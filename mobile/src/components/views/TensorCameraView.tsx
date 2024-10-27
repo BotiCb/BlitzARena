@@ -14,6 +14,7 @@ import { Camera } from "expo-camera/legacy";
 import Svg, { Circle } from "react-native-svg";
 import * as Posenet from "@tensorflow-models/posenet";
 import * as tf from "@tensorflow/tfjs";
+import { ExpoWebGLRenderingContext } from "expo-gl/build/GLView.types";
 
 const TensorCamera = cameraWithTensors(Camera);
 const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
@@ -50,7 +51,7 @@ const InbattleScreen = () => {
     loadModel();
   }, []);
 
-  const handleCameraStream = (images: any) => {
+  const handleCameraStream = (images :IterableIterator<tf.Tensor3D>, updatePreview: () => void, gl : ExpoWebGLRenderingContext) => {
     const loop = async () => {
       try {
         if (model) {
@@ -70,7 +71,10 @@ const InbattleScreen = () => {
       } catch (error) {
         console.error("Error in handleCameraStream:", error); 
       }
-
+      console.log(gl);
+      if (gl) {
+        gl.endFrameEXP();
+      }
       requestAnimationFrame(loop);
     };
     loop();
@@ -106,6 +110,7 @@ const InbattleScreen = () => {
             resizeDepth={3}
             autorender={false}
             onReady={handleCameraStream}
+            onMountError={(error) => console.error("Camera mount error:", error)}
           />
           {pose && (
            <Svg style={styles.svg}>
