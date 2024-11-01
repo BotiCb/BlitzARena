@@ -6,8 +6,9 @@ import {
   useCameraPermission,
   useFrameProcessor,
 } from "react-native-vision-camera";
+import * as useResizePlugin from "vision-camera-resize-plugin";
 import { TensorflowModel, useTensorflowModel } from "react-native-fast-tflite";
-import { resize } from "./utils/frame-procesing";
+import { mapToPose } from "./utils/frame-procesing";
 
 function tensorToString(tensor: TensorflowModel["inputs"][number]): string {
   return `${tensor.dataType} [${tensor.shape}]`;
@@ -50,12 +51,20 @@ const CameraView = () => {
       </View>
     );
   }
+  const {resize} = useResizePlugin.createResizePlugin();
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet'
     if (plugin.state === "loaded") {
-      const resized = resize(frame, 192, 192)
+      const resized = resize(frame, {
+        scale: {
+          width: 192,
+          height: 192,
+        },
+        pixelFormat: 'rgb',
+        dataType: 'uint8',
+    })
       const outputs = plugin.model.runSync([resized])
-      console.log(`Received ${outputs.length} outputs!`)
+      console.log(mapToPose(outputs[0]).keypoints.filter(k => k.score > 0.5));
     }
   }, [plugin])
     
@@ -64,9 +73,9 @@ const CameraView = () => {
       <Camera
         style={StyleSheet.absoluteFill} // Fills the entire screen
         device={device}
-        isActive={true}
+        isActive= {true}
         frameProcessor={frameProcessor}
-        pixelFormat="rgb"
+        pixelFormat="yuv"
       />
     </View>
   );
@@ -92,3 +101,5 @@ const styles = StyleSheet.create({
     color: "gray",
   },
 });
+
+
