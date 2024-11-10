@@ -46,7 +46,7 @@ const CameraView = forwardRef((_, ref) => {
   const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
 
   const plugin = useTensorflowModel(
-    require("C:/Allamvizsga/allamvizsgaProjekt/mobile2/assets/models/movenet-tflite-singlepose-lightning-tflite-int8-v1 (1)/4.tflite"),
+    require("../assets/models/movenet-tflite-singlepose-lightning-tflite-int8-v1 (1)/4.tflite"),
 
     delegate
   );
