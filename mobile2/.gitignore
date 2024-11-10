@@ -9,7 +9,7 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
-tensorflow
+
 # macOS
 .DS_Store
 
@@ -18,3 +18,5 @@ tensorflow
 
 expo-env.d.ts
 # @end expo-cli
+android
+ios

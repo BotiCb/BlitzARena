@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { View, Text, Dimensions } from "react-native";
 
-import * as ScreenOrientation from "expo-screen-orientation";
+
 import { Pose } from "@/components/utils/types";
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
 

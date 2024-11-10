@@ -41,7 +41,10 @@ function tensorToString(tensor: TensorflowModel["inputs"][number]): string {
 const CameraView = forwardRef((_, ref) => {
   const device = useCameraDevices()[0]; // Using back camera as default
 
-  const { hasPermission } = useCameraPermission();
+  const { hasPermission, requestPermission } = useCameraPermission();
+  if(!hasPermission){
+    requestPermission();
+  }
 
   const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
 
