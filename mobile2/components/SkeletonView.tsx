@@ -1,72 +1,79 @@
-import React from 'react';
-import { View } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
 import Svg, { Line, Circle } from 'react-native-svg';
-import { bodyConnections } from './utils/types';
-interface Keypoint {
-  [key: string]: number;
-}
+import { bodyConnections, Pose } from './utils/types';
+import { Float } from 'react-native/Libraries/Types/CodegenTypes';
+import { MOVENET_CONSTANTS } from '@/constants/MovenetConstants';
 
 // Define body part connections (pairs of keypoints to connect with lines)
 
 interface SkeletonProps {
-  keypoints: Keypoint;
+  pose: Pose;
+  height: Float;
+  width: Float;
 }
 
-const Skeleton: React.FC<SkeletonProps> = ({ keypoints }) => {
-  const scale = 400; // Scale up keypoints for better visibility
 
-  const renderConnections = () => {
-    return bodyConnections.map(([start, end], index) => {
-      const x1 = keypoints[start * 2] * scale;
-      const y1 = keypoints[start * 2 + 1] * scale;
-      const x2 = keypoints[end * 2] * scale;
-      const y2 = keypoints[end * 2 + 1] * scale;
-
-      return (
-        <Line
-          key={`line-${index}`}
-          x1={x1}
-          y1={y1}
-          x2={x2}
-          y2={y2}
-          stroke="black"
-          strokeWidth="2"
-        />
-      );
-    });
-  };
-
-  const renderKeypoints = () => {
-    return Object.keys(keypoints)
-      .filter((key) => parseInt(key) % 2 === 0) // Filter x-coordinates only
-      .map((key, index) => {
-        const x = keypoints[key] * scale;
-        const y = keypoints[(parseInt(key) + 1).toString()] * scale;
-
-        return (
-          <Circle
-            key={`circle-${index}`}
-            cx={x}
-            cy={y}
-            r="4"
-            fill="blue"
-          />
-        );
-      });
-  };
-  if(keypoints == null) {
-    return null;
-  }
+const Skeleton: React.FC<SkeletonProps> = ({ pose, height , width }) => {
+  useEffect(() => {
+    console.log("Skeleton rendered ", height, width);
+  }, []);
+  
 
   return (
-    <View>
+    <View style={styles.container}>
         
-      <Svg height="400" width="400">
-        {renderConnections()}
-        {renderKeypoints()}
+      <Svg >
+        {pose.keypoints.map((keypoint, index) => (
+          <Circle
+            key={index}
+            cy={keypoint.x *height
+            }
+            cx={width -keypoint.y * width}
+            r={5}
+            fill="red"
+            
+          />
+        ))}
+        {/* {MOVENET_CONSTANTS.BODY_CONNECTIONS.map(([startIdx, endIdx], index) => {
+          const startKeypoint = pose.keypoints[startIdx];
+          const endKeypoint = pose.keypoints[endIdx];
+
+          // Check if both keypoints are valid before rendering the line
+          if (startKeypoint && endKeypoint && startKeypoint.x != null && startKeypoint.y != null && endKeypoint.x != null && endKeypoint.y != null) {
+            return (
+              <Line
+                key={`line-${index}`}
+                x1={startKeypoint.x * width}
+                y1={startKeypoint.y * height}
+                x2={endKeypoint.x * width}
+                y2={endKeypoint.y * height}
+                stroke="blue"
+                strokeWidth={2}
+              />
+            );
+          }
+          return null;
+        })} */}
+        <Circle cx={100} cy={0} r={5} fill={'red'} />
       </Svg>
     </View>
   );
 };
 
 export default Skeleton;
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    position: 'absolute',
+    borderColor: 'red',
+    borderWidth: 1,
+    height: '100%',
+    width: '100%',
+  },
+});

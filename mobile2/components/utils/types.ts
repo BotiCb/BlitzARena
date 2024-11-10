@@ -8,8 +8,11 @@ export const bodyConnections = [
     y: number;
     x: number;
     score: number;
+    index: number;
+    name: string;
   };
   
   export type Pose = {
     keypoints: Keypoint[];
   };
+  

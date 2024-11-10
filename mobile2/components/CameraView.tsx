@@ -1,105 +1,180 @@
-import React, { useEffect } from "react";
-import { View, Text, StyleSheet, Platform } from "react-native";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
+
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
+
 import {
   Camera,
   useCameraDevices,
   useCameraPermission,
   useFrameProcessor,
+  Orientation,
+  useCameraFormat,
+  runAtTargetFps,
 } from "react-native-vision-camera";
+
 import * as useResizePlugin from "vision-camera-resize-plugin";
+
 import { TensorflowModel, useTensorflowModel } from "react-native-fast-tflite";
-import { mapToPose } from "./utils/frame-procesing";
+
+import { mapToKeypoints, mapToPose } from "./utils/frame-procesing";
+
+import { Pose } from "./utils/types";
+
+import { useSharedValue, worklet, Worklets } from "react-native-worklets-core";
+import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
 
 function tensorToString(tensor: TensorflowModel["inputs"][number]): string {
   return `${tensor.dataType} [${tensor.shape}]`;
 }
 
-const CameraView = () => {
+const CameraView = forwardRef((_, ref) => {
   const device = useCameraDevices()[0]; // Using back camera as default
+
   const { hasPermission } = useCameraPermission();
+
   const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
+
   const plugin = useTensorflowModel(
-    require("C:/Allamvizsga/allamvizsgaProjekt/mobile2/assets/models/4.tflite"),
+    require("C:/Allamvizsga/allamvizsgaProjekt/mobile2/assets/models/movenet-tflite-singlepose-lightning-tflite-int8-v1 (1)/4.tflite"),
+
     delegate
   );
+
   useEffect(() => {
     const model = plugin.model;
-    if (model == null) {
-      return;
-    }
+
+    if (model == null) return;
+
     console.log(
       `Model: ${model.inputs.map(tensorToString)} -> ${model.outputs.map(
         tensorToString
       )}`
     );
   }, [plugin]);
-  const inputTensor = plugin.model?.inputs[0];
-  const inputWidth = inputTensor?.shape[1] ?? 0;
-  const inputHeight = inputTensor?.shape[2] ?? 0;
-  if (inputTensor != null) {
-    console.log(
-      `Input: ${inputTensor.dataType} ${inputWidth} x ${inputHeight}`,
-    );
-  }
+
+  const { resize } = useResizePlugin.createResizePlugin();
+
+  const detectedPose = useSharedValue<Pose | null>(null);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      getPose: () => {
+        return detectedPose.value;
+      },
+    }),
+    []
+  );
+
+  const frameProcessor = useFrameProcessor(
+    (frame) => {
+      "worklet";
+
+      if (plugin.state === "loaded") {
+        runAtTargetFps(MOVENET_CONSTANTS.FPS,
+          () => {
+            "worklet";
+            const resized = resize(frame, {
+              scale: {
+                width: 192,
+    
+                height: 192,
+              },
+    
+              pixelFormat: "rgb",
+    
+              dataType: "uint8",
+            });
+    
+            const outputs = plugin.model.runSync([resized]);
+            // console.log(outputs[0], outputs[1]);
+            const newPose = mapToPose(outputs[0]);
+            console.log(newPose);
+            detectedPose.value = newPose;
+          
+        })
+        //console.log(newPose);
+      }
+    },
+
+    [plugin]
+  ); // Use useImperativeHandle to expose functionalities to the parent component
+
+  const format = useCameraFormat(device, [{ videoAspectRatio: 9 / 16 }]);
+
+  useEffect(() => {
+    console.log("Camera Component rendered");
+  }, []);
 
   if (!device || !hasPermission) {
     return (
       <View style={styles.permissionContainer}>
+      
         <Text style={styles.permissionText}>
           Camera permission is required.
         </Text>
+        
       </View>
     );
   }
-  const {resize} = useResizePlugin.createResizePlugin();
-  const frameProcessor = useFrameProcessor((frame) => {
-    'worklet'
-    if (plugin.state === "loaded") {
-      const resized = resize(frame, {
-        scale: {
-          width: 192,
-          height: 192,
-        },
-        pixelFormat: 'rgb',
-        dataType: 'uint8',
-    })
-      const outputs = plugin.model.runSync([resized])
-      console.log(mapToPose(outputs[0]).keypoints.filter(k => k.score > 0.5));
-    }
-  }, [plugin])
-    
+
   return (
     <View style={styles.container}>
-      <Camera
-        style={StyleSheet.absoluteFill} // Fills the entire screen
-        device={device}
-        isActive= {true}
-        frameProcessor={frameProcessor}
-        pixelFormat="yuv"
-      />
+      
+      {plugin.state ? (
+        <Camera
+          style={StyleSheet.absoluteFill}
+          device={device}
+          isActive={true}
+          frameProcessor={frameProcessor}
+          pixelFormat="yuv"
+          outputOrientation={"device"} // format={format}
+        />
+      ) : (
+        <ActivityIndicator size="large" color={"#0000ff"} />
+      )}
+     
     </View>
   );
-};
+});
 
 export default CameraView;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+
     justifyContent: "center",
+
     alignItems: "center",
-    backgroundColor: "black",
+
+    
   },
+
   permissionContainer: {
     flex: 1,
+
     justifyContent: "center",
+
     alignItems: "center",
+
     backgroundColor: "white",
   },
+
   permissionText: {
     fontSize: 16,
+
     color: "gray",
   },
 });
-
-

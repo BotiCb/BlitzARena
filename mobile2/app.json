@@ -35,21 +35,27 @@
     },
     "plugins": [
       "react-native-vision-camera",
-      [ "expo-build-properties",
-      {
-        "android": {
-          "compileSdkVersion": 34,
-          "targetSdkVersion": 34,
-          "buildToolsVersion": "34.0.0",
-        },
-        "ios": {
-          "deploymentTarget": "13.4"
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
+          },
+          "ios": {
+            "deploymentTarget": "13.4"
+          }
         }
-      }
-    ]
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3326f156-c8b1-46cd-82f7-88156a417974"
+      }
     }
   }
 }
