@@ -27,9 +27,9 @@ import * as useResizePlugin from "vision-camera-resize-plugin";
 
 import { TensorflowModel, useTensorflowModel } from "react-native-fast-tflite";
 
-import { mapToKeypoints, mapToPose } from "./utils/frame-procesing";
+import { mapToKeypoints, mapToPose } from "../utils/frame-procesing";
 
-import { Pose } from "./utils/types";
+import { Pose } from "../utils/types";
 
 import { useSharedValue, worklet, Worklets } from "react-native-worklets-core";
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
@@ -42,7 +42,7 @@ const CameraView = forwardRef((_, ref) => {
   const device = useCameraDevices()[0]; // Using back camera as default
 
   const { hasPermission, requestPermission } = useCameraPermission();
-  if(!hasPermission){
+  if (!hasPermission) {
     requestPermission();
   }
 
@@ -85,28 +85,26 @@ const CameraView = forwardRef((_, ref) => {
       "worklet";
 
       if (plugin.state === "loaded") {
-        runAtTargetFps(MOVENET_CONSTANTS.FPS,
-          () => {
-            "worklet";
-            const resized = resize(frame, {
-              scale: {
-                width: 192,
-    
-                height: 192,
-              },
-    
-              pixelFormat: "rgb",
-    
-              dataType: "uint8",
-            });
-    
-            const outputs = plugin.model.runSync([resized]);
-            // console.log(outputs[0], outputs[1]);
-            const newPose = mapToPose(outputs[0]);
-            console.log(newPose);
-            detectedPose.value = newPose;
-          
-        })
+        runAtTargetFps(MOVENET_CONSTANTS.FPS, () => {
+          "worklet";
+          const resized = resize(frame, {
+            scale: {
+              width: 192,
+
+              height: 192,
+            },
+
+            pixelFormat: "rgb",
+
+            dataType: "uint8",
+          });
+
+          const outputs = plugin.model.runSync([resized]);
+          // console.log(outputs[0], outputs[1]);
+          const newPose = mapToPose(outputs[0]);
+          console.log(newPose);
+          detectedPose.value = newPose;
+        });
         //console.log(newPose);
       }
     },
@@ -123,18 +121,15 @@ const CameraView = forwardRef((_, ref) => {
   if (!device || !hasPermission) {
     return (
       <View style={styles.permissionContainer}>
-      
         <Text style={styles.permissionText}>
           Camera permission is required.
         </Text>
-        
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      
       {plugin.state ? (
         <Camera
           style={StyleSheet.absoluteFill}
@@ -147,7 +142,6 @@ const CameraView = forwardRef((_, ref) => {
       ) : (
         <ActivityIndicator size="large" color={"#0000ff"} />
       )}
-     
     </View>
   );
 });
@@ -161,8 +155,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
 
     alignItems: "center",
-
-    
   },
 
   permissionContainer: {

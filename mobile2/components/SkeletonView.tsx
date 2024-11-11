@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import Svg, { Line, Circle } from 'react-native-svg';
-import { bodyConnections, Pose } from './utils/types';
-import { Float } from 'react-native/Libraries/Types/CodegenTypes';
-import { MOVENET_CONSTANTS } from '@/constants/MovenetConstants';
+import React, { useEffect } from "react";
+import { View, StyleSheet } from "react-native";
+import Svg, { Line, Circle } from "react-native-svg";
+import { bodyConnections, Pose } from "../utils/types";
+import { Float } from "react-native/Libraries/Types/CodegenTypes";
+import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
 
 // Define body part connections (pairs of keypoints to connect with lines)
 
@@ -13,26 +13,21 @@ interface SkeletonProps {
   width: Float;
 }
 
-
-const Skeleton: React.FC<SkeletonProps> = ({ pose, height , width }) => {
+const Skeleton: React.FC<SkeletonProps> = ({ pose, height, width }) => {
   useEffect(() => {
     console.log("Skeleton rendered ", height, width);
   }, []);
-  
 
   return (
     <View style={styles.container}>
-        
-      <Svg >
+      <Svg>
         {pose.keypoints.map((keypoint, index) => (
           <Circle
             key={index}
-            cy={keypoint.x *height
-            }
-            cx={width -keypoint.y * width}
+            cy={keypoint.x * height}
+            cx={width - keypoint.y * width}
             r={5}
             fill="red"
-            
           />
         ))}
         {/* {MOVENET_CONSTANTS.BODY_CONNECTIONS.map(([startIdx, endIdx], index) => {
@@ -55,7 +50,7 @@ const Skeleton: React.FC<SkeletonProps> = ({ pose, height , width }) => {
           }
           return null;
         })} */}
-        <Circle cx={100} cy={0} r={5} fill={'red'} />
+        <Circle cx={100} cy={0} r={5} fill={"red"} />
       </Svg>
     </View>
   );
@@ -63,17 +58,16 @@ const Skeleton: React.FC<SkeletonProps> = ({ pose, height , width }) => {
 
 export default Skeleton;
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    position: 'absolute',
-    borderColor: 'red',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "transparent",
+    position: "absolute",
+    borderColor: "red",
     borderWidth: 1,
-    height: '100%',
-    width: '100%',
+    height: "100%",
+    width: "100%",
   },
 });
