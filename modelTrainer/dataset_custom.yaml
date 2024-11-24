@@ -1,0 +1,6 @@
+train: C:\Allamvizsga\allamvizsgaProjekt\modelTrainer\train
+val: C:\Allamvizsga\allamvizsgaProjekt\modelTrainer\val
+test: C:\Allamvizsga\allamvizsgaProjekt\modelTrainer\test
+
+nc: 1
+names: ['person']

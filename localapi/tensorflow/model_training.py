@@ -14,4 +14,4 @@ tflite_model = converter.convert()
 
 # Save the .tflite file
 with open('model.tflite', 'wb') as f:
-  f.write(tflite_model) 
+  f.write(tflite_model)

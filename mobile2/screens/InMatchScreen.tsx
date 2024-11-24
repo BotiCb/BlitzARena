@@ -29,7 +29,7 @@ const InMatchScreen = () => {
   return (
     <View style={{ flex: 1 }}>
       <CameraView ref={cameraRef} />
-      {pose && <Skeleton pose={pose} width={width} height={height} />}
+      {/* {pose && <Skeleton pose={pose} width={width} height={height} />} */}
       <Button
         title="Go to Home"
       />

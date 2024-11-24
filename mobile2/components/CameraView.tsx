@@ -49,7 +49,7 @@ const CameraView = forwardRef((_, ref) => {
   const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
 
   const plugin = useTensorflowModel(
-    require("../assets/models/movenet-tflite-singlepose-lightning-tflite-int8-v1 (1)/4.tflite"),
+    require("../assets/models/ceca480n_int8.tflite"),
 
     delegate
   );
@@ -89,20 +89,21 @@ const CameraView = forwardRef((_, ref) => {
           "worklet";
           const resized = resize(frame, {
             scale: {
-              width: 192,
+              width: 480,
 
-              height: 192,
+              height: 480,
             },
 
             pixelFormat: "rgb",
 
-            dataType: "uint8",
+            dataType: "float32",
           });
 
           const outputs = plugin.model.runSync([resized]);
+          //rconsole.log(outputs);
           // console.log(outputs[0], outputs[1]);
           const newPose = mapToPose(outputs[0]);
-          console.log(newPose);
+          //console.log(newPose);
           detectedPose.value = newPose;
         });
         //console.log(newPose);

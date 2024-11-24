@@ -21,7 +21,7 @@
         "Right Ankle"
       ],
       TRESHOLD : 0.25,
-      FPS: 15,
+      FPS: 10,
       BODY_CONNECTIONS:  [
         [0, 1], [1, 2], [2, 3], [3, 4],           // Head and eyes
         [5, 6], [5, 7], [7, 9], [6, 8], [8, 10],   // Arms
