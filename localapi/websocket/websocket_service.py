@@ -1,0 +1,18 @@
+import asyncio
+import websockets
+
+async def echo(websocket, path=None):  # Define a default path argument
+    print(f"New connection established. Path: {path}")
+    try:
+        async for message in websocket:
+            print(f"Received: {message}")
+            await websocket.send(f"Echo: {message}")
+    except websockets.ConnectionClosed as e:
+        print(f"Connection closed: {e}")
+
+# Start WebSocket server
+async def start_server():
+    print("Starting WebSocket server")
+    # Ensure the 'echo' handler is passed here
+    server = await websockets.serve(echo, "192.168.137.1", 8765)
+    await server.wait_closed()
