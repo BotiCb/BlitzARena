@@ -135,10 +135,7 @@ function computeIoU(
   const unionArea = boxAArea + boxBArea - intersectionArea;
   return unionArea === 0 ? 0 : intersectionArea / unionArea;
 }
-function applyNMS(
-  detections: Detection[],
-  iouThreshold: number
-): Detection[] {
+function applyNMS(detections: Detection[], iouThreshold: number): Detection[] {
   "worklet";
   const selected: Detection[] = [];
 
@@ -161,7 +158,6 @@ function applyNMS(
 /**
  * Computes Intersection over Union (IoU) between two bounding boxes.
  */
-
 
 /**
  * Maps model output to structured detections and applies NMS.
@@ -205,7 +201,7 @@ export function mapModelOutputWithNMS(
       const kpConfidence = output[kpOffset + 2];
       keypoints.push({ x, y, confidence: kpConfidence });
     }
-    
+
     // Add detection to the list
     detections.push({
       boundingBox: { xMin, yMin, xMax, yMax },
@@ -217,4 +213,74 @@ export function mapModelOutputWithNMS(
 
   // Apply Non-Maximum Suppression
   return applyNMS(detections, iouThreshold);
+}
+function sigmoid(x: number): number {
+  "worklet";
+  return 1 / (1 + Math.exp(-x));
+}
+
+export function decodeYoloOutput(
+  outputTensor: any[],
+  numDetections: number,
+  attributes = 5
+) {
+  "worklet";
+  const detections = [];
+  for (let i = 0; i < numDetections; i++) {
+    ;
+
+    
+      const xc = outputTensor[0][i * attributes];
+      const yc = outputTensor[0][i * attributes + 1];
+      const w = outputTensor[0][i * attributes + 2];
+      const h = outputTensor[0][i * attributes + 3];
+      const confidence = outputTensor[0][i * attributes + 4]
+      
+      detections.push({
+        xc,
+        yc,
+        w,
+        h,
+        confidence,
+        
+      });
+     
+  }
+  return detections;
+}
+
+export function nonMaxSuppressionFromYolo(
+  detections: any[],
+  iouThreshold: number
+) {
+  "worklet";
+  // Compute IoU between two boxes
+  function iou(boxA: any, boxB: any) {
+    const xa = Math.max(boxA.x, boxB.x);
+    const ya = Math.max(boxA.y, boxB.y);
+    const xb = Math.min(boxA.x + boxA.width, boxB.x + boxB.width);
+    const yb = Math.min(boxA.y + boxA.height, boxB.y + boxB.height);
+
+    const interArea = Math.max(0, xb - xa) * Math.max(0, yb - ya);
+    const boxAArea = boxA.width * boxA.height;
+    const boxBArea = boxB.width * boxB.height;
+
+    return interArea / (boxAArea + boxBArea - interArea);
+  }
+
+  // Sort detections by confidence
+  detections.sort((a, b) => b.confidence - a.confidence);
+
+  const selected = [];
+  while (detections.length > 0) {
+    const current = detections.shift(); // Take the detection with the highest confidence
+    selected.push(current);
+
+    // Filter out overlapping detections
+    detections = detections.filter(
+      (detection) => iou(current, detection) <= iouThreshold
+    );
+  }
+
+  return selected; // Filtered detections
 }

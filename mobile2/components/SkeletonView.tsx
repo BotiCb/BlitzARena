@@ -26,7 +26,7 @@ const Skeleton: React.FC<SkeletonProps> = ({ pose, height, width }) => {
             key={index}
             cy={keypoint.x * height}
             cx={width - keypoint.y * width}
-            r={5}
+            r={2}
             fill="red"
           />
         ))}
@@ -50,7 +50,7 @@ const Skeleton: React.FC<SkeletonProps> = ({ pose, height, width }) => {
           }
           return null;
         })} */}
-        <Circle cx={100} cy={0} r={5} fill={"red"} />
+        <Circle cx={100} cy={0} r={1} fill={"red"} />
       </Svg>
     </View>
   );

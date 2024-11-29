@@ -27,7 +27,7 @@ import * as useResizePlugin from "vision-camera-resize-plugin";
 
 import { TensorflowModel, useTensorflowModel } from "react-native-fast-tflite";
 
-import { decodeTensor, mapModelOutputWithNMS, mapToKeypoints, mapToPose, mapYOLOOutput, mapYoloOutputForOneClass, mapYoloPoseOutput, parseYoloOutput } from "../utils/frame-procesing";
+import { decodeTensor, decodeYoloOutput, mapModelOutputWithNMS, mapToKeypoints, mapToPose, mapYOLOOutput, mapYoloOutputForOneClass, mapYoloPoseOutput, nonMaxSuppressionFromYolo, parseYoloOutput } from "../utils/frame-procesing";
 
 import { Pose } from "../utils/types";
 
@@ -49,7 +49,7 @@ const CameraView = forwardRef((_, ref) => {
   const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
 
   const plugin = useTensorflowModel(
-    require("../assets/models/yolov8n-pose_float32.tflite"),
+    require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_float32.tflite"),
 
     delegate
   );
@@ -98,14 +98,23 @@ const CameraView = forwardRef((_, ref) => {
 
             dataType: "float32",
           });
-
           const outputs = plugin.model.runSync([resized]);
+
+          // const array: number[] = [];
+          // for(let i = 0; i < 2100*5; i+=5) {
+          //   if(outputs[0][i+1] > 0.5) {
+          //     array.push(outputs[0][i+1] as number);
+            
+          // }
           
-         console.log(outputs[0].slice(0, 10));
-         for (let i = 0; i < outputs[0].length; i += 5) {
-          const confidence = outputs[0][i+4];
+            
+          // }
+          console.log(decodeYoloOutput(outputs, 2100, 5).length);
           
-}
+        //console.log(outputs[0].slice(0, 10));
+        
+          
+
           // console.log(outputs[0], outputs[1]);
           //const newPose = mapToPose(outputs[0]);
           //console.log(newPose);

@@ -6,7 +6,7 @@ async def echo(websocket, path=None):  # Define a default path argument
     try:
         async for message in websocket:
             print(f"Received: {message}")
-            await websocket.send(f"Echo: {message}")
+            # await websocket.send(f"Echo: {message}")
     except websockets.ConnectionClosed as e:
         print(f"Connection closed: {e}")
 
@@ -14,5 +14,5 @@ async def echo(websocket, path=None):  # Define a default path argument
 async def start_server():
     print("Starting WebSocket server")
     # Ensure the 'echo' handler is passed here
-    server = await websockets.serve(echo, "192.168.137.1", 8765)
+    server = await websockets.serve(echo, "192.168.1.41", 8765)
     await server.wait_closed()
