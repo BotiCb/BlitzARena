@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useRef } from "react";
-
+import RNFS from "react-native-fs";
 import { View, Text, StyleSheet, Platform } from "react-native";
-
+import modelTrainingWebsocketService from "@/services/websocket/model-training.websocket.service";
 import {
   Camera,
   useCameraDevices,
@@ -27,6 +27,10 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
     }
   }, [hasPermission, requestPermission]);
 
+  const format = useCameraFormat(device, [
+    { photoResolution: { width: 1280, height: 720 } }
+  ])
+
   useEffect(() => {
     if (!takePhotos || !hasPermission) return; 
 
@@ -34,7 +38,8 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
       if (camera.current) {
         const photo = await camera.current.takePhoto();
         if (photo) {
-          handleImageCapture(photo);
+          const base64Image = await RNFS.readFile(photo.path, "base64");
+          handleImageCapture(base64Image);
         }
       }
     }, 1000); // Capture photo every 1 second
@@ -64,6 +69,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
         outputOrientation={"device"}
         photo={true}
         ref={camera}
+        format={format}
       />
     </View>
   );

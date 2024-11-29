@@ -10,7 +10,7 @@ from services.websocket.websocket_service import WebSocketService
 async def main():
     print("Starting game server...")
     websocket_service = WebSocketService()  # Instantiate the WebSocket service
-    server = await websockets.serve(websocket_service.handle_connection, "0.0.0.0", 8765)
+    server = await websockets.serve(websocket_service.handle_connection, "0.0.0.0.0", 8765)
     print("WebSocket server started on ws://0.0.0.0:8765")
     await server.wait_closed()
 

@@ -3,7 +3,7 @@ import InMatchScreen from '@/screens/InMatchScreen';
 import ModelTrainingScreen from '@/screens/ModelTrainingScreen';
 import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, View, Text, Button } from 'react-native';
-import webSocketService from '@/services/websocket.service';
+import webSocketService from '@/services/websocket/websocket.service';
 export default function HomeScreen() {
   const [message, setMessage] = useState<string>('');  // Store received message
   const [connected, setConnected] = useState<boolean>(false);

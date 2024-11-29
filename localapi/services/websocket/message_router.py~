@@ -1,0 +1,15 @@
+async def route_message(player_id, raw_message):
+    try:
+        message = json.loads(raw_message)
+        message_type = message.get("type")
+
+        if message_type == "player_action":
+            await handle_player_action(player_id, message)
+        elif message_type == "lobby_action":
+            await handle_lobby_action(player_id, message)
+        elif message_type == "game_event":
+            await handle_game_event(player_id, message)
+        else:
+            print(f"Unknown message type: {message_type}")
+    except Exception as e:
+        print(f"Failed to process message from player {player_id}: {e}")

@@ -1,16 +1,47 @@
 import TrainingCameraView from "@/components/TraingCameraView"
-import { useEffect, useState } from "react"
+import modelTrainingWebsocketService from "@/services/websocket/model-training.websocket.service"
+import { useEffect, useRef, useState } from "react"
 import { View, Text, Button } from "react-native"
 
 const ModelTrainingScreen = () => {
     const [takePhotos, setTakePhotos] = useState(false)
-    const [capturedPhotos, setCapturedPhotos] = useState<any[]>([])
-    const handleImageCapture = (image:any) => {
-        setCapturedPhotos((prevImages) => [...prevImages, image]);
-      };
-      useEffect (() => {
-        console.log(capturedPhotos)
-      }, [takePhotos])
+    const photoQueue = useRef<string[]>([]); // Queue to store Base64 photos
+    const isSending = useRef(false); // Prevent multiple send processes
+  
+    // Add photo to the queue
+    const handleImageCapture = (image: string) => {
+      photoQueue.current.push(image); // Add new photo to the queue
+      sendPhotosToServer(); // Trigger sending process
+    };
+  
+    // Function to send photos asynchronously
+    const sendPhotosToServer = async () => {
+      if (isSending.current || photoQueue.current.length === 0) return;
+  
+      isSending.current = true;
+  
+      while (photoQueue.current.length > 0) {
+        const photo: string | undefined = photoQueue.current.shift(); // Remove the first photo from the queue
+  
+        if (photo) {
+          try {
+            // Send the photo to the server via WebSocket
+            const message = JSON.stringify({
+              type: "photo",
+              data: photo.slice(22),
+            });
+  
+            modelTrainingWebsocketService.sendImage(message);
+          } catch (error) {
+            console.error("Error sending photo:", error);
+            photoQueue.current.unshift(photo); // Re-add the photo to the front of the queue
+            break; // Exit the loop to retry later
+          }
+        }
+      }
+  
+      isSending.current = false;
+    };
     return (
         <View style={{ flex: 1 }}>
             <Text>ModelTrainingScreen</Text>

@@ -227,15 +227,14 @@ export function decodeYoloOutput(
   "worklet";
   const detections = [];
   for (let i = 0; i < numDetections; i++) {
-    ;
-
-    
-      const xc = outputTensor[0][i * attributes];
-      const yc = outputTensor[0][i * attributes + 1];
-      const w = outputTensor[0][i * attributes + 2];
-      const h = outputTensor[0][i * attributes + 3];
-      const confidence = outputTensor[0][i * attributes + 4]
-      
+    const confidence = outputTensor[0][i + numDetections * 4];
+    if(confidence < 0.5){
+      continue;
+    }
+      const xc = outputTensor[0][i];
+      const yc = outputTensor[0][i + numDetections];
+      const w = outputTensor[0][i + numDetections * 2];
+      const h = outputTensor[0][i + numDetections * 3];
       detections.push({
         xc,
         yc,

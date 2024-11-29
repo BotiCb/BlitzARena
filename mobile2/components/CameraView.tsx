@@ -49,7 +49,7 @@ const CameraView = forwardRef((_, ref) => {
   const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
 
   const plugin = useTensorflowModel(
-    require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_float32.tflite"),
+    require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
 
     delegate
   );
@@ -85,7 +85,7 @@ const CameraView = forwardRef((_, ref) => {
       "worklet";
 
       if (plugin.state === "loaded") {
-        runAtTargetFps(1, () => {
+        runAtTargetFps(20, () => {
           "worklet";
           const resized = resize(frame, {
             scale: {
@@ -99,7 +99,7 @@ const CameraView = forwardRef((_, ref) => {
             dataType: "float32",
           });
           const outputs = plugin.model.runSync([resized]);
-
+          //console.log(outputs[0][2100*4]);
           // const array: number[] = [];
           // for(let i = 0; i < 2100*5; i+=5) {
           //   if(outputs[0][i+1] > 0.5) {
