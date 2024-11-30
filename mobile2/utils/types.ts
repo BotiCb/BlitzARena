@@ -7,12 +7,24 @@ export const bodyConnections = [
   export type Keypoint = {
     y: number;
     x: number;
-    score: number;
-    index: number;
+    confidence: number;
     name: string;
   };
-  
+
   export type Pose = {
     keypoints: Keypoint[];
+  };
+
+  export type BoundingBox = {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  }
+  
+  export type Detection = {
+    keypoints: Keypoint[];
+    boundingBox: BoundingBox;
+    confidence: number;
   };
   

@@ -29,7 +29,7 @@ import { TensorflowModel, useTensorflowModel } from "react-native-fast-tflite";
 
 import { decodeTensor, decodeYoloOutput, mapModelOutputWithNMS, mapToKeypoints, mapToPose, mapYOLOOutput, mapYoloOutputForOneClass, mapYoloPoseOutput, nonMaxSuppressionFromYolo, parseYoloOutput } from "../utils/frame-procesing";
 
-import { Pose } from "../utils/types";
+import { Detection, Pose } from "../utils/types";
 
 import { useSharedValue, worklet, Worklets } from "react-native-worklets-core";
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
@@ -50,8 +50,8 @@ const CameraView = forwardRef((_, ref) => {
 
   const plugin = useTensorflowModel(
     require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
-
     delegate
+   
   );
 
   useEffect(() => {
@@ -85,12 +85,12 @@ const CameraView = forwardRef((_, ref) => {
       "worklet";
 
       if (plugin.state === "loaded") {
-        runAtTargetFps(20, () => {
+        runAtTargetFps(5, () => {
           "worklet";
           const resized = resize(frame, {
             scale: {
               width: 320,
-
+              
               height: 320,
             },
 
@@ -109,25 +109,32 @@ const CameraView = forwardRef((_, ref) => {
           
             
           // }
-          console.log(decodeYoloOutput(outputs, 2100, 5).length);
+          const detections: Detection[] =decodeYoloOutput(outputs, 2100, 5);
           
-        //console.log(outputs[0].slice(0, 10));
-        
-          
+        console.log(detections.length);
+        if(detections.length > 0) {
+          const pose :Pose = { keypoints: detections[0].keypoints };
+          detectedPose.value = pose;
+        }
+        // if(detections.length > 0) {
+        // console.log(detections[0].keypoints.length);
+        // }
 
           // console.log(outputs[0], outputs[1]);
           //const newPose = mapToPose(outputs[0]);
           //console.log(newPose);
-          //detectedPose.value = newPose;
+         
         });
         //console.log(newPose);
       }
     },
 
-    [plugin]
+    [plugin, detectedPose]
   ); // Use useImperativeHandle to expose functionalities to the parent component
 
-  const format = useCameraFormat(device, [{ videoAspectRatio: 9 / 16 }]);
+  const format = useCameraFormat(device, [{ 
+    videoResolution: { width: 320, height: 320 },
+  }]);
 
   useEffect(() => {
     console.log("Camera Component rendered");
@@ -152,6 +159,7 @@ const CameraView = forwardRef((_, ref) => {
           isActive={true}
           frameProcessor={frameProcessor}
           pixelFormat="yuv"
+          // format={format}
           outputOrientation={"device"} // format={format}
         />
       ) : (
