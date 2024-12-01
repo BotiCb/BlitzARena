@@ -2,6 +2,7 @@ import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
 } from "react";
 
@@ -21,18 +22,20 @@ import {
   Orientation,
   useCameraFormat,
   runAtTargetFps,
+  useSkiaFrameProcessor,
 } from "react-native-vision-camera";
 
 import * as useResizePlugin from "vision-camera-resize-plugin";
 
 import { TensorflowModel, useTensorflowModel } from "react-native-fast-tflite";
 
-import { decodeTensor, decodeYoloOutput, mapModelOutputWithNMS, mapToKeypoints, mapToPose, mapYOLOOutput, mapYoloOutputForOneClass, mapYoloPoseOutput, nonMaxSuppressionFromYolo, parseYoloOutput } from "../utils/frame-procesing";
+import { decodeYoloOutput, drawDetections } from "../utils/frame-procesing-utils";
 
 import { Detection, Pose } from "../utils/types";
 
 import { useSharedValue, worklet, Worklets } from "react-native-worklets-core";
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
+import { Skia } from "@shopify/react-native-skia";
 
 function tensorToString(tensor: TensorflowModel["inputs"][number]): string {
   return `${tensor.dataType} [${tensor.shape}]`;
@@ -51,7 +54,6 @@ const CameraView = forwardRef((_, ref) => {
   const plugin = useTensorflowModel(
     require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
     delegate
-   
   );
 
   useEffect(() => {
@@ -79,62 +81,53 @@ const CameraView = forwardRef((_, ref) => {
     }),
     []
   );
+  const paint = Skia.Paint();
+  paint.setColor(Skia.Color("red"));
+  paint.setStrokeWidth(3);
 
-  const frameProcessor = useFrameProcessor(
+  const lastDetectionsRef = useRef<Detection[]>([]); // Ref for detections
+  const lastUpdateTimeRef = useRef<number>(Date.now());
+
+  const frameProcessor = useSkiaFrameProcessor(
     (frame) => {
       "worklet";
-
+      frame.render();
+      let detections = [];
       if (plugin.state === "loaded") {
-        runAtTargetFps(5, () => {
+        runAtTargetFps(15, () => {
           "worklet";
           const resized = resize(frame, {
-            scale: {
-              width: 320,
-              
-              height: 320,
-            },
-
+            scale: { width: 320, height: 320 },
             pixelFormat: "rgb",
-
+            rotation: "90deg",
             dataType: "float32",
           });
+
           const outputs = plugin.model.runSync([resized]);
-          //console.log(outputs[0][2100*4]);
-          // const array: number[] = [];
-          // for(let i = 0; i < 2100*5; i+=5) {
-          //   if(outputs[0][i+1] > 0.5) {
-          //     array.push(outputs[0][i+1] as number);
-            
-          // }
-          
-            
-          // }
-          const detections: Detection[] =decodeYoloOutput(outputs, 2100, 5);
-          
-        console.log(detections.length);
-        if(detections.length > 0) {
-          const pose :Pose = { keypoints: detections[0].keypoints };
-          detectedPose.value = pose;
-        }
-        // if(detections.length > 0) {
-        // console.log(detections[0].keypoints.length);
-        // }
+          detections = decodeYoloOutput(outputs, 2100, 5);
 
-          // console.log(outputs[0], outputs[1]);
-          //const newPose = mapToPose(outputs[0]);
-          //console.log(newPose);
-         
+          if (detections.length > 0) {
+            lastDetectionsRef.current = detections;
+            lastUpdateTimeRef.current = Date.now();
+          }
         });
-        //console.log(newPose);
       }
+
+      const currentTime = Date.now();
+      if (currentTime - lastUpdateTimeRef.current > 300) {
+        lastDetectionsRef.current = []; 
+      }
+    
+     drawDetections(frame, lastDetectionsRef.current, paint)
     },
+    [plugin]
+  );
 
-    [plugin, detectedPose]
-  ); // Use useImperativeHandle to expose functionalities to the parent component
-
-  const format = useCameraFormat(device, [{ 
-    videoResolution: { width: 320, height: 320 },
-  }]);
+  const format = useCameraFormat(device, [
+    {
+      videoResolution: { height: 1280, width: 720 },
+    },
+  ]);
 
   useEffect(() => {
     console.log("Camera Component rendered");
@@ -159,7 +152,7 @@ const CameraView = forwardRef((_, ref) => {
           isActive={true}
           frameProcessor={frameProcessor}
           pixelFormat="yuv"
-          // format={format}
+          format={format}
           outputOrientation={"device"} // format={format}
         />
       ) : (
