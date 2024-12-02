@@ -94,7 +94,7 @@ const CameraView = forwardRef((_, ref) => {
       frame.render();
       let detections = [];
       if (plugin.state === "loaded") {
-        runAtTargetFps(15, () => {
+        runAtTargetFps(5, () => {
           "worklet";
           const resized = resize(frame, {
             scale: { width: 320, height: 320 },
@@ -109,7 +109,9 @@ const CameraView = forwardRef((_, ref) => {
           if (detections.length > 0) {
             lastDetectionsRef.current = detections;
             lastUpdateTimeRef.current = Date.now();
+           //console.log(detections[0].keypoints[0]);
           }
+          
         });
       }
 
@@ -152,7 +154,7 @@ const CameraView = forwardRef((_, ref) => {
           isActive={true}
           frameProcessor={frameProcessor}
           pixelFormat="yuv"
-          format={format}
+          //format={format}
           outputOrientation={"device"} // format={format}
         />
       ) : (

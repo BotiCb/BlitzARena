@@ -1,8 +1,11 @@
 import { DrawableFrame, Frame } from "react-native-vision-camera";
-import { BoundingBox, Detection, Keypoint } from "./types";
+import { BoundingBox, Detection, Keypoint, Keypoints } from "./types";
 
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
-import { Skia, SkPaint } from "@shopify/react-native-skia/lib/typescript/src/skia/types";
+import {
+  Skia,
+  SkPaint,
+} from "@shopify/react-native-skia/lib/typescript/src/skia/types";
 import { worklet } from "react-native-worklets-core";
 
 // Keypoint names (you can expand or adjust these based on your model)
@@ -84,7 +87,7 @@ export function decodeYoloOutput(
 ): Detection[] {
   "worklet";
   const detections: Detection[] = [];
-  
+
   for (let i = 0; i < numDetections; i++) {
     const confidence = outputTensor[0][i + numDetections * 4];
     if (confidence < 0.5) {
@@ -95,26 +98,27 @@ export function decodeYoloOutput(
     const w = outputTensor[0][i + numDetections * 2];
     const h = outputTensor[0][i + numDetections * 3];
 
-    const y1 = 1-(xc - w / 2); // Top-left y
+    const y1 = 1 - (xc - w / 2); // Top-left y
     const x1 = yc - h / 2; // Top-left x
-    const y2 = 1-(xc + w / 2); // Bottom-right y
+    const y2 = 1 - (xc + w / 2); // Bottom-right y
     const x2 = yc + h / 2; // Bottom-right x
-
-    const keypoints: Keypoint[] = [];
+    const keypoints: Keypoints = {};
     for (let j = 5; j < 56; j += 3) {
       const y = outputTensor[0][j * numDetections + i];
-      const x = outputTensor[0][j * numDetections + i + 1];
-      const confidence = outputTensor[0][j * numDetections + i + 2];
-      const keypointName = MOVENET_CONSTANTS.KEYPONTS[(j - 5) / 3];
-      if (confidence < 0.5) {
-        continue; // Skip low-confidence keypoints
+      const x = outputTensor[0][j * numDetections + i + numDetections];
+      const keypointConfidence = outputTensor[0][j * numDetections + i + 2*numDetections];
+      const keypointIndex = Math.floor((j - 5) / 3);
+      const keypointName = MOVENET_CONSTANTS.KEYPONTS[keypointIndex];
+      
+      if(keypointConfidence < 0.5) {
+        continue;
       }
-      keypoints.push({
-        x,
-        y,
-        confidence,
+      keypoints[keypointIndex]= {
         name: keypointName,
-      });
+        x,
+        y:1-y,
+        confidence: keypointConfidence,
+      }
     }
 
     detections.push({
@@ -133,14 +137,17 @@ export function decodeYoloOutput(
   return nonMaximumSuppression(detections, 0.5);
 }
 
-
-
-export function drawDetections(frame: DrawableFrame, detections: Detection[], paint: SkPaint) {
+export function drawDetections(
+  frame: DrawableFrame,
+  detections: Detection[],
+  paint: SkPaint
+) {
   "worklet";
   for (const detection of detections) {
+    // Draw bounding box
     frame.drawLine(
-      detection.boundingBox.x1 * frame.width, // Corrected width scaling
-      detection.boundingBox.y1 * frame.height, // Corrected height scaling
+      detection.boundingBox.x1 * frame.width,
+      detection.boundingBox.y1 * frame.height,
       detection.boundingBox.x2 * frame.width,
       detection.boundingBox.y1 * frame.height,
       paint
@@ -166,5 +173,30 @@ export function drawDetections(frame: DrawableFrame, detections: Detection[], pa
       detection.boundingBox.y1 * frame.height,
       paint
     );
+
+    // Draw keypoints
+   
+
+    for (const [startIdx, endIdx] of MOVENET_CONSTANTS.BODY_CONNECTIONS) {
+      const start = detection.keypoints[startIdx];
+      const end = detection.keypoints[endIdx];
+    
+      if (
+        start &&
+        end &&
+        start.confidence > MOVENET_CONSTANTS.TRESHOLD &&
+        end.confidence > MOVENET_CONSTANTS.TRESHOLD
+      ) {
+        frame.drawLine(
+          start.x * frame.width,
+          start.y * frame.height,
+          end.x * frame.width,
+          end.y * frame.height,
+          paint
+        );
+      }
+    }
   }
 }
+
+
