@@ -1,4 +1,4 @@
-import {  WebSocketMessageType, WebSocketMsg } from "./utils/types";
+import {  TrainingImage, WebSocketMessageType, WebSocketMsg } from "./utils/types";
 import websocketService from "./websocket.service";
 
 class ModelTrainingWebSocketService {
@@ -8,11 +8,11 @@ class ModelTrainingWebSocketService {
       });
   }
 
-  sendImage(image: string) {
+  sendTrainingImage(trainingImage: TrainingImage) {
     const wsMessage: WebSocketMsg = {
       type: WebSocketMessageType.TRAINING_DATA,
       user_id: '1',
-      data: image
+      data: JSON.stringify(trainingImage),
     }
     websocketService.sendMessage(wsMessage);
   }

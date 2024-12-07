@@ -1,16 +1,19 @@
 import TrainingCameraView from "@/components/TraingCameraView"
 import modelTrainingWebsocketService from "@/services/websocket/model-training.websocket.service"
+import { TrainingImage } from "@/services/websocket/utils/types"
+import { Detection } from "@/utils/types"
 import { useEffect, useRef, useState } from "react"
 import { View, Text, Button } from "react-native"
 
 const ModelTrainingScreen = () => {
     const [takePhotos, setTakePhotos] = useState(false)
-    const photoQueue = useRef<string[]>([]); // Queue to store Base64 photos
-    const isSending = useRef(false); // Prevent multiple send processes
+    const photoQueue = useRef<TrainingImage[]>([]); // Queue to store Base64 photos
+    const isSending = useRef(false);
+    const lastDetectionsRef = useRef<Detection[]>([]); // Prevent multiple send processes
   
     // Add photo to the queue
-    const handleImageCapture = (image: string) => {
-      photoQueue.current.push(image); // Add new photo to the queue
+    const handleImageCapture = (trainingImage: TrainingImage) => {
+      photoQueue.current.push(trainingImage); // Add new photo to the queue
       sendPhotosToServer(); // Trigger sending process
     };
   
@@ -21,17 +24,13 @@ const ModelTrainingScreen = () => {
       isSending.current = true;
   
       while (photoQueue.current.length > 0) {
-        const photo: string | undefined = photoQueue.current.shift(); // Remove the first photo from the queue
+        const photo: TrainingImage | undefined = photoQueue.current.shift(); // Remove the first photo from the queue
   
         if (photo) {
           try {
             // Send the photo to the server via WebSocket
-            const message = JSON.stringify({
-              type: "photo",
-              data: photo.slice(22),
-            });
-  
-            modelTrainingWebsocketService.sendImage(message);
+           
+            modelTrainingWebsocketService.sendTrainingImage(photo);
           } catch (error) {
             console.error("Error sending photo:", error);
             photoQueue.current.unshift(photo); // Re-add the photo to the front of the queue
@@ -48,7 +47,7 @@ const ModelTrainingScreen = () => {
             {!takePhotos ? 
             (<Button title="Take Photos" onPress={() => setTakePhotos(true)} />) : 
             (<Button title="Stop taking photos" onPress={() => setTakePhotos(false)} />)}
-            <TrainingCameraView  takePhotos={takePhotos} handleImageCapture={handleImageCapture}/>
+            <TrainingCameraView  takePhotos={takePhotos} handleImageCapture={handleImageCapture} lastDetectionsRef={lastDetectionsRef}/>
         </View>
     )
 }

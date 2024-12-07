@@ -10,7 +10,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     // Connect to the WebSocket server when the component mounts
-    webSocketService.connect('ws://192.168.1.41:8765'); // Using the echo WebSocket server for testing
+    webSocketService.connect('ws://192.168.68.226:8765'); // Using the echo WebSocket server for testing
 
     // Register a listener for incoming messages
     webSocketService.onMessage((data: string) => {
@@ -29,8 +29,8 @@ export default function HomeScreen() {
   };
   return (
     <View style={{ flex: 1 }}>
-     <InMatchScreen />
-      {/* <ModelTrainingScreen /> */}
+     {/* <InMatchScreen /> */}
+      <ModelTrainingScreen />
       <Text>{message}</Text>
       <Button title="Send Message" onPress={sendMessage} />
     </View>

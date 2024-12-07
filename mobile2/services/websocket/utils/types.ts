@@ -1,3 +1,5 @@
+import { Detection } from "@/utils/types"
+
 export type WebSocketMsg ={
     type: WebSocketMessageType,
     user_id?: string,
@@ -7,7 +9,13 @@ export type WebSocketMsg ={
 export enum WebSocketMessageType {
     PING = 'ping',
     PONG = 'pong',
-    TRAINING_START = 'training-start',
-    TRAINING_DATA = 'training-data',
-    TRAINING_END = 'training-end',
+    TRAINING_START = 'training_start',
+    TRAINING_DATA = 'training_data',
+    TRAINING_END = 'training_end',
+}
+
+
+export type TrainingImage={
+    photo: string,
+    detections: Detection
 }

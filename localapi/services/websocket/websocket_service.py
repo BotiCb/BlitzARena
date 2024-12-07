@@ -1,54 +1,55 @@
-import websockets
 import asyncio
 import json
-import uuid  # Import uuid to generate unique client IDs
+import uuid
+import websockets
 
 class WebSocketService:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self):
-        self.clients = {}  # Store clients as a dictionary of client_id -> websocket
-        self.message_handlers = {}
+        if not hasattr(self, "initialized"):
+            self.clients = {}  # Store client_id -> websocket
+            self.message_handlers = {}
+            self.initialized = True
 
     def register_message_handler(self, message_type, handler):
         self.message_handlers[message_type] = handler
 
     async def handle_connection(self, websocket, path=None):
-        # If the path is None or empty, generate a unique client_id
-        client_id = path.strip("/") if path else str(uuid.uuid4())  # Fallback to UUID if path is None
-
-        # Register the client
+        client_id = path.strip("/") if path else str(uuid.uuid4())
         self.clients[client_id] = websocket
-        print(f"New connection established: {client_id}")
+        print(f"Client connected: {client_id}")
 
         try:
             async for message in websocket:
                 await self.handle_incoming_message(client_id, websocket, message)
-        except websockets.ConnectionClosed as e:
-            print(f"Connection closed for {client_id}: {e}")
-            self.clients.pop(client_id, None)  # Remove the client from the list on disconnect
+        except websockets.ConnectionClosed:
+            print(f"Client disconnected: {client_id}")
+            self.clients.pop(client_id, None)
 
     async def handle_incoming_message(self, client_id, websocket, message):
         try:
-            parsed_message = json.loads(message)
-            message_type = parsed_message.get("type")
-            handler = self.message_handlers.get(message_type)
-
+            data = json.loads(message)
+            handler = self.message_handlers.get(data.get("type"))
             if handler:
-                # Call the handler with parsed message and websocket
-                await handler(client_id, websocket, parsed_message)
+                await handler(client_id, websocket, data)
             else:
-                print(f"No handler found for message type: {message_type}")
+                print(f"No handler for message type: {data.get('type')}")
         except Exception as e:
-            print(f"Error handling message from {client_id}: {e}")
+            print(f"Error: {e}")
 
-    def send_message_to_all(self, message):
-        # Broadcast message to all connected clients
-        for client_id, client_ws in self.clients.items():
-            asyncio.create_task(client_ws.send(message))
+    def broadcast(self, message):
+        for ws in self.clients.values():
+            asyncio.create_task(ws.send(message))
 
-    async def send_message_to_client(self, client_id, message):
-        # Send a message to a specific client
-        client_ws = self.clients.get(client_id)
-        if client_ws:
-            await client_ws.send(message)
+    async def send_to_client(self, client_id, message):
+        ws = self.clients.get(client_id)
+        if ws:
+            await ws.send(message)
         else:
-            print(f"Client {client_id} not connected")
+            print(f"Client {client_id} not found")
