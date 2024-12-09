@@ -11,6 +11,10 @@ export const bodyConnections = [
   };
 
   export type BoundingBox = {
+    xc: number;
+    yc: number;
+    w: number;
+    h: number;
     x1: number;
     y1: number;
     x2: number;
@@ -18,10 +22,11 @@ export const bodyConnections = [
   }
   
   export type Detection = {
-    keypoints: Keypoints;
+    keypoints: Keypoints | null;
     boundingBox: BoundingBox;
     confidence: number;
   };
+
   export type Keypoints = {
     [index: number]: Keypoint;
   };
@@ -32,3 +37,11 @@ export const bodyConnections = [
     confidence: number;
     name: string;
   };
+
+
+  export type TrainingImageLabel = {
+    xc: number;
+    yc: number;
+    w: number;
+    h: number;
+  }

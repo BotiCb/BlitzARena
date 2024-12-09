@@ -10,6 +10,7 @@ const ModelTrainingScreen = () => {
     const photoQueue = useRef<TrainingImage[]>([]); // Queue to store Base64 photos
     const isSending = useRef(false);
     const lastDetectionsRef = useRef<Detection[]>([]); // Prevent multiple send processes
+    const [playerNumber, setPlayerNumber] = useState(0)
   
     // Add photo to the queue
     const handleImageCapture = (trainingImage: TrainingImage) => {
@@ -43,11 +44,13 @@ const ModelTrainingScreen = () => {
     };
     return (
         <View style={{ flex: 1 }}>
-            <Text>ModelTrainingScreen</Text>
+            <Text>ModelTrainingScreen Player: {playerNumber}</Text>
             {!takePhotos ? 
             (<Button title="Take Photos" onPress={() => setTakePhotos(true)} />) : 
             (<Button title="Stop taking photos" onPress={() => setTakePhotos(false)} />)}
-            <TrainingCameraView  takePhotos={takePhotos} handleImageCapture={handleImageCapture} lastDetectionsRef={lastDetectionsRef}/>
+            <Button title="Next player " onPress={() => setPlayerNumber(playerNumber + 1)} />
+            <Button title="Previous player " onPress={() => setPlayerNumber(playerNumber - 1)} />
+            <TrainingCameraView  takePhotos={takePhotos} handleImageCapture={handleImageCapture} lastDetectionsRef={lastDetectionsRef} playerNumber={playerNumber}/>
         </View>
     )
 }

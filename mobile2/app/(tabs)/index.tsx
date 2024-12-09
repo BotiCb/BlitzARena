@@ -10,7 +10,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     // Connect to the WebSocket server when the component mounts
-    webSocketService.connect('ws://192.168.68.226:8765'); // Using the echo WebSocket server for testing
+    webSocketService.connect('ws://192.168.137.1:8765'); // Using the echo WebSocket server for testing
 
     // Register a listener for incoming messages
     webSocketService.onMessage((data: string) => {
@@ -23,6 +23,7 @@ export default function HomeScreen() {
       webSocketService.close();
     };
   }, []);
+  
 
   const sendMessage = () => {
     webSocketService.sendMessage('Hello from React Native!'); // Send a message through the WebSocket connection

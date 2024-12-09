@@ -29,7 +29,10 @@ import * as useResizePlugin from "vision-camera-resize-plugin";
 
 import { TensorflowModel, useTensorflowModel } from "react-native-fast-tflite";
 
-import { decodeYoloOutput, drawDetections } from "../utils/frame-procesing-utils";
+import {
+  decodeYoloPoseOutput,
+  drawDetections,
+} from "../utils/frame-procesing-utils";
 
 import { Detection, Pose } from "../utils/types";
 
@@ -55,6 +58,10 @@ const CameraView = forwardRef((_, ref) => {
     require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
     delegate
   );
+  const plugin2 = useTensorflowModel(
+    require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
+    delegate
+  );
 
   useEffect(() => {
     const model = plugin.model;
@@ -67,6 +74,18 @@ const CameraView = forwardRef((_, ref) => {
       )}`
     );
   }, [plugin]);
+
+  useEffect(() => {
+    const model = plugin2.model;
+
+    if (model == null) return;
+
+    console.log(
+      `Model2: ${model.inputs.map(tensorToString)} -> ${model.outputs.map(
+        tensorToString
+      )}`
+    );
+  }, [plugin2]);
 
   const { resize } = useResizePlugin.createResizePlugin();
 
@@ -87,14 +106,14 @@ const CameraView = forwardRef((_, ref) => {
 
   const lastDetectionsRef = useRef<Detection[]>([]); // Ref for detections
   const lastUpdateTimeRef = useRef<number>(Date.now());
+  const detections = useSharedValue<Detection[]>([]);
 
-  const frameProcessor = useFrameProcessor(
+  const frameProcessor = useSkiaFrameProcessor(
     (frame) => {
       "worklet";
-      
-      let detections = [];
+      frame.render();
       if (plugin.state === "loaded") {
-        runAtTargetFps(10, () => {
+        runAtTargetFps(2, () => {
           "worklet";
           const resized = resize(frame, {
             scale: { width: 320, height: 320 },
@@ -104,25 +123,24 @@ const CameraView = forwardRef((_, ref) => {
           });
 
           const outputs = plugin.model.runSync([resized]);
-          detections = decodeYoloOutput(outputs, 2100, 5);
+          detections.value = decodeYoloPoseOutput(outputs, 2100, 5);
 
-          if (detections.length > 0) {
-            lastDetectionsRef.current = detections;
+          if (detections.value.length > 0) {
+            lastDetectionsRef.current = detections.value;
             lastUpdateTimeRef.current = Date.now();
-
-           console.log(detections[0]);
+            //console.log(detections[0].keypoints[0]);
           }
-          
         });
       }
 
       const currentTime = Date.now();
-      if (currentTime - lastUpdateTimeRef.current > 300) {
-        lastDetectionsRef.current = []; 
+      if (currentTime - lastUpdateTimeRef.current > 500) {
+        lastDetectionsRef.current = [];
       }
-    
+
+      drawDetections(frame, detections.value, paint);
     },
-    [plugin]
+    [plugin, detections]
   );
 
   const format = useCameraFormat(device, [

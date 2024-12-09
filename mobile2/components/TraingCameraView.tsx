@@ -14,14 +14,20 @@ import {
 import { Skia } from "@shopify/react-native-skia";
 import { Detection } from "@/utils/types";
 import { TensorflowModel, useTensorflowModel } from "react-native-fast-tflite";
-import { decodeYoloOutput, drawDetections } from "@/utils/frame-procesing-utils";
+import {
+  decodeYoloOutput,
+  decodeYoloPoseOutput,
+  drawDetections,
+  mapFromDetectionToTrainingImageLabel,
+} from "@/utils/frame-procesing-utils";
 import { TrainingImage } from "@/services/websocket/utils/types";
 import { useSharedValue } from "react-native-worklets-core";
 
 interface TrainingCameraViewProps {
   takePhotos: boolean;
   handleImageCapture: (trainingImage: TrainingImage) => void;
-  lastDetectionsRef: React.MutableRefObject<Detection[]>
+  lastDetectionsRef: React.MutableRefObject<Detection[]>;
+  playerNumber: number;
 }
 function tensorToString(tensor: TensorflowModel["inputs"][number]): string {
   return `${tensor.dataType} [${tensor.shape}]`;
@@ -30,7 +36,8 @@ function tensorToString(tensor: TensorflowModel["inputs"][number]): string {
 const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   takePhotos,
   handleImageCapture,
-  lastDetectionsRef
+  lastDetectionsRef,
+  playerNumber,
 }) => {
   const camera = useRef<Camera>(null);
   const device = useCameraDevices()[0];
@@ -42,11 +49,11 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   }, [hasPermission, requestPermission]);
 
   const format = useCameraFormat(device, [
-    { photoResolution: { width: 1280, height: 720 } }
-  ])
+    { photoResolution: { width: 1280, height: 720 } },
+  ]);
 
   useEffect(() => {
-    if (!takePhotos || !hasPermission) return; 
+    if (!takePhotos || !hasPermission) return;
 
     const interval = setInterval(async () => {
       if (camera.current) {
@@ -54,17 +61,17 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
         if (photo) {
           const base64Image = await RNFS.readFile(photo.path, "base64");
           const trainingImage: TrainingImage = {
-              photo: base64Image,
-              detections: detections.value[0]
-          }
-         
+            photo: base64Image,
+            label: mapFromDetectionToTrainingImageLabel(detections.value[0]),
+            detectedPlayer: playerNumber.toString(),
+          };
+
           handleImageCapture(trainingImage);
         }
       }
-    }, 1000); // Capture photo every 1 second
+    }, 500); // Capture photo every 1 second
 
     return () => clearInterval(interval);
-
   }, [takePhotos, handleImageCapture, hasPermission]);
   const paint = Skia.Paint();
   paint.setColor(Skia.Color("red"));
@@ -76,7 +83,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
 
   const plugin = useTensorflowModel(
-    require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
+    require("../assets/models/person320n_integer_quant.tflite"),
     delegate
   );
 
@@ -92,15 +99,16 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
     );
   }, [plugin]);
 
-
-  const detections= useSharedValue<Detection[]>([]);
+  const detections = useSharedValue<Detection[]>([]);
 
   const frameProcessor = useSkiaFrameProcessor(
     (frame) => {
       "worklet";
       frame.render();
+      const frameHeight = frame.height;
+      const frameWidth = frame.width;
       if (plugin.state === "loaded") {
-        runAtTargetFps(1, () => {
+        runAtTargetFps(2, () => {
           "worklet";
           const resized = resize(frame, {
             scale: { width: 320, height: 320 },
@@ -115,23 +123,20 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
           if (detections.value.length > 0) {
             lastDetectionsRef.current = detections.value;
             lastUpdateTimeRef.current = Date.now();
-           //console.log(detections[0].keypoints[0]);
+            //console.log(detections[0].keypoints[0]);
           }
-          
-        },);
+        });
       }
 
       const currentTime = Date.now();
       if (currentTime - lastUpdateTimeRef.current > 500) {
-        lastDetectionsRef.current = []; 
+        lastDetectionsRef.current = [];
       }
-    
-    drawDetections(frame, detections.value, paint)
+
+      drawDetections(frame, detections.value, paint);
     },
     [plugin, detections]
   );
-
-
 
   if (!device || !hasPermission) {
     return (

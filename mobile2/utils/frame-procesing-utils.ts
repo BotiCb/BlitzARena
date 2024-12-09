@@ -1,5 +1,5 @@
 import { DrawableFrame, Frame } from "react-native-vision-camera";
-import { BoundingBox, Detection, Keypoint, Keypoints } from "./types";
+import { BoundingBox, Detection, Keypoint, Keypoints, TrainingImageLabel } from "./types";
 
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
 import {
@@ -80,7 +80,7 @@ export function nonMaximumSuppression(
   return finalDetections;
 }
 
-export function decodeYoloOutput(
+export function decodeYoloPoseOutput(
   outputTensor: any[],
   numDetections: number,
   attributes = 5
@@ -106,19 +106,20 @@ export function decodeYoloOutput(
     for (let j = 5; j < 56; j += 3) {
       const y = outputTensor[0][j * numDetections + i];
       const x = outputTensor[0][j * numDetections + i + numDetections];
-      const keypointConfidence = outputTensor[0][j * numDetections + i + 2*numDetections];
+      const keypointConfidence =
+        outputTensor[0][j * numDetections + i + 2 * numDetections];
       const keypointIndex = Math.floor((j - 5) / 3);
       const keypointName = MOVENET_CONSTANTS.KEYPONTS[keypointIndex];
-      
-      if(keypointConfidence < 0.5) {
+
+      if (keypointConfidence < 0.5) {
         continue;
       }
-      keypoints[keypointIndex]= {
+      keypoints[keypointIndex] = {
         name: keypointName,
         x,
-        y:1-y,
+        y: 1 - y,
         confidence: keypointConfidence,
-      }
+      };
     }
 
     detections.push({
@@ -127,9 +128,63 @@ export function decodeYoloOutput(
         y1,
         x2,
         y2,
+        xc,
+        yc,
+        w,
+        h,
       },
       confidence,
       keypoints,
+    });
+  }
+
+  // Apply NMS after decoding all detections
+  return nonMaximumSuppression(detections, 0.5);
+}
+
+
+
+
+
+
+
+
+
+export function decodeYoloOutput(
+  outputTensor: any[],
+  numDetections: number
+): Detection[] {
+  "worklet";
+  const detections: Detection[] = [];
+
+  for (let i = 0; i < numDetections; i++) {
+    const confidence = outputTensor[0][i + numDetections * 4];
+    if (confidence < 0.5) {
+      continue;
+    }
+    const xc = outputTensor[0][i];
+    const yc = outputTensor[0][i + numDetections];
+    const w = outputTensor[0][i + numDetections * 2];
+    const h = outputTensor[0][i + numDetections * 3]*0.75;
+
+    const y1 = 1 - (xc - w / 2); // Top-left y
+    const x1 = yc - h / 2; // Top-left x
+    const y2 = 1 - (xc + w / 2); // Bottom-right y
+    const x2 = yc + h / 2; // Bottom-right x
+  
+    detections.push({
+      boundingBox: {
+        x1,
+        y1,
+        x2,
+        y2,
+        xc,
+        yc,
+        w,
+        h,
+      },
+      confidence,
+      keypoints: null,
     });
   }
 
@@ -175,28 +230,39 @@ export function drawDetections(
     );
 
     // Draw keypoints
-   
 
-    for (const [startIdx, endIdx] of MOVENET_CONSTANTS.BODY_CONNECTIONS) {
-      const start = detection.keypoints[startIdx];
-      const end = detection.keypoints[endIdx];
-    
-      if (
-        start &&
-        end &&
-        start.confidence > MOVENET_CONSTANTS.TRESHOLD &&
-        end.confidence > MOVENET_CONSTANTS.TRESHOLD
-      ) {
-        frame.drawLine(
-          start.x * frame.width,
-          start.y * frame.height,
-          end.x * frame.width,
-          end.y * frame.height,
-          paint
-        );
+    if (detection.keypoints) {
+      for (const [startIdx, endIdx] of MOVENET_CONSTANTS.BODY_CONNECTIONS) {
+        const start = detection.keypoints[startIdx];
+        const end = detection.keypoints[endIdx];
+
+        if (
+          start &&
+          end &&
+          start.confidence > MOVENET_CONSTANTS.TRESHOLD &&
+          end.confidence > MOVENET_CONSTANTS.TRESHOLD
+        ) {
+          frame.drawLine(
+            start.x * frame.width,
+            start.y * frame.height,
+            end.x * frame.width,
+            end.y * frame.height,
+            paint
+          );
+        }
       }
     }
   }
 }
 
 
+
+export function mapFromDetectionToTrainingImageLabel(detection: Detection) : TrainingImageLabel{
+  "worklet";
+  return {
+    xc: detection.boundingBox.xc,
+    yc: detection.boundingBox.yc,
+    w: detection.boundingBox.w,
+    h: detection.boundingBox.h,
+  };
+}

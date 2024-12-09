@@ -7,11 +7,20 @@ from services.websocket.websocket_service import WebSocketService
 
 class ModelTrainingService:
     def __init__(self):
+        # Initialize file_count as a class instance variable
+        self.file_count = 0
         self.websocket_service = WebSocketService()
         self.websocket_service.register_message_handler("training_data", self.handle_recived_training_image)
 
-    def handle_recived_training_image(self, client_id, websocket, message):
+    async def handle_recived_training_image(self, client_id, websocket, message):
         try:
+            # Increment the file count to ensure unique filenames
+            self.file_count += 1
+
+            # Determine if this file should go to train or val
+            is_validation = self.file_count % 7 == 0
+            split = "val" if is_validation else "train"
+
             # Parse the `data` field, which is a JSON string
             data = json.loads(message.get("data", "{}"))
 
@@ -24,22 +33,61 @@ class ModelTrainingService:
             # Decode the base64 photo data
             image_bytes = base64.b64decode(photo_data)
 
-            # Ensure the "photos" directory exists
-            photos_dir = "photos"
-            os.makedirs(photos_dir, exist_ok=True)
+            # Create the `dataset/train` and `dataset/val` directories
+            dataset_dir = "dataset"
+            split_dir = os.path.join(dataset_dir, split)
+            images_dir = os.path.join(split_dir, "images")
+            labels_dir = os.path.join(split_dir, "labels")
+            os.makedirs(images_dir, exist_ok=True)
+            os.makedirs(labels_dir, exist_ok=True)
 
-            # Generate a unique file name for the image
-            image_filename = os.path.join(photos_dir, f"{client_id}_training_image.jpg")
+            # Generate a unique file name using the file count
+            filename = f"image_{self.file_count:04d}"
 
-            # Save the decoded image as a JPEG file
+            # Save the image in the `images` folder
+            image_filename = os.path.join(images_dir, f"{filename}.jpg")
             with open(image_filename, "wb") as image_file:
                 image_file.write(image_bytes)
 
             print(f"Image saved successfully as {image_filename}")
 
-            # Optionally, you can process the detections here
-            detections = data.get("detections", {})
-            print(f"Detections received: {detections}")
+            # Extract and process detections
+            label = data.get("label", {})
+
+
+
+            detected_player = label.get("detectedPlayer", "")
+            if label:
+                # Calculate YOLO normalized values for the bounding box
+                xc = label.get("xc", 0)
+                yc = label.get("yc", 0)
+                width = label.get("width", 0)
+                height = label.get("height", 0)
+
+
+                # Prepare the label row: class, bounding box
+                yolo_row = f"{detected_player} {xc:.6f} {yc:.6f} {width:.6f} {height:.6f}"
+
+                # Append keypoints in the specified order
+                # for kp_name in keypoint_names:
+                #     if kp_name in keypoints:
+                #         kp_info = keypoints[kp_name]
+                #         kp_x = kp_info.get("x", 0)
+                #         kp_y = kp_info.get("y", 0)
+                #         kp_conf = kp_info.get("confidence", 0)
+                #         yolo_row += f" {kp_x:.6f} {kp_y:.6f} {kp_conf:.6f}"
+                #     else:
+                #         # Missing keypoint: add three zeros
+                #         yolo_row += " 0.000000 0.000000 0.000000"
+
+                # Save the YOLO label data in the `labels` folder
+                yolo_filename = os.path.join(labels_dir, f"{filename}.txt")
+                with open(yolo_filename, "w") as yolo_file:
+                    yolo_file.write(yolo_row)
+
+                print(f"YOLO labels saved successfully as {yolo_filename}")
+            else:
+                print("No bounding box data found in the detections.")
 
         except json.JSONDecodeError as e:
             print(f"Error decoding JSON data: {e}")

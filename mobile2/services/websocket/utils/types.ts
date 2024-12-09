@@ -1,4 +1,4 @@
-import { Detection } from "@/utils/types"
+import { Detection, TrainingImageLabel } from "@/utils/types"
 
 export type WebSocketMsg ={
     type: WebSocketMessageType,
@@ -17,5 +17,6 @@ export enum WebSocketMessageType {
 
 export type TrainingImage={
     photo: string,
-    detections: Detection
+    label: TrainingImageLabel,
+    detectedPlayer: string
 }
