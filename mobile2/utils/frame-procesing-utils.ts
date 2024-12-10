@@ -165,7 +165,7 @@ export function decodeYoloOutput(
     const xc = outputTensor[0][i];
     const yc = outputTensor[0][i + numDetections];
     const w = outputTensor[0][i + numDetections * 2];
-    const h = outputTensor[0][i + numDetections * 3]*0.75;
+    const h = outputTensor[0][i + numDetections * 3];
 
     const y1 = 1 - (xc - w / 2); // Top-left y
     const x1 = yc - h / 2; // Top-left x

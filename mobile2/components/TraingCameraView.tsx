@@ -49,7 +49,8 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   }, [hasPermission, requestPermission]);
 
   const format = useCameraFormat(device, [
-    { photoResolution: { width: 1280, height: 720 } },
+    { videoResolution: { width: 640, height: 480 },
+  photoResolution: { width: 1280, height: 720 } },
   ]);
 
   useEffect(() => {
@@ -83,7 +84,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
 
   const plugin = useTensorflowModel(
-    require("../assets/models/person320n_integer_quant.tflite"),
+    require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
     delegate
   );
 
@@ -100,25 +101,26 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   }, [plugin]);
 
   const detections = useSharedValue<Detection[]>([]);
+  
 
   const frameProcessor = useSkiaFrameProcessor(
     (frame) => {
       "worklet";
       frame.render();
-      const frameHeight = frame.height;
-      const frameWidth = frame.width;
       if (plugin.state === "loaded") {
-        runAtTargetFps(2, () => {
+        runAtTargetFps(5, () => {
           "worklet";
           const resized = resize(frame, {
             scale: { width: 320, height: 320 },
             pixelFormat: "rgb",
             rotation: "90deg",
             dataType: "float32",
+           crop: { x: 0, y: 0, width: 640, height: 480 },
+          
           });
 
           const outputs = plugin.model.runSync([resized]);
-          detections.value = decodeYoloOutput(outputs, 2100, 5);
+          detections.value = decodeYoloPoseOutput(outputs, 2100, 5);
 
           if (detections.value.length > 0) {
             lastDetectionsRef.current = detections.value;

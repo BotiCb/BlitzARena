@@ -3,4 +3,4 @@ val: C:\Allamvizsga\allamvizsgaProjekt\modelTrainer\val
 
 
 nc: 3
-names: ['Csongor', 'Boti', 'Alpar']
+names: ['Alpar', 'Boti', 'Csongor']

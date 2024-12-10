@@ -17,6 +17,7 @@ export default function HomeScreen() {
       setMessage(data); // Update message state when a message is received
     });
    
+    
 
     // Cleanup when the component unmounts (close WebSocket)
     return () => {

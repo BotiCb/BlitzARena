@@ -112,14 +112,17 @@ const CameraView = forwardRef((_, ref) => {
     (frame) => {
       "worklet";
       frame.render();
+      console.log(frame.width, frame.height);
       if (plugin.state === "loaded") {
-        runAtTargetFps(2, () => {
+        runAtTargetFps(5, () => {
           "worklet";
           const resized = resize(frame, {
             scale: { width: 320, height: 320 },
             pixelFormat: "rgb",
             rotation: "90deg",
             dataType: "float32",
+           crop: { x: 0, y: 0, width: 640, height: 480 },
+          
           });
 
           const outputs = plugin.model.runSync([resized]);
@@ -145,7 +148,7 @@ const CameraView = forwardRef((_, ref) => {
 
   const format = useCameraFormat(device, [
     {
-      videoResolution: { height: 1280, width: 720 },
+      videoResolution: { height: 320, width: 320 },
     },
   ]);
 
@@ -172,7 +175,7 @@ const CameraView = forwardRef((_, ref) => {
           isActive={true}
           frameProcessor={frameProcessor}
           pixelFormat="yuv"
-          //format={format}
+         format={format}
           outputOrientation={"device"} // format={format}
         />
       ) : (
