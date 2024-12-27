@@ -13,7 +13,7 @@ async def main():
     print("Starting game server...")
     websocket_service = WebSocketService()
     model_training_service = ModelTrainingService()
-    server = await websockets.serve(websocket_service.handle_connection, "0.0.0.0", 8765)
+    server = await websockets.serve(websocket_service.handle_connection, "0.0.0.0", 8765, max_size=None, max_queue=None)
     print("WebSocket server started on ws://0.0.0.0:8765")
     await server.wait_closed()
 

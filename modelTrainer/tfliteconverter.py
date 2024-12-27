@@ -1,6 +1,6 @@
 from ultralytics import YOLO
 
-model= YOLO("models/person320n.pt")
+model= YOLO("./models/cls.pt")
 
 model.export(format="tflite", batch=1, half=True, imgsz=320, int8=True
              )

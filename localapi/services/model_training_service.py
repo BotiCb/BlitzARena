@@ -33,61 +33,31 @@ class ModelTrainingService:
             # Decode the base64 photo data
             image_bytes = base64.b64decode(photo_data)
 
-            # Create the `dataset/train` and `dataset/val` directories
+            # Extract the detected player number
+            detected_player = data.get("detectedPlayer", "")
+            if not detected_player:
+                print("No detected player found in the message.")
+                return
+
+            # Ensure detectedPlayer is a string for consistent directory naming
+            detected_player = str(detected_player)
+
+            # Create the player-specific directory under `train` or `val`
             dataset_dir = "dataset"
-            split_dir = os.path.join(dataset_dir, split)
-            images_dir = os.path.join(split_dir, "images")
-            labels_dir = os.path.join(split_dir, "labels")
-            os.makedirs(images_dir, exist_ok=True)
-            os.makedirs(labels_dir, exist_ok=True)
+            player_dir = os.path.join(dataset_dir, split, detected_player)
+            os.makedirs(player_dir, exist_ok=True)
 
             # Generate a unique file name using the file count
             filename = f"image_{self.file_count:04d}"
 
-            # Save the image in the `images` folder
-            image_filename = os.path.join(images_dir, f"{filename}.jpg")
+            # Save the image in the player-specific folder
+            image_filename = os.path.join(player_dir, f"{filename}.jpg")
             with open(image_filename, "wb") as image_file:
                 image_file.write(image_bytes)
 
             print(f"Image saved successfully as {image_filename}")
-            detected_player = data.get("detectedPlayer", "")
-            # Extract and process detections
-            label = data.get("label", {})
 
 
-
-
-            if label:
-                # Calculate YOLO normalized values for the bounding box
-                xc = label.get("xc", 0)
-                yc = label.get("yc", 0)
-                width = label.get("w", 0)
-                height = label.get("h", 0)
-
-
-                # Prepare the label row: class, bounding box
-                yolo_row = f"{detected_player} {xc:.6f} {yc:.6f} {width:.6f} {height:.6f}"
-
-                # Append keypoints in the specified order
-                # for kp_name in keypoint_names:
-                #     if kp_name in keypoints:
-                #         kp_info = keypoints[kp_name]
-                #         kp_x = kp_info.get("x", 0)
-                #         kp_y = kp_info.get("y", 0)
-                #         kp_conf = kp_info.get("confidence", 0)
-                #         yolo_row += f" {kp_x:.6f} {kp_y:.6f} {kp_conf:.6f}"
-                #     else:
-                #         # Missing keypoint: add three zeros
-                #         yolo_row += " 0.000000 0.000000 0.000000"
-
-                # Save the YOLO label data in the `labels` folder
-                yolo_filename = os.path.join(labels_dir, f"{filename}.txt")
-                with open(yolo_filename, "w") as yolo_file:
-                    yolo_file.write(yolo_row)
-
-                print(f"YOLO labels saved successfully as {yolo_filename}")
-            else:
-                print("No bounding box data found in the detections.")
 
         except json.JSONDecodeError as e:
             print(f"Error decoding JSON data: {e}")

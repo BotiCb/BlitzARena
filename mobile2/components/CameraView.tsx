@@ -39,6 +39,7 @@ import { Detection, Pose } from "../utils/types";
 import { useSharedValue, worklet, Worklets } from "react-native-worklets-core";
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
 import { Skia } from "@shopify/react-native-skia";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 function tensorToString(tensor: TensorflowModel["inputs"][number]): string {
   return `${tensor.dataType} [${tensor.shape}]`;
@@ -59,7 +60,7 @@ const CameraView = forwardRef((_, ref) => {
     delegate
   );
   const plugin2 = useTensorflowModel(
-    require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
+    require("../assets/models/cls_integer_quant.tflite"),
     delegate
   );
 
@@ -103,18 +104,32 @@ const CameraView = forwardRef((_, ref) => {
   const paint = Skia.Paint();
   paint.setColor(Skia.Color("red"));
   paint.setStrokeWidth(3);
+  const colors: string[] = ["red", "green", "blue"]
 
   const lastDetectionsRef = useRef<Detection[]>([]); // Ref for detections
   const lastUpdateTimeRef = useRef<number>(Date.now());
   const detections = useSharedValue<Detection[]>([]);
+  function getKeyOfMaxValue(array: any): number {
+    "worklet";
+    let maxIndex = 0;
+    let maxValue = array[0];
+
+    for (let i = 1; i < array.length; i++) {
+        if (array[i] > maxValue) {
+            maxValue = array[i];
+            maxIndex = i;
+        }
+    }
+
+    return maxIndex; // Return the index of the max value
+}
 
   const frameProcessor = useSkiaFrameProcessor(
     (frame) => {
       "worklet";
       frame.render();
-      console.log(frame.width, frame.height);
-      if (plugin.state === "loaded") {
-        runAtTargetFps(5, () => {
+      if (plugin.state === "loaded" && plugin2.state === "loaded") {
+        runAtTargetFps(3, () => {
           "worklet";
           const resized = resize(frame, {
             scale: { width: 320, height: 320 },
@@ -127,6 +142,41 @@ const CameraView = forwardRef((_, ref) => {
 
           const outputs = plugin.model.runSync([resized]);
           detections.value = decodeYoloPoseOutput(outputs, 2100, 5);
+
+          if(detections.value.length > 0){
+
+          // const resized2 = resize(frame, {
+          //   scale: { width: 320, height: 320 },
+          //   pixelFormat: "rgb",
+          //   rotation: "90deg",
+          //   dataType: "float32",
+          //  crop: { 
+          //   x: detections.value[0].boundingBox.xc*frame.width, 
+          //   y: detections.value[0].boundingBox.yc*frame.height, 
+          //   width: detections.value[0].boundingBox.w*frame.width, 
+          //   height: detections.value[0].boundingBox.h*frame.height 
+          // },
+          
+          // });
+
+          const resized2 = resize(frame, {
+            scale: { width: 320, height: 320 },
+            pixelFormat: "rgb",
+            rotation: "90deg",
+            dataType: "float32",
+           crop: { x: 0, y: 0, width: 640, height: 480 },
+          
+          });
+
+
+
+
+          const outputs2 = plugin2.model.runSync([resized2]);
+          console.log(outputs2);
+          console.log(getKeyOfMaxValue(outputs2[0]));
+          paint.setColor(Skia.Color(colors[getKeyOfMaxValue(outputs2[0])]))
+          
+        }
 
           if (detections.value.length > 0) {
             lastDetectionsRef.current = detections.value;
@@ -143,7 +193,7 @@ const CameraView = forwardRef((_, ref) => {
 
       drawDetections(frame, detections.value, paint);
     },
-    [plugin, detections]
+    [plugin, plugin2, detections]
   );
 
   const format = useCameraFormat(device, [

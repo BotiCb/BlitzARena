@@ -8,3 +8,4 @@ venv
 *.pt
 *.py~
 *.npy
+training_dataset

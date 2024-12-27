@@ -2,5 +2,5 @@ train: C:\Allamvizsga\allamvizsgaProjekt\modelTrainer\train
 val: C:\Allamvizsga\allamvizsgaProjekt\modelTrainer\val
 
 
-nc: 3
-names: ['Alpar', 'Boti', 'Csongor']
+nc: 5
+names: ['Toni', 'Boti', 'Pali', 'Zsuzsi', 'Bibi']

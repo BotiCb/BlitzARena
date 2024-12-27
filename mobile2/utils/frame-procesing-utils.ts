@@ -150,16 +150,18 @@ export function decodeYoloPoseOutput(
 
 
 
+
 export function decodeYoloOutput(
   outputTensor: any[],
-  numDetections: number
+  numDetections: number,
+  numclasses: number
 ): Detection[] {
   "worklet";
   const detections: Detection[] = [];
 
   for (let i = 0; i < numDetections; i++) {
-    const confidence = outputTensor[0][i + numDetections * 4];
-    if (confidence < 0.5) {
+    const confidence = outputTensor[0][i + numDetections *7];
+    if (confidence < 0.05) {
       continue;
     }
     const xc = outputTensor[0][i];
@@ -171,7 +173,11 @@ export function decodeYoloOutput(
     const x1 = yc - h / 2; // Top-left x
     const y2 = 1 - (xc + w / 2); // Bottom-right y
     const x2 = yc + h / 2; // Bottom-right x
-  
+
+    for (let j = 0; j < numclasses; j++) {
+      console.log(j + " " +outputTensor[0][j * numDetections + i]);
+    }
+    console.log("\n");
     detections.push({
       boundingBox: {
         x1,
@@ -189,7 +195,7 @@ export function decodeYoloOutput(
   }
 
   // Apply NMS after decoding all detections
-  return nonMaximumSuppression(detections, 0.5);
+  return detections;
 }
 
 export function drawDetections(
@@ -254,6 +260,8 @@ export function drawDetections(
     }
   }
 }
+
+
 
 
 

@@ -17,6 +17,5 @@ export enum WebSocketMessageType {
 
 export type TrainingImage={
     photo: string,
-    label: TrainingImageLabel,
     detectedPlayer: string
 }

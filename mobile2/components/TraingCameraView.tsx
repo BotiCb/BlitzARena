@@ -10,6 +10,7 @@ import {
   useCameraFormat,
   useSkiaFrameProcessor,
   runAtTargetFps,
+  useFrameProcessor,
 } from "react-native-vision-camera";
 import { Skia } from "@shopify/react-native-skia";
 import { Detection } from "@/utils/types";
@@ -22,7 +23,7 @@ import {
 } from "@/utils/frame-procesing-utils";
 import { TrainingImage } from "@/services/websocket/utils/types";
 import { useSharedValue } from "react-native-worklets-core";
-
+import ImageEditor from "@react-native-community/image-editor";
 interface TrainingCameraViewProps {
   takePhotos: boolean;
   handleImageCapture: (trainingImage: TrainingImage) => void;
@@ -49,8 +50,10 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   }, [hasPermission, requestPermission]);
 
   const format = useCameraFormat(device, [
-    { videoResolution: { width: 640, height: 480 },
-  photoResolution: { width: 1280, height: 720 } },
+    {
+videoResolution: { width: 640, height: 480 },
+      photoResolution: { width: 4000, height: 4000*(16/9) },
+    },
   ]);
 
   useEffect(() => {
@@ -59,15 +62,32 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
     const interval = setInterval(async () => {
       if (camera.current) {
         const photo = await camera.current.takePhoto();
-        if (photo) {
-          const base64Image = await RNFS.readFile(photo.path, "base64");
-          const trainingImage: TrainingImage = {
-            photo: base64Image,
-            label: mapFromDetectionToTrainingImageLabel(detections.value[0]),
-            detectedPlayer: playerNumber.toString(),
-          };
+        if (photo && detections.value.length === 1) {
+          try {
+            const croppedPhoto = await ImageEditor.cropImage('file://' + photo.path, {
+              offset: {
+                x: (1-detections.value[0].boundingBox.y1) * photo.width,
+                y: detections.value[0].boundingBox.x1 * photo.height,
+              },
+              size: {
+                width: detections.value[0].boundingBox.w * photo.width,
+                height: detections.value[0].boundingBox.h * photo.height,
+              },
+              quality: 1.0,
+            });
+            const base64Image = await RNFS.readFile(croppedPhoto.uri, "base64");
+            //delete the photo file after using it
+            await RNFS.unlink(croppedPhoto.uri);
+            await RNFS.unlink(photo.path);
+            const trainingImage: TrainingImage = {
+              photo: base64Image,
+              detectedPlayer: playerNumber.toString(),
+            };
 
-          handleImageCapture(trainingImage);
+            handleImageCapture(trainingImage);
+          } catch (error) {
+            console.error("Error cropping image:", error);
+          }
         }
       }
     }, 500); // Capture photo every 1 second
@@ -77,6 +97,11 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   const paint = Skia.Paint();
   paint.setColor(Skia.Color("red"));
   paint.setStrokeWidth(3);
+
+  const paint2 = Skia.Paint();
+  paint2.setColor(Skia.Color("green"));
+  paint2.setStrokeWidth(3);
+
   const { resize } = useResizePlugin.createResizePlugin();
   // Ref for detections
   const lastUpdateTimeRef = useRef<number>(Date.now());
@@ -101,25 +126,24 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   }, [plugin]);
 
   const detections = useSharedValue<Detection[]>([]);
-  
 
   const frameProcessor = useSkiaFrameProcessor(
     (frame) => {
       "worklet";
       frame.render();
       if (plugin.state === "loaded") {
-        runAtTargetFps(5, () => {
+        runAtTargetFps(4, () => {
           "worklet";
           const resized = resize(frame, {
             scale: { width: 320, height: 320 },
             pixelFormat: "rgb",
             rotation: "90deg",
             dataType: "float32",
-           crop: { x: 0, y: 0, width: 640, height: 480 },
-          
+            crop: { x: 0, y: 0, width: frame.width, height: frame.height },
           });
 
           const outputs = plugin.model.runSync([resized]);
+
           detections.value = decodeYoloPoseOutput(outputs, 2100, 5);
 
           if (detections.value.length > 0) {
