@@ -39,7 +39,6 @@ import { Detection, Pose } from "../utils/types";
 import { useSharedValue, worklet, Worklets } from "react-native-worklets-core";
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
 import { Skia } from "@shopify/react-native-skia";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 function tensorToString(tensor: TensorflowModel["inputs"][number]): string {
   return `${tensor.dataType} [${tensor.shape}]`;
@@ -132,11 +131,14 @@ const CameraView = forwardRef((_, ref) => {
         runAtTargetFps(3, () => {
           "worklet";
           const resized = resize(frame, {
-            scale: { width: 320, height: 320 },
+            scale: { 
+              width: plugin.model.inputs[0].shape[1],
+              height: plugin.model.inputs[0].shape[2] 
+            },
             pixelFormat: "rgb",
             rotation: "90deg",
             dataType: "float32",
-           crop: { x: 0, y: 0, width: 640, height: 480 },
+           crop: { x: 0, y: 0, width: frame.width, height: frame.height },
           
           });
 
@@ -158,13 +160,20 @@ const CameraView = forwardRef((_, ref) => {
           // },
           
           // });
-
+         
           const resized2 = resize(frame, {
-            scale: { width: 320, height: 320 },
+            scale: { 
+              width: plugin2.model.inputs[0].shape[1],
+              height: plugin2.model.inputs[0].shape[2] 
+            },
             pixelFormat: "rgb",
             rotation: "90deg",
             dataType: "float32",
-           crop: { x: 0, y: 0, width: 640, height: 480 },
+           crop: { 
+            x: detections.value[0].boundingBox.yc * frame.width,
+            y: (1-detections.value[0].boundingBox.xc) * frame.height, 
+            width: detections.value[0].boundingBox.h * frame.width, 
+            height: detections.value[0].boundingBox.w * frame.height},
           
           });
 
@@ -175,6 +184,7 @@ const CameraView = forwardRef((_, ref) => {
           console.log(outputs2);
           console.log(getKeyOfMaxValue(outputs2[0]));
           paint.setColor(Skia.Color(colors[getKeyOfMaxValue(outputs2[0])]))
+          
           
         }
 
@@ -190,15 +200,14 @@ const CameraView = forwardRef((_, ref) => {
       if (currentTime - lastUpdateTimeRef.current > 500) {
         lastDetectionsRef.current = [];
       }
-
-      drawDetections(frame, detections.value, paint);
+      drawDetections(frame, lastDetectionsRef.current, paint);
     },
     [plugin, plugin2, detections]
   );
 
   const format = useCameraFormat(device, [
     {
-      videoResolution: { height: 320, width: 320 },
+      videoResolution: { height: 4000, width: 4000*(16/9) },
     },
   ]);
 
