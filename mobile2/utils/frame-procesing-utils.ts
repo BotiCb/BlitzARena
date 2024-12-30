@@ -1,12 +1,14 @@
 import { DrawableFrame, Frame } from "react-native-vision-camera";
 import { BoundingBox, Detection, Keypoint, Keypoints, TrainingImageLabel } from "./types";
-
+import RNFS from 'react-native-fs';
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
 import {
   Skia,
   SkPaint,
 } from "@shopify/react-native-skia/lib/typescript/src/skia/types";
 import { worklet } from "react-native-worklets-core";
+import { TrainingImage, WebSocketMessageType, WebSocketMsg } from "@/services/websocket/utils/types";
+import websocketService from "@/services/websocket/websocket.service";
 
 // Keypoint names (you can expand or adjust these based on your model)
 const keypointNames = [
@@ -288,3 +290,6 @@ export function mapFromDetectionToTrainingImageLabel(detection: Detection) : Tra
     h: detection.boundingBox.h,
   };
 }
+
+
+  

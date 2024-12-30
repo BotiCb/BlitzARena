@@ -24,6 +24,8 @@ import {
 import { TrainingImage } from "@/services/websocket/utils/types";
 import { useSharedValue } from "react-native-worklets-core";
 import ImageEditor from "@react-native-community/image-editor";
+import { ImageCropData } from "@react-native-community/image-editor/lib/typescript/src/types";
+
 interface TrainingCameraViewProps {
   takePhotos: boolean;
   handleImageCapture: (trainingImage: TrainingImage) => void;
@@ -52,29 +54,72 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   const format = useCameraFormat(device, [
     {
 videoResolution: { width: 640, height: 480 },
-      photoResolution: { width: 4000, height: 4000*(16/9) },
+      //photoResolution: { width: 4000, height: 4000*(3/4) },
+      
+    
     },
   ]);
+  const lastUpdateTime = useSharedValue<number>(Date.now());
 
   useEffect(() => {
     if (!takePhotos || !hasPermission) return;
 
     const interval = setInterval(async () => {
-      if (camera.current) {
-        const photo = await camera.current.takePhoto();
-        if (photo && detections.value.length === 1) {
+      if (camera.current && Object.values(detections.value).length === 1) {
+        
+        while (Date.now() - lastUpdateTime.value > 10) {
+         // console.log(Date.now() - lastUpdateTime.value + " delaying");
+          // Wait for 10ms before taking the photo
+          await new Promise((resolve) => setTimeout(resolve, 3));
+          if(Object.values(detections.value).length !== 1  || !takePhotos){
+            console.log("Skipping photo");
+            return;
+          }
+
+        }
+        const photoPromise = camera.current.takePhoto();
+        console.log(Date.now() - lastUpdateTime.value);
+        const photo = await photoPromise;
+        if (photo) {
           try {
-            const croppedPhoto = await ImageEditor.cropImage('file://' + photo.path, {
-              offset: {
-                x: (1-detections.value[0].boundingBox.y1) * photo.width,
-                y: detections.value[0].boundingBox.x1 * photo.height,
-              },
-              size: {
-                width: detections.value[0].boundingBox.w * photo.width,
-                height: detections.value[0].boundingBox.h * photo.height,
-              },
-              quality: 1.0,
-            });
+            console.log(photo.width, photo.height);
+            let  cropOptions: ImageCropData ;
+            if(photo.height > photo.width){
+              cropOptions =
+               {
+                offset: {
+                  x: (1-detections.value[0].boundingBox.y1) * photo.width,
+                  y: detections.value[0].boundingBox.x1 * photo.height,
+                },
+                size: {
+                  width: detections.value[0].boundingBox.w * photo.width,
+                  height: detections.value[0].boundingBox.h * photo.height,
+                },
+                quality: 1.0,
+                
+
+                
+              }
+            }
+            else{
+              cropOptions =
+               {
+                offset: {
+                  x: (1-detections.value[0].boundingBox.y1) * photo.height,
+                  y: detections.value[0].boundingBox.x1 * photo.width,
+                },
+                size: {
+                  width: detections.value[0].boundingBox.w * photo.height,
+                  height: detections.value[0].boundingBox.h * photo.width,
+                },
+                quality: 1.0,
+                
+              }
+            }
+            const croppedPhoto = await ImageEditor.cropImage('file://' + photo.path, cropOptions);
+
+
+           
             const base64Image = await RNFS.readFile(croppedPhoto.uri, "base64");
             //delete the photo file after using it
             await RNFS.unlink(croppedPhoto.uri);
@@ -104,7 +149,6 @@ videoResolution: { width: 640, height: 480 },
 
   const { resize } = useResizePlugin.createResizePlugin();
   // Ref for detections
-  const lastUpdateTimeRef = useRef<number>(Date.now());
 
   const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
 
@@ -126,13 +170,14 @@ videoResolution: { width: 640, height: 480 },
   }, [plugin]);
 
   const detections = useSharedValue<Detection[]>([]);
+  
 
   const frameProcessor = useSkiaFrameProcessor(
     (frame) => {
       "worklet";
       frame.render();
       if (plugin.state === "loaded") {
-        runAtTargetFps(4, () => {
+        runAtTargetFps(5, () => {
           "worklet";
           const resized = resize(frame, {
             scale: { width: 320, height: 320 },
@@ -145,17 +190,18 @@ videoResolution: { width: 640, height: 480 },
           const outputs = plugin.model.runSync([resized]);
 
           detections.value = decodeYoloPoseOutput(outputs, 2100, 5);
-
-          if (detections.value.length > 0) {
+          
+          if (Object.values(detections.value).length > 0) {
             lastDetectionsRef.current = detections.value;
-            lastUpdateTimeRef.current = Date.now();
+            lastUpdateTime.value = Date.now();
+            //console.log(Date.now());
             //console.log(detections[0].keypoints[0]);
           }
         });
       }
 
       const currentTime = Date.now();
-      if (currentTime - lastUpdateTimeRef.current > 500) {
+      if (currentTime - lastUpdateTime.value > 500) {
         lastDetectionsRef.current = [];
       }
 
@@ -181,7 +227,7 @@ videoResolution: { width: 640, height: 480 },
         device={device}
         isActive={true}
         pixelFormat="yuv"
-        outputOrientation={"device"}
+        outputOrientation="preview"
         photo={true}
         ref={camera}
         format={format}
