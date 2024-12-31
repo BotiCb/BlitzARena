@@ -25,7 +25,7 @@ class WebSocketService {
     };
 
     this.ws.onmessage = (event: MessageEvent) => {
-      console.log('Received message:', event.data);
+      //console.log('Received message:', event.data);
       this.handleMessage(event.data);
     };
 

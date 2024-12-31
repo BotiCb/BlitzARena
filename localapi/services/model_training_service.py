@@ -4,31 +4,24 @@ import os
 from PIL import Image, ImageOps
 from io import BytesIO
 from services.websocket.websocket_service import WebSocketService
+from ultralytics import YOLO
 
 
 class ModelTrainingService:
-    def __init__(self):
+    def __init__(self, max_photos_per_player=125):
         # Initialize file_count as a class instance variable
         self.file_count = 0
+        self.isTraining = False
         self.websocket_service = WebSocketService()
-        self.websocket_service.register_message_handler("training_data", self.handle_recived_training_image)
+        self.websocket_service.register_message_handler("training_data", self.handle_received_training_image)
+        self.websocket_service.register_message_handler("training_start", self.handle_received_training_start)
 
-    async def handle_recived_training_image(self, client_id, websocket, message):
+        # Initialize a dictionary to track the photo count per player
+        self.player_photo_count = {}
+        self.max_photos_per_player = max_photos_per_player
+
+    async def handle_received_training_image(self, client_id, websocket, message):
         try:
-            # Increment the file count to ensure unique filenames
-            self.file_count += 1
-
-            # Determine if this file should go to train, val, or test
-            is_validation = self.file_count % 10 <= 1
-            is_test = self.file_count % 10 == 2
-
-            if is_validation:
-                split = "val"
-            elif is_test:
-                split = "test"
-            else:
-                split = "train"
-
             # Parse the `data` field, which is a JSON string
             data = json.loads(message.get("data", "{}"))
 
@@ -38,9 +31,6 @@ class ModelTrainingService:
                 print("No photo data found in the message.")
                 return
 
-            # Decode the base64 photo data
-            image_bytes = base64.b64decode(photo_data)
-
             # Extract the detected player number
             detected_player = data.get("detectedPlayer", "")
             if not detected_player:
@@ -49,6 +39,31 @@ class ModelTrainingService:
 
             # Ensure detectedPlayer is a string for consistent directory naming
             detected_player = str(detected_player)
+
+            # Check if the player has reached the maximum photo count
+            if self.player_photo_count.get(detected_player, 0) >= self.max_photos_per_player:
+                print(f"Player {detected_player} has reached the maximum photo count. Image not saved.")
+                self.websocket_service.broadcast(json.dumps({"type": "training_ready_for_player", "data": {
+                    "detectedPlayer": detected_player
+                }}))
+                return
+
+            # Increment the player's photo count
+            self.player_photo_count[detected_player] = self.player_photo_count.get(detected_player, 0) + 1
+
+            # Increment the file count to ensure unique filenames
+            self.file_count += 1
+
+            # Determine if this file should go to train, val, or test
+            is_validation = self.file_count % 4 == 0
+
+            if is_validation:
+                split = "val"
+            else:
+                split = "train"
+
+            # Decode the base64 photo data
+            image_bytes = base64.b64decode(photo_data)
 
             # Create the player-specific directory under `train`, `val`, or `test`
             dataset_dir = "dataset"
@@ -92,3 +107,23 @@ class ModelTrainingService:
             print(f"Error decoding base64 image: {e}")
         except Exception as e:
             print(f"Error handling training image: {e}")
+
+
+
+    async def handle_received_training_start(self, client_id, websocket, message):
+
+        if self.isTraining:
+            print("Training is already in progress. Please wait for the current training to finish before starting a new one.")
+            return
+
+        self.isTraining = True
+        #check if the dataset dir exist:
+        if not os.path.exists("dataset"):
+            print("Dataset directory does not exist.")
+            return
+        model = YOLO("yolo11n-cls.pt")
+
+        model.train(data="./dataset",
+                    imgsz=320, rect=True, epochs=10, batch=150, patience=3, workers=0, device=0, amp=True)
+
+        model.export(format="tflite", batch=1, imgsz=[320, 192], rect=True, device=0)

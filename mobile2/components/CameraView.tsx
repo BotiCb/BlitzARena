@@ -124,13 +124,13 @@ const CameraView = forwardRef((_, ref) => {
     return maxIndex; // Return the index of the max value
   }
 
-  const frameProcessor = useFrameProcessor(
+  const frameProcessor = useSkiaFrameProcessor(
     (frame) => {
       "worklet";
-      //frame.render();
+      frame.render();
       if (plugin.state === "loaded" && plugin2.state === "loaded") {
         runAtTargetFps(
-          15, () => {
+          2, () => {
           "worklet";
           const resized = resize(frame, {
             scale: {
@@ -197,7 +197,7 @@ const CameraView = forwardRef((_, ref) => {
       //   lastDetectionsRef.current = [];
       // }
       //console.log(lastDetectionsRef.current);
-      //drawDetections(frame, detections.value, paint);
+      drawDetections(frame, detections.value, paint);
     },
     [plugin, plugin2, detections]
   );

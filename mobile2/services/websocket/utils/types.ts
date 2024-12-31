@@ -12,6 +12,7 @@ export enum WebSocketMessageType {
     TRAINING_START = 'training_start',
     TRAINING_DATA = 'training_data',
     TRAINING_END = 'training_end',
+    TRAINING_READY_FOR_PLAYER = 'training_ready_for_player',
 }
 
 

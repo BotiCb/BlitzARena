@@ -17,6 +17,16 @@ const ModelTrainingScreen = () => {
       photoQueue.current.push(trainingImage); // Add new photo to the queue
       sendPhotosToServer(); // Trigger sending process
     };
+
+    useEffect(() => {
+      const handleTrainingReady = () => {
+        console.log("Received training_ready_for_player message");
+        setTakePhotos(false);
+      };
+      modelTrainingWebsocketService.setTrainingReadyForPlayerEventListener(handleTrainingReady);
+  
+    }, []);
+
   
     // Function to send photos asynchronously
     const sendPhotosToServer = async () => {
@@ -50,6 +60,7 @@ const ModelTrainingScreen = () => {
             (<Button title="Stop taking photos" onPress={() => setTakePhotos(false)} />)}
             <Button title="Next player " onPress={() => setPlayerNumber(playerNumber + 1)} />
             <Button title="Previous player " onPress={() => setPlayerNumber(playerNumber - 1)} />
+              <Button title="Start training" onPress={() => modelTrainingWebsocketService.sendStartModelTraining()} />
             <TrainingCameraView  takePhotos={takePhotos} handleImageCapture={handleImageCapture} lastDetectionsRef={lastDetectionsRef} playerNumber={playerNumber}/>
         </View>
     )

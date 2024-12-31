@@ -2,10 +2,10 @@ import {  TrainingImage, WebSocketMessageType, WebSocketMsg } from "./utils/type
 import websocketService from "./websocket.service";
 
 class ModelTrainingWebSocketService {
-  constructor() {
-    websocketService.onMessageType('training-start', (message : string) => {
-        console.log('Received training-start notification:', message);
-      });
+
+
+  setTrainingReadyForPlayerEventListener(eventListener: () => void) {
+    websocketService.onMessageType('training_ready_for_player', eventListener);
   }
 
   sendTrainingImage(trainingImage: TrainingImage) {
@@ -16,6 +16,16 @@ class ModelTrainingWebSocketService {
     }
     websocketService.sendMessage(wsMessage);
   }
+
+  sendStartModelTraining() {
+    const wsMessage: WebSocketMsg = {
+      type: WebSocketMessageType.TRAINING_START,
+      user_id: '1',
+    }
+    websocketService.sendMessage(wsMessage);
+  }
+
+
 }
 
 export default new ModelTrainingWebSocketService();
