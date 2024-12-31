@@ -1,13 +1,22 @@
 import { DrawableFrame, Frame } from "react-native-vision-camera";
-import { BoundingBox, Detection, Keypoint, Keypoints, TrainingImageLabel } from "./types";
-import RNFS from 'react-native-fs';
+import {
+  BoundingBox,
+  Classification,
+  ObjectDetection,
+  Keypoints,
+} from "./types";
+import RNFS from "react-native-fs";
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
 import {
   Skia,
   SkPaint,
 } from "@shopify/react-native-skia/lib/typescript/src/skia/types";
 import { worklet } from "react-native-worklets-core";
-import { TrainingImage, WebSocketMessageType, WebSocketMsg } from "@/services/websocket/utils/types";
+import {
+  TrainingImage,
+  WebSocketMessageType,
+  WebSocketMsg,
+} from "@/services/websocket/utils/types";
 import websocketService from "@/services/websocket/websocket.service";
 
 // Keypoint names (you can expand or adjust these based on your model)
@@ -37,9 +46,9 @@ function sigmoid(x: number): number {
 }
 
 export function nonMaximumSuppression(
-  detections: Detection[],
+  detections: ObjectDetection[],
   iouThreshold = 0.5
-): Detection[] {
+): ObjectDetection[] {
   "worklet";
 
   // Helper function to calculate IoU
@@ -67,7 +76,7 @@ export function nonMaximumSuppression(
   // Sort detections by confidence in descending order
   detections.sort((a, b) => b.confidence - a.confidence);
 
-  const finalDetections: Detection[] = [];
+  const finalDetections: ObjectDetection[] = [];
 
   while (detections.length > 0) {
     const current = detections.shift()!; // Highest confidence detection
@@ -82,13 +91,35 @@ export function nonMaximumSuppression(
   return finalDetections;
 }
 
+function getClosestDetectionToCenter(
+  detections: ObjectDetection[]
+): ObjectDetection | null {
+  "worklet";
+  let closestDetection = null;
+  let closestDistance = Infinity;
+  if(detections.length === 1) return detections[0];
+
+  for (const detection of detections) {
+    const distance = Math.sqrt(
+      Math.pow(detection.boundingBox.xc - 0.5, 2) +
+        Math.pow(detection.boundingBox.yc - 0.5, 2)
+    );
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestDetection = detection;
+    }
+  }
+
+  return closestDetection;
+}
+
 export function decodeYoloPoseOutput(
   outputTensor: any[],
-  numDetections: number,
-  attributes = 5
-): Detection[] {
+  numDetections: number
+): ObjectDetection | null {
   "worklet";
-  const detections: Detection[] = [];
+  const detections: ObjectDetection[] = [];
 
   for (let i = 0; i < numDetections; i++) {
     const confidence = outputTensor[0][i + numDetections * 4];
@@ -139,157 +170,118 @@ export function decodeYoloPoseOutput(
       keypoints,
     });
   }
-
+  outputTensor.length = 0;
   // Apply NMS after decoding all detections
-  return nonMaximumSuppression(detections, 0.5);
+  return getClosestDetectionToCenter(nonMaximumSuppression(detections, 0.5));
 }
 
-
-
-
-
-
-
-
-
-
-export function decodeYoloOutput(
-  outputTensor: any[],
-  numDetections: number,
-  numclasses: number
-): Detection[] {
+export function decodeYoloClassifyOutput(array: any): Classification {
   "worklet";
-  const detections: Detection[] = [];
-
-  for (let i = 0; i < numDetections; i++) {
-    const confidence = outputTensor[0][i + numDetections *7];
-    if (confidence < 0.05) {
-      continue;
-    }
-    const xc = outputTensor[0][i];
-    const yc = outputTensor[0][i + numDetections];
-    const w = outputTensor[0][i + numDetections * 2];
-    const h = outputTensor[0][i + numDetections * 3];
-
-    const y1 = 1 - (xc - w / 2); // Top-left y
-    const x1 = yc - h / 2; // Top-left x
-    const y2 = 1 - (xc + w / 2); // Bottom-right y
-    const x2 = yc + h / 2; // Bottom-right x
-
-    for (let j = 0; j < numclasses; j++) {
-      console.log(j + " " +outputTensor[0][j * numDetections + i]);
-    }
-    console.log("\n");
-    detections.push({
-      boundingBox: {
-        x1,
-        y1,
-        x2,
-        y2,
-        xc,
-        yc,
-        w,
-        h,
-      },
-      confidence,
-      keypoints: null,
-    });
+  if (array.length < 2) {
+    throw new Error(
+      "Array must have at least two elements to compute confidence advantage."
+    );
   }
 
-  // Apply NMS after decoding all detections
-  return detections;
+  let maxIndex = 0;
+  let secondMaxIndex = -1;
+  let maxValue = array[0];
+  let secondMaxValue = -Infinity;
+
+  for (let i = 1; i < array.length; i++) {
+    if (array[i] > maxValue) {
+      secondMaxValue = maxValue;
+      secondMaxIndex = maxIndex;
+      maxValue = array[i];
+      maxIndex = i;
+    } else if (array[i] > secondMaxValue) {
+      secondMaxValue = array[i];
+      secondMaxIndex = i;
+    }
+  }
+
+  const confidenceAdvantage = maxValue - secondMaxValue;
+  array = null;
+  return {
+    id: maxIndex,
+    confidenceAdvantage: confidenceAdvantage,
+  };
 }
 
 export function drawDetections(
   frame: DrawableFrame,
-  detections: Detection[],
+  detection: ObjectDetection,
   paint: SkPaint
 ) {
   "worklet";
-  for (const detection of detections) {
-    frame.drawCircle(
-      detection.boundingBox.yc * frame.width,
-      (1-detection.boundingBox.xc) * frame.height,
-      5,
-      paint
-    )
-    // Draw bounding box
-    frame.drawLine(
-      detection.boundingBox.x1 * frame.width,
-      detection.boundingBox.y1 * frame.height,
-      detection.boundingBox.x2 * frame.width,
-      detection.boundingBox.y1 * frame.height,
-      paint
-    );
-    frame.drawLine(
-      detection.boundingBox.x2 * frame.width,
-      detection.boundingBox.y1 * frame.height,
-      detection.boundingBox.x2 * frame.width,
-      detection.boundingBox.y2 * frame.height,
-      paint
-    );
-    frame.drawLine(
-      detection.boundingBox.x2 * frame.width,
-      detection.boundingBox.y2 * frame.height,
-      detection.boundingBox.x1 * frame.width,
-      detection.boundingBox.y2 * frame.height,
-      paint
-    );
-    frame.drawLine(
-      detection.boundingBox.x1 * frame.width,
-      detection.boundingBox.y2 * frame.height,
-      detection.boundingBox.x1 * frame.width,
-      detection.boundingBox.y1 * frame.height,
-      paint
-    );
-    frame.drawLine(
-      detection.boundingBox.yc * frame.width,
-      (1-detection.boundingBox.xc) * frame.height,
-      detection.boundingBox.yc * frame.width+detection.boundingBox.h * frame.width/2,
-      (1-detection.boundingBox.xc) * frame.height,
-      paint
-    )
 
+  frame.drawCircle(
+    detection.boundingBox.yc * frame.width,
+    (1 - detection.boundingBox.xc) * frame.height,
+    5,
+    paint
+  );
+  // Draw bounding box
+  frame.drawLine(
+    detection.boundingBox.x1 * frame.width,
+    detection.boundingBox.y1 * frame.height,
+    detection.boundingBox.x2 * frame.width,
+    detection.boundingBox.y1 * frame.height,
+    paint
+  );
+  frame.drawLine(
+    detection.boundingBox.x2 * frame.width,
+    detection.boundingBox.y1 * frame.height,
+    detection.boundingBox.x2 * frame.width,
+    detection.boundingBox.y2 * frame.height,
+    paint
+  );
+  frame.drawLine(
+    detection.boundingBox.x2 * frame.width,
+    detection.boundingBox.y2 * frame.height,
+    detection.boundingBox.x1 * frame.width,
+    detection.boundingBox.y2 * frame.height,
+    paint
+  );
+  frame.drawLine(
+    detection.boundingBox.x1 * frame.width,
+    detection.boundingBox.y2 * frame.height,
+    detection.boundingBox.x1 * frame.width,
+    detection.boundingBox.y1 * frame.height,
+    paint
+  );
+  frame.drawLine(
+    detection.boundingBox.yc * frame.width,
+    (1 - detection.boundingBox.xc) * frame.height,
+    detection.boundingBox.yc * frame.width +
+      (detection.boundingBox.h * frame.width) / 2,
+    (1 - detection.boundingBox.xc) * frame.height,
+    paint
+  );
 
-    // Draw keypoints
+  // Draw keypoints
 
-    if (detection.keypoints) {
-      for (const [startIdx, endIdx] of MOVENET_CONSTANTS.BODY_CONNECTIONS) {
-        const start = detection.keypoints[startIdx];
-        const end = detection.keypoints[endIdx];
+  if (detection.keypoints) {
+    for (const [startIdx, endIdx] of MOVENET_CONSTANTS.BODY_CONNECTIONS) {
+      const start = detection.keypoints[startIdx];
+      const end = detection.keypoints[endIdx];
 
-        if (
-          start &&
-          end &&
-          start.confidence > MOVENET_CONSTANTS.TRESHOLD &&
-          end.confidence > MOVENET_CONSTANTS.TRESHOLD
-        ) {
-          frame.drawLine(
-            start.x * frame.width,
-            start.y * frame.height,
-            end.x * frame.width,
-            end.y * frame.height,
-            paint
-          );
-        }
+      if (
+        start &&
+        end &&
+        start.confidence > MOVENET_CONSTANTS.TRESHOLD &&
+        end.confidence > MOVENET_CONSTANTS.TRESHOLD
+      ) {
+        frame.drawLine(
+          start.x * frame.width,
+          start.y * frame.height,
+          end.x * frame.width,
+          end.y * frame.height,
+          paint
+        );
       }
     }
   }
 }
 
 
-
-
-
-export function mapFromDetectionToTrainingImageLabel(detection: Detection) : TrainingImageLabel{
-  "worklet";
-  return {
-    xc: detection.boundingBox.xc,
-    yc: detection.boundingBox.yc,
-    w: detection.boundingBox.w,
-    h: detection.boundingBox.h,
-  };
-}
-
-
-  

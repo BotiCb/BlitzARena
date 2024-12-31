@@ -1,4 +1,3 @@
-import { Detection, TrainingImageLabel } from "@/utils/types"
 
 export type WebSocketMsg ={
     type: WebSocketMessageType,

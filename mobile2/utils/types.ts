@@ -1,47 +1,56 @@
 export const bodyConnections = [
-    [0, 1], [0, 2], [1, 3], [2, 4], // Head
-    [5, 6], [5, 7], [7, 9], [6, 8], [8, 10], // Arms
-    [11, 12], [5, 11], [6, 12], [11, 13], [12, 14], [13, 15], [14, 16] // Torso & Legs
-  ];
+  [0, 1],
+  [0, 2],
+  [1, 3],
+  [2, 4], // Head
+  [5, 6],
+  [5, 7],
+  [7, 9],
+  [6, 8],
+  [8, 10], // Arms
+  [11, 12],
+  [5, 11],
+  [6, 12],
+  [11, 13],
+  [12, 14],
+  [13, 15],
+  [14, 16], // Torso & Legs
+];
 
+export type BoundingBox = {
+  xc: number;
+  yc: number;
+  w: number;
+  h: number;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+};
 
+export type ObjectDetection = {
+  keypoints: Keypoints | null;
+  boundingBox: BoundingBox;
+  confidence: number;
+};
 
-  export type Pose = {
-    keypoints: Keypoint[];
-  };
+export type Keypoints = {
+  [index: number]: Keypoint;
+};
 
-  export type BoundingBox = {
-    xc: number;
-    yc: number;
-    w: number;
-    h: number;
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
-  }
-  
-  export type Detection = {
-    keypoints: Keypoints | null;
-    boundingBox: BoundingBox;
-    confidence: number;
-  };
+export type Keypoint = {
+  y: number;
+  x: number;
+  confidence: number;
+  name: string;
+};
 
-  export type Keypoints = {
-    [index: number]: Keypoint;
-  };
+export type Classification = {
+  id: number;
+  confidenceAdvantage: number;
+};
 
-  export type Keypoint = {
-    y: number;
-    x: number;
-    confidence: number;
-    name: string;
-  };
-
-
-  export type TrainingImageLabel = {
-    xc: number;
-    yc: number;
-    w: number;
-    h: number;
-  }
+export type Detection = {
+  objectDetection: ObjectDetection;
+  classification: Classification;
+}

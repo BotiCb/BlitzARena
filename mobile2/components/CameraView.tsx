@@ -19,7 +19,6 @@ import {
   useCameraDevices,
   useCameraPermission,
   useFrameProcessor,
-  Orientation,
   useCameraFormat,
   runAtTargetFps,
   useSkiaFrameProcessor,
@@ -27,26 +26,33 @@ import {
 
 import * as useResizePlugin from "vision-camera-resize-plugin";
 
-import { TensorflowModel, useTensorflowModel } from "react-native-fast-tflite";
+import {
+  TensorflowModel,
+  TensorflowPlugin,
+  useTensorflowModel,
+} from "react-native-fast-tflite";
 
 import {
-
   decodeYoloPoseOutput,
   drawDetections,
+  decodeYoloClassifyOutput,
 } from "../utils/frame-procesing-utils";
 
-import { Detection, Pose } from "../utils/types";
+import { Classification, Detection, ObjectDetection } from "../utils/types";
 
-import { useSharedValue, worklet, Worklets } from "react-native-worklets-core";
-import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
+import { ISharedValue, useSharedValue, worklet, Worklets } from "react-native-worklets-core";
 import { Skia } from "@shopify/react-native-skia";
-import modelTrainingWebsocketService from "@/services/websocket/model-training.websocket.service";
 
 function tensorToString(tensor: TensorflowModel["inputs"][number]): string {
   return `${tensor.dataType} [${tensor.shape}]`;
 }
 
-const CameraView = forwardRef((_, ref) => {
+interface CameraViewProps {
+  plugins: TensorflowPlugin[];
+  detections: ISharedValue<Detection | null>
+}
+
+const CameraView = forwardRef<any, CameraViewProps>(({ plugins, detections }, ref) => {
   const device = useCameraDevices()[0]; // Using back camera as default
 
   const { hasPermission, requestPermission } = useCameraPermission();
@@ -54,16 +60,8 @@ const CameraView = forwardRef((_, ref) => {
     requestPermission();
   }
 
-  const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
-
-  const plugin = useTensorflowModel(
-    require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
-    delegate
-  );
-  const plugin2 = useTensorflowModel(
-    require("../assets/models/best_float32.tflite"),
-    delegate
-  );
+  const plugin = plugins[0];
+  const plugin2 = plugins[1];
 
   useEffect(() => {
     const model = plugin.model;
@@ -91,8 +89,6 @@ const CameraView = forwardRef((_, ref) => {
 
   const { resize } = useResizePlugin.createResizePlugin();
 
-
-
   // useImperativeHandle(
   //   ref,
   //   () => ({
@@ -105,32 +101,18 @@ const CameraView = forwardRef((_, ref) => {
   const paint = Skia.Paint();
   paint.setColor(Skia.Color("red"));
   paint.setStrokeWidth(3);
-  const colors: string[] = ["red", "green", "blue", "yellow"];
 
+  const lastUpdateTime = useSharedValue<number>(Date.now());
+  
 
-  const detections = useSharedValue<Detection[]>([]);
-  function getKeyOfMaxValue(array: any): number {
-    "worklet";
-    let maxIndex = 0;
-    let maxValue = array[0];
-
-    for (let i = 1; i < array.length; i++) {
-      if (array[i] > maxValue) {
-        maxValue = array[i];
-        maxIndex = i;
-      }
-    }
-
-    return maxIndex; // Return the index of the max value
-  }
-
-  const frameProcessor = useSkiaFrameProcessor(
+  const frameProcessor = useFrameProcessor(
     (frame) => {
       "worklet";
-      frame.render();
+     // frame.render();
+     
       if (plugin.state === "loaded" && plugin2.state === "loaded") {
-        runAtTargetFps(
-          2, () => {
+
+        runAtTargetFps(5, () => {
           "worklet";
           const resized = resize(frame, {
             scale: {
@@ -142,53 +124,60 @@ const CameraView = forwardRef((_, ref) => {
             dataType: "float32",
             crop: { x: 0, y: 0, width: frame.width, height: frame.height },
           });
-         
-          
-          
+
           const outputs = plugin.model.runSync([resized]);
-          detections.value = decodeYoloPoseOutput(outputs, 2100, 5);
-
-          if (Object.values(detections.value).length === 1) {
-            // const resized2 = resize(frame, {
-            //   scale: {
-            //     width: plugin2.model.inputs[0].shape[1],
-            //     height: plugin2.model.inputs[0].shape[2],
-            //   },
-            //   pixelFormat: "rgb",
-            //  rotation: "270deg",
-
-            //   dataType: "float32",
-            //   crop: {
-            //     x: detections.value[0].boundingBox.yc * frame.width,
-            //     y: (1 - detections.value[0].boundingBox.xc) * frame.height,
-            //     width: detections.value[0].boundingBox.h * frame.width,
-            //     height: detections.value[0].boundingBox.w * frame.height,
-            //   },
-            // });
-
+          const objDetection: ObjectDetection | null = decodeYoloPoseOutput(outputs, plugin.model.outputs[0].shape[2]);
+          outputs.length=0;
+          if(objDetection) {
             const resized3 = resize(frame, {
               scale: {
                 width: plugin2.model.inputs[0].shape[1],
                 height: plugin2.model.inputs[0].shape[2],
               },
               pixelFormat: "rgb",
-             rotation: "90deg",
+              rotation: "90deg",
               dataType: "float32",
 
               crop: { x: 0, y: 0, width: frame.width, height: frame.height },
             });
 
             const outputs2 = plugin2.model.runSync([resized3]);
-            console.log(outputs2);
-            console.log(getKeyOfMaxValue(outputs2[0]));
-            paint.setColor(Skia.Color(colors[getKeyOfMaxValue(outputs2[0])]));
+            const classification: Classification = decodeYoloClassifyOutput(
+              outputs2[0]
+            )
+            outputs2.length=0;
+            // console.log(classification)
+            detections.value = {
+              objectDetection: objDetection,
+              classification: classification
+            };
+            lastUpdateTime.value = Date.now();
+           
           }
 
-          // if (detections.value.length > 0) {
-          //   lastDetectionsRef.current = detections.value;
-          //   lastUpdateTimeRef.current = Date.now();
-          //   //console.log(detections[0].keypoints[0]);
+          
+          // if (objDetection.length === 1) {
+          //   // const resized2 = resize(frame, {
+          //   //   scale: {
+          //   //     width: plugin2.model.inputs[0].shape[1],
+          //   //     height: plugin2.model.inputs[0].shape[2],
+          //   //   },
+          //   //   pixelFormat: "rgb",
+          //   //  rotation: "270deg",
+
+          //   //   dataType: "float32",
+          //   //   crop: {
+          //   //     x: detections.value[0].boundingBox.yc * frame.width,
+          //   //     y: (1 - detections.value[0].boundingBox.xc) * frame.height,
+          //   //     width: detections.value[0].boundingBox.h * frame.width,
+          //   //     height: detections.value[0].boundingBox.w * frame.height,
+          //   //   },
+          //   // });
+
+           
           // }
+
+        
         });
       }
 
@@ -197,7 +186,15 @@ const CameraView = forwardRef((_, ref) => {
       //   lastDetectionsRef.current = [];
       // }
       //console.log(lastDetectionsRef.current);
-      drawDetections(frame, detections.value, paint);
+      //console.log(detections.value);
+          const currentTime = Date.now();
+          if (currentTime - lastUpdateTime.value > 500) {
+            detections.value = null;
+          }
+          // if(detections.value){
+          //   drawDetections(frame, detections.value.objectDetection, paint);
+          // }
+      
     },
     [plugin, plugin2, detections]
   );
@@ -205,6 +202,7 @@ const CameraView = forwardRef((_, ref) => {
   const format = useCameraFormat(device, [
     {
       videoResolution: { height: 1500, width: 1500 * (16 / 9) },
+      
     },
   ]);
 
@@ -231,7 +229,7 @@ const CameraView = forwardRef((_, ref) => {
           isActive={true}
           frameProcessor={frameProcessor}
           pixelFormat="yuv"
-          format={format}
+         format={format}
           outputOrientation={"device"} // format={format}
         />
       ) : (
