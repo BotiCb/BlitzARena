@@ -105,10 +105,10 @@ const CameraView = forwardRef<any, CameraViewProps>(({ plugins, detections }, re
   const lastUpdateTime = useSharedValue<number>(Date.now());
   
 
-  const frameProcessor = useFrameProcessor(
+  const frameProcessor = useSkiaFrameProcessor(
     (frame) => {
       "worklet";
-     // frame.render();
+     frame.render();
      
       if (plugin.state === "loaded" && plugin2.state === "loaded") {
 
@@ -191,9 +191,9 @@ const CameraView = forwardRef<any, CameraViewProps>(({ plugins, detections }, re
           if (currentTime - lastUpdateTime.value > 500) {
             detections.value = null;
           }
-          // if(detections.value){
-          //   drawDetections(frame, detections.value.objectDetection, paint);
-          // }
+          if(detections.value){
+            drawDetections(frame, detections.value.objectDetection, paint);
+          }
       
     },
     [plugin, plugin2, detections]
