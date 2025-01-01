@@ -8,13 +8,14 @@ from ultralytics import YOLO
 
 
 class ModelTrainingService:
-    def __init__(self, max_photos_per_player=125):
+    def __init__(self, max_photos_per_player=250):
         # Initialize file_count as a class instance variable
         self.file_count = 0
         self.isTraining = False
         self.websocket_service = WebSocketService()
         self.websocket_service.register_message_handler("training_data", self.handle_received_training_image)
         self.websocket_service.register_message_handler("training_start", self.handle_received_training_start)
+        self.photo_size = 320
 
         # Initialize a dictionary to track the photo count per player
         self.player_photo_count = {}
@@ -83,21 +84,13 @@ class ModelTrainingService:
                 width, height = height, width
 
             # Resize the image while keeping its height constant
-            target_height = 480  # Desired height of the final image
-            aspect_ratio = width / height
-            target_width = int(target_height * aspect_ratio)
-            resized_image = image.resize((target_width, target_height), Image.Resampling.BICUBIC)
+              # Desired height of the final image
 
-            # Calculate the padding to make the image square
-            padding_left = (480 - target_width) // 2
-            padding_right = 480 - target_width - padding_left
-
-            # Add padding to the sides to make the image square
-            padded_image = ImageOps.expand(resized_image, border=(padding_left, 0, padding_right, 0), fill=(0, 0, 0))
+            image = image.resize((self.photo_size, self.photo_size))
 
             # Save the padded image in the player-specific folder
             image_filename = os.path.join(player_dir, f"{filename}.jpg")
-            padded_image.save(image_filename, "JPEG")
+            image.save(image_filename, "JPEG")
 
             print(f"Image saved successfully as {image_filename}")
 
@@ -124,6 +117,8 @@ class ModelTrainingService:
         model = YOLO("yolo11n-cls.pt")
 
         model.train(data="./dataset",
-                    imgsz=320, rect=True, epochs=10, batch=150, patience=3, workers=0, device=0, amp=True)
+                    imgsz=self.photo_size, rect=True, epochs=10, batch=110, patience=3, workers=0, device=0, amp=True, half=True)
 
-        model.export(format="tflite", batch=1, imgsz=[320, 192], rect=True, device=0)
+        model.export(format="tflite", batch=1, imgsz=self.photo_size, rect=True, device=0, workers=0, half=True)
+
+        self.isTraining = False

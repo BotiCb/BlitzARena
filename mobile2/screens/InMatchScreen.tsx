@@ -22,7 +22,7 @@ const InMatchScreen = () => {
     require("../assets/models/best_float32.tflite"),
     delegate
   );
-  const people = ["bibi", "pali", "toni", "zsuzsi"];
+  const people = [ "toni","bibi", "pali", "boti", "zsuzsi"];
   const [detectedPerson, setDetectedPerson] = useState<String>("");
   const detections = useSharedValue<Detection | null>(null);
 
@@ -37,7 +37,7 @@ const InMatchScreen = () => {
       else {
         setDetectedPerson("")
       }
-    }, 100);
+    }, 300);
 
     return () => clearInterval(interval);
   }, []);

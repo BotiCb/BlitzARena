@@ -1,0 +1,11 @@
+dataset
+val
+venv
+.idea
+*.pt
+*.py~
+*.npy
+*.pyc
+**/*.pyc
+
+training_dataset
