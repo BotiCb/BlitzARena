@@ -108,7 +108,7 @@ const CameraView = forwardRef<any, CameraViewProps>(
     // );
     const paint = Skia.Paint();
     paint.setColor(Skia.Color("red"));
-    paint.setStrokeWidth(3);
+    paint.setStrokeWidth(6);
 
     const lastUpdateTime = useSharedValue<number>(Date.now());
 
@@ -118,7 +118,7 @@ const CameraView = forwardRef<any, CameraViewProps>(
         frame.render();
 
         if (plugin.state === "loaded" && plugin2.state === "loaded") {
-          runAtTargetFps(2, () => {
+          runAtTargetFps(4, () => {
             "worklet";
             let resized = resize(frame, {
               scale: {
@@ -139,17 +139,12 @@ const CameraView = forwardRef<any, CameraViewProps>(
             );
             outputs.length = 0;
             if (objDetection) {
-              // const resized3 = resize(frame, {
-              //   scale: {
-              //     width: plugin2.model.inputs[0].shape[1],
-              //     height: plugin2.model.inputs[0].shape[2],
-              //   },
-              //   pixelFormat: "rgb",
-              //   rotation: "90deg",
-              //   dataType: "float32",
-
-              //   crop: { x: 0, y: 0, width: frame.width, height: frame.height },
-              // });
+              const cropData = {
+                x: objDetection.boundingBox.x1 * frame.width,
+                y: objDetection.boundingBox.y2 * frame.height,
+                height: objDetection.boundingBox.w * frame.height,
+                width: objDetection.boundingBox.h * frame.width,
+              };
               const resized3 = resize2(frame, {
                 scale: {
                   width: plugin2.model.inputs[0].shape[1],
@@ -158,24 +153,21 @@ const CameraView = forwardRef<any, CameraViewProps>(
                 pixelFormat: "rgb",
                 rotation: "90deg",
                 dataType: "float32",
-
-                crop: {
-                  x: objDetection.boundingBox.yc * frame.width,
-                  y: (1 - objDetection.boundingBox.xc) * frame.height,
-                  width: objDetection.boundingBox.h * frame.width,
-                  height: objDetection.boundingBox.w * frame.height,
-                },
+                crop: cropData,
               });
 
               const outputs2 = plugin2.model.runSync([resized3]);
               const classification: Classification = decodeYoloClassifyOutput(
                 outputs2[0]
               );
+
               outputs2.length = 0;
-              detections.value = {
-                objectDetection: objDetection,
-                classification: classification,
-              };
+              if (objDetection) {
+                detections.value = {
+                  objectDetection: objDetection,
+                  classification: classification,
+                };
+              }
               lastUpdateTime.value = Date.now();
             }
 
@@ -208,7 +200,7 @@ const CameraView = forwardRef<any, CameraViewProps>(
         //console.log(lastDetectionsRef.current);
         //console.log(detections.value);
         const currentTime = Date.now();
-        if (currentTime - lastUpdateTime.value > 500) {
+        if (currentTime - lastUpdateTime.value > 700) {
           detections.value = null;
         }
         if (detections.value) {
@@ -220,7 +212,7 @@ const CameraView = forwardRef<any, CameraViewProps>(
 
     const format = useCameraFormat(device, [
       {
-        videoResolution: { height: 1500, width: 1500 * (16 / 9) },
+        videoResolution: { width: 2000, height: 2000 * (16 / 9) },
       },
     ]);
 

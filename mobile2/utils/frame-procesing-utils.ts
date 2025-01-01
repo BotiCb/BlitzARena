@@ -215,12 +215,7 @@ export function drawDetections(
 ) {
   "worklet";
 
-  frame.drawCircle(
-    detection.boundingBox.yc * frame.width,
-    (1 - detection.boundingBox.xc) * frame.height,
-    5,
-    paint
-  );
+ 
   // Draw bounding box
   frame.drawLine(
     detection.boundingBox.x1 * frame.width,
@@ -248,14 +243,6 @@ export function drawDetections(
     detection.boundingBox.y2 * frame.height,
     detection.boundingBox.x1 * frame.width,
     detection.boundingBox.y1 * frame.height,
-    paint
-  );
-  frame.drawLine(
-    detection.boundingBox.yc * frame.width,
-    (1 - detection.boundingBox.xc) * frame.height,
-    detection.boundingBox.yc * frame.width +
-      (detection.boundingBox.h * frame.width) / 2,
-    (1 - detection.boundingBox.xc) * frame.height,
     paint
   );
 
