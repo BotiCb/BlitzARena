@@ -4,6 +4,10 @@ import {
   Classification,
   ObjectDetection,
   Keypoints,
+  BODY_PART,
+  Point,
+  KEYPOINTS,
+
 } from "./types";
 import RNFS from "react-native-fs";
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
@@ -39,11 +43,6 @@ const keypointNames = [
   "leftAnkle",
   "rightAnkle",
 ];
-
-function sigmoid(x: number): number {
-  "worklet";
-  return 1 / (1 + Math.exp(-x));
-}
 
 export function nonMaximumSuppression(
   detections: ObjectDetection[],
@@ -97,7 +96,7 @@ function getClosestDetectionToCenter(
   "worklet";
   let closestDetection = null;
   let closestDistance = Infinity;
-  if(detections.length === 1) return detections[0];
+  if (detections.length === 1) return detections[0];
 
   for (const detection of detections) {
     const distance = Math.sqrt(
@@ -142,15 +141,17 @@ export function decodeYoloPoseOutput(
       const keypointConfidence =
         outputTensor[0][j * numDetections + i + 2 * numDetections];
       const keypointIndex = Math.floor((j - 5) / 3);
-      const keypointName = MOVENET_CONSTANTS.KEYPONTS[keypointIndex];
+      
 
       if (keypointConfidence < 0.5) {
         continue;
       }
       keypoints[keypointIndex] = {
-        name: keypointName,
-        x,
-        y: 1 - y,
+        name: MOVENET_CONSTANTS.KEYPONTS[keypointIndex],
+        coord: {
+          x,
+          y: 1 - y,
+        },
         confidence: keypointConfidence,
       };
     }
@@ -215,7 +216,6 @@ export function drawDetections(
 ) {
   "worklet";
 
- 
   // Draw bounding box
   frame.drawLine(
     detection.boundingBox.x1 * frame.width,
@@ -260,10 +260,10 @@ export function drawDetections(
         end.confidence > MOVENET_CONSTANTS.TRESHOLD
       ) {
         frame.drawLine(
-          start.x * frame.width,
-          start.y * frame.height,
-          end.x * frame.width,
-          end.y * frame.height,
+          start.coord.x * frame.width,
+          start.coord.y * frame.height,
+          end.coord.x * frame.width,
+          end.coord.y * frame.height,
           paint
         );
       }
@@ -271,4 +271,65 @@ export function drawDetections(
   }
 }
 
+export function isPointInRectangle(rectPoints: Point[], fixedPoint: Point): boolean {
+  "worklet";
+  /**
+   * Helper function to calculate the cross product of two vectors
+   */
+  const crossProduct = (v1: Point, v2: Point): number => {
+    return v1.x * v2.y - v1.y * v2.x;
+  };
 
+  const n = rectPoints.length;
+  let prevSign: boolean | null = null;
+
+  for (let i = 0; i < n; i++) {
+    const current = rectPoints[i];
+    const next = rectPoints[(i + 1) % n]; // Wrap around to the first vertex
+
+    // Calculate edge vector and vector to the fixed point
+    const edgeVector: Point = { x: next.x - current.x, y: next.y - current.y };
+    const pointVector: Point = { x: fixedPoint.x - current.x, y: fixedPoint.y - current.y };
+
+    // Compute the cross product
+    const cp = crossProduct(pointVector, edgeVector);
+
+    // Determine the sign of the cross product
+    const currentSign = cp > 0;
+    if (prevSign === null) {
+      prevSign = currentSign;
+    } else if (prevSign !== currentSign) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// get the body part which is in the middle of the frame
+export function getHitBodyPartFromKeypoints(keypoints: Keypoints | null): BODY_PART  {
+  "worklet";
+  if(keypoints === null || Object.keys(keypoints).length === 0) return BODY_PART.NOTHING;
+
+
+  if(keypoints[KEYPOINTS.LEFT_SHOULDER] && keypoints[KEYPOINTS.RIGHT_SHOULDER] && keypoints[KEYPOINTS.LEFT_HIP] && keypoints[KEYPOINTS.RIGHT_HIP]){
+    const chestCoordinates = [
+      keypoints[KEYPOINTS.LEFT_SHOULDER].coord,
+      keypoints[KEYPOINTS.RIGHT_SHOULDER].coord,
+      keypoints[KEYPOINTS.RIGHT_HIP].coord,
+      keypoints[KEYPOINTS.LEFT_HIP].coord,
+    ];
+      console.log(chestCoordinates);
+      if( isPointInRectangle(chestCoordinates, {x: 0.5, y: 0.5})){
+        return BODY_PART.CHEST;
+      }
+  
+  
+ 
+  }
+
+ 
+
+return BODY_PART.NOTHING;
+
+}

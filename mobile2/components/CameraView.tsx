@@ -36,6 +36,7 @@ import {
   decodeYoloPoseOutput,
   drawDetections,
   decodeYoloClassifyOutput,
+  getHitBodyPartFromKeypoints,
 } from "../utils/frame-procesing-utils";
 
 import { Classification, Detection, ObjectDetection } from "../utils/types";
@@ -162,10 +163,14 @@ const CameraView = forwardRef<any, CameraViewProps>(
               );
 
               outputs2.length = 0;
+
+
               if (objDetection) {
+                //console.log(objDetection.keypoints );
                 detections.value = {
                   objectDetection: objDetection,
                   classification: classification,
+                  bodyPart: getHitBodyPartFromKeypoints(objDetection.keypoints),
                 };
               }
               lastUpdateTime.value = Date.now();
@@ -203,6 +208,7 @@ const CameraView = forwardRef<any, CameraViewProps>(
         if (currentTime - lastUpdateTime.value > 700) {
           detections.value = null;
         }
+        frame.drawCircle(frame.width / 2, frame.height / 2, 3, paint);
         if (detections.value) {
           drawDetections(frame, detections.value.objectDetection, paint);
         }
@@ -239,7 +245,7 @@ const CameraView = forwardRef<any, CameraViewProps>(
             isActive={true}
             frameProcessor={frameProcessor}
             pixelFormat="yuv"
-            format={format}
+           // format={format}
             outputOrientation={"device"} // format={format}
           />
         ) : (

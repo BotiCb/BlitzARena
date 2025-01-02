@@ -31,7 +31,8 @@ const InMatchScreen = () => {
     const interval = setInterval(() => {
       if(detections.value) {
         setDetectedPerson(
-          people[detections.value.classification.id] + " " + detections.value.classification.confidenceAdvantage
+          people[detections.value.classification.id] + " " + detections.value.classification.confidenceAdvantage + " " +
+          detections.value.bodyPart.toString() + " "
         )
       }
       else {
