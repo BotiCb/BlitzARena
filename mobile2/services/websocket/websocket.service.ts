@@ -20,7 +20,7 @@ class WebSocketService {
     this.ws = new WebSocket(url);
 
     this.ws.onopen = () => {
-      console.log('WebSocket connected');
+      console.log("WebSocket connected");
       this.reconnectAttempts = 0; // Reset the reconnect attempts on successful connection
     };
 
@@ -30,18 +30,18 @@ class WebSocketService {
     };
 
     this.ws.onerror = (error: Event) => {
-      console.error('WebSocket error:', error);
+      console.error("WebSocket error:", error);
     };
 
     this.ws.onclose = (event: CloseEvent) => {
-      console.log('WebSocket connection closed:', event.reason);
+      console.log("WebSocket connection closed:", event.reason);
       this.ws = null;
 
       // Attempt reconnection if the closure was abnormal (not a manual close)
       if (!event.wasClean && this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnect();
       } else {
-        console.warn('Max reconnect attempts reached or connection closed cleanly');
+        console.warn("Max reconnect attempts reached or connection closed cleanly");
       }
     };
 
@@ -53,9 +53,9 @@ class WebSocketService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       const messageString = JSON.stringify(message);
       this.ws.send(messageString);
-      console.log('Sent message:', message.type);
+      console.log("Sent message:", message.type);
     } else {
-      console.error('WebSocket is not connected');
+      console.error("WebSocket is not connected");
     }
   }
 
@@ -73,9 +73,9 @@ class WebSocketService {
   close(): void {
     if (this.ws) {
       this.ws.close();
-      console.log('WebSocket closed manually');
+      console.log("WebSocket closed manually");
     } else {
-      console.warn('WebSocket is not connected');
+      console.warn("WebSocket is not connected");
     }
   }
 
@@ -88,10 +88,10 @@ class WebSocketService {
       if (this.messageHandlers[type]) {
         this.messageHandlers[type](parsedMessage);
       } else {
-        console.log('No handler registered for message type:', type);
+        console.log("No handler registered for message type:", type);
       }
     } catch (error) {
-      console.error('Error parsing message:', error);
+      console.error("Error parsing message:", error);
     }
   }
 
@@ -104,7 +104,7 @@ class WebSocketService {
       if (this.url) {
         this.connect(this.url); // Reconnect using the stored URL
       } else {
-        console.error('Reconnect failed: URL is not stored');
+        console.error("Reconnect failed: URL is not stored");
       }
     }, this.reconnectDelay);
   }

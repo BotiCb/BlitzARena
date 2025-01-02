@@ -15,10 +15,7 @@ import {
 import { Skia } from "@shopify/react-native-skia";
 import { ObjectDetection } from "@/utils/types";
 import { TensorflowModel, useTensorflowModel } from "react-native-fast-tflite";
-import {
-  decodeYoloPoseOutput,
-  drawDetections,
-} from "@/utils/frame-procesing-utils";
+import { decodeYoloPoseOutput, drawDetections } from "@/utils/frame-procesing-utils";
 import { TrainingImage } from "@/services/websocket/utils/types";
 import { useSharedValue } from "react-native-worklets-core";
 import ImageEditor from "@react-native-community/image-editor";
@@ -65,7 +62,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
         while (Date.now() - lastUpdateTime.value > 10) {
           // console.log(Date.now() - lastUpdateTime.value + " delaying");
           // Wait for 10ms before taking the photo
-          await new Promise((resolve) => setTimeout(resolve, 3));
+          await new Promise(resolve => setTimeout(resolve, 3));
           if (!detections.value || !takePhotos) {
             console.log("Skipping photo");
             return;
@@ -103,10 +100,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
                 quality: 1.0,
               };
             }
-            const croppedPhoto = await ImageEditor.cropImage(
-              "file://" + photo.path,
-              cropOptions
-            );
+            const croppedPhoto = await ImageEditor.cropImage("file://" + photo.path, cropOptions);
 
             const base64Image = await RNFS.readFile(croppedPhoto.uri, "base64");
             //delete the photo file after using it
@@ -142,7 +136,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
 
   const plugin = useTensorflowModel(
     require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
-    delegate
+    delegate,
   );
 
   useEffect(() => {
@@ -150,17 +144,13 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
 
     if (model == null) return;
 
-    console.log(
-      `Model: ${model.inputs.map(tensorToString)} -> ${model.outputs.map(
-        tensorToString
-      )}`
-    );
+    console.log(`Model: ${model.inputs.map(tensorToString)} -> ${model.outputs.map(tensorToString)}`);
   }, [plugin]);
 
   const detections = useSharedValue<ObjectDetection | null>(null);
 
   const frameProcessor = useSkiaFrameProcessor(
-    (frame) => {
+    frame => {
       "worklet";
       frame.render();
       if (plugin.state === "loaded") {
@@ -176,11 +166,11 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
 
           const outputs = plugin.model.runSync([resized]);
 
-         const objDetection: ObjectDetection | null = decodeYoloPoseOutput(outputs, plugin.model.outputs[0].shape[2]);
-        if(objDetection){
-          detections.value = objDetection;
-          lastUpdateTime.value = Date.now();
-        }
+          const objDetection: ObjectDetection | null = decodeYoloPoseOutput(outputs, plugin.model.outputs[0].shape[2]);
+          if (objDetection) {
+            detections.value = objDetection;
+            lastUpdateTime.value = Date.now();
+          }
         });
       }
 
@@ -188,19 +178,17 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
       if (currentTime - lastUpdateTime.value > 500) {
         detections.value = null;
       }
-      if(detections.value){
+      if (detections.value) {
         drawDetections(frame, detections.value, paint);
       }
     },
-    [plugin, detections]
+    [plugin, detections],
   );
 
   if (!device || !hasPermission) {
     return (
       <View style={styles.permissionContainer}>
-        <Text style={styles.permissionText}>
-          Camera permission is required.
-        </Text>
+        <Text style={styles.permissionText}>Camera permission is required.</Text>
       </View>
     );
   }

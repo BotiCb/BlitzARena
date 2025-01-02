@@ -16,27 +16,23 @@ const InMatchScreen = () => {
 
   const plugin = useTensorflowModel(
     require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
-    delegate
+    delegate,
   );
-  const plugin2 = useTensorflowModel(
-    require("../assets/models/best_float32.tflite"),
-    delegate
-  );
-  const people = [ "toni","bibi", "pali", "boti", "zsuzsi"];
+  const plugin2 = useTensorflowModel(require("../assets/models/best_float32.tflite"), delegate);
+  const people = ["toni", "bibi", "pali", "boti", "zsuzsi"];
+  const bodyParts = ["head", "chest", "arm", "leg", "nothing"];
   const [detectedPerson, setDetectedPerson] = useState<String>("");
   const detections = useSharedValue<Detection | null>(null);
 
-
   useEffect(() => {
     const interval = setInterval(() => {
-      if(detections.value) {
+      if (detections.value) {
         setDetectedPerson(
           people[detections.value.classification.id] + " " + detections.value.classification.confidenceAdvantage + " " +
-          detections.value.bodyPart.toString() + " "
-        )
-      }
-      else {
-        setDetectedPerson("")
+          bodyParts[detections.value.bodyPart] + " ",
+        );
+      } else {
+        setDetectedPerson("");
       }
     }, 300);
 
@@ -46,11 +42,7 @@ const InMatchScreen = () => {
   return (
     <View style={{ flex: 1 }}>
       <Text>{detectedPerson}</Text>
-      <CameraView
-        ref={cameraRef}
-        plugins={[plugin, plugin2]}
-        detections={detections}
-      />
+      <CameraView ref={cameraRef} plugins={[plugin, plugin2]} detections={detections} />
       {/* {pose && <Skeleton pose={pose} width={width} height={height} />} */}
       {/* <Button
         title="Go to Home"

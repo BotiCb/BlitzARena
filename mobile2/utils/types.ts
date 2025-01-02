@@ -53,7 +53,7 @@ export type Detection = {
   objectDetection: ObjectDetection;
   classification: Classification;
   bodyPart: BODY_PART;
-}
+};
 
 export enum KEYPOINTS {
   NOSE = 0,
@@ -61,29 +61,26 @@ export enum KEYPOINTS {
   RIGHT_EYE = 2,
   LEFT_EAR = 3,
   RIGHT_EAR = 4,
-  LEFT_SHOULDER = 5,  
+  LEFT_SHOULDER = 5,
   RIGHT_SHOULDER = 6,
   LEFT_ELBOW = 7,
   RIGHT_ELBOW = 8,
-  LEFT_WRIST = 9, 
+  LEFT_WRIST = 9,
   RIGHT_WRIST = 10,
   LEFT_HIP = 11,
   RIGHT_HIP = 12,
   LEFT_KNEE = 13,
   RIGHT_KNEE = 14,
   LEFT_ANKLE = 15,
-  RIGHT_ANKLE = 16
+  RIGHT_ANKLE = 16,
 }
 
-
-
-
-export enum BODY_PART{
+export enum BODY_PART {
   HEAD,
   CHEST,
   ARM,
   LEG,
-  NOTHING
+  NOTHING,
 }
 
 export type Point = {

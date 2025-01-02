@@ -1,26 +1,10 @@
 import { DrawableFrame, Frame } from "react-native-vision-camera";
-import {
-  BoundingBox,
-  Classification,
-  ObjectDetection,
-  Keypoints,
-  BODY_PART,
-  Point,
-  KEYPOINTS,
-
-} from "./types";
+import { BoundingBox, Classification, ObjectDetection, Keypoints, BODY_PART, Point, KEYPOINTS } from "./types";
 import RNFS from "react-native-fs";
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
-import {
-  Skia,
-  SkPaint,
-} from "@shopify/react-native-skia/lib/typescript/src/skia/types";
+import { Skia, SkPaint } from "@shopify/react-native-skia/lib/typescript/src/skia/types";
 import { worklet } from "react-native-worklets-core";
-import {
-  TrainingImage,
-  WebSocketMessageType,
-  WebSocketMsg,
-} from "@/services/websocket/utils/types";
+import { TrainingImage, WebSocketMessageType, WebSocketMsg } from "@/services/websocket/utils/types";
 import websocketService from "@/services/websocket/websocket.service";
 
 // Keypoint names (you can expand or adjust these based on your model)
@@ -44,10 +28,7 @@ const keypointNames = [
   "rightAnkle",
 ];
 
-export function nonMaximumSuppression(
-  detections: ObjectDetection[],
-  iouThreshold = 0.5
-): ObjectDetection[] {
+export function nonMaximumSuppression(detections: ObjectDetection[], iouThreshold = 0.5): ObjectDetection[] {
   "worklet";
 
   // Helper function to calculate IoU
@@ -82,17 +63,13 @@ export function nonMaximumSuppression(
     finalDetections.push(current);
 
     // Filter out detections with IoU >= threshold
-    detections = detections.filter(
-      (det) => calculateIoU(current.boundingBox, det.boundingBox) < iouThreshold
-    );
+    detections = detections.filter(det => calculateIoU(current.boundingBox, det.boundingBox) < iouThreshold);
   }
 
   return finalDetections;
 }
 
-function getClosestDetectionToCenter(
-  detections: ObjectDetection[]
-): ObjectDetection | null {
+function getClosestDetectionToCenter(detections: ObjectDetection[]): ObjectDetection | null {
   "worklet";
   let closestDetection = null;
   let closestDistance = Infinity;
@@ -100,8 +77,7 @@ function getClosestDetectionToCenter(
 
   for (const detection of detections) {
     const distance = Math.sqrt(
-      Math.pow(detection.boundingBox.xc - 0.5, 2) +
-        Math.pow(detection.boundingBox.yc - 0.5, 2)
+      Math.pow(detection.boundingBox.xc - 0.5, 2) + Math.pow(detection.boundingBox.yc - 0.5, 2),
     );
 
     if (distance < closestDistance) {
@@ -113,10 +89,7 @@ function getClosestDetectionToCenter(
   return closestDetection;
 }
 
-export function decodeYoloPoseOutput(
-  outputTensor: any[],
-  numDetections: number
-): ObjectDetection | null {
+export function decodeYoloPoseOutput(outputTensor: any[], numDetections: number): ObjectDetection | null {
   "worklet";
   const detections: ObjectDetection[] = [];
 
@@ -138,10 +111,8 @@ export function decodeYoloPoseOutput(
     for (let j = 5; j < 56; j += 3) {
       const y = outputTensor[0][j * numDetections + i];
       const x = outputTensor[0][j * numDetections + i + numDetections];
-      const keypointConfidence =
-        outputTensor[0][j * numDetections + i + 2 * numDetections];
+      const keypointConfidence = outputTensor[0][j * numDetections + i + 2 * numDetections];
       const keypointIndex = Math.floor((j - 5) / 3);
-      
 
       if (keypointConfidence < 0.5) {
         continue;
@@ -179,9 +150,7 @@ export function decodeYoloPoseOutput(
 export function decodeYoloClassifyOutput(array: any): Classification {
   "worklet";
   if (array.length < 2) {
-    throw new Error(
-      "Array must have at least two elements to compute confidence advantage."
-    );
+    throw new Error("Array must have at least two elements to compute confidence advantage.");
   }
 
   let maxIndex = 0;
@@ -209,11 +178,7 @@ export function decodeYoloClassifyOutput(array: any): Classification {
   };
 }
 
-export function drawDetections(
-  frame: DrawableFrame,
-  detection: ObjectDetection,
-  paint: SkPaint
-) {
+export function drawDetections(frame: DrawableFrame, detection: ObjectDetection, paint: SkPaint) {
   "worklet";
 
   // Draw bounding box
@@ -222,28 +187,28 @@ export function drawDetections(
     detection.boundingBox.y1 * frame.height,
     detection.boundingBox.x2 * frame.width,
     detection.boundingBox.y1 * frame.height,
-    paint
+    paint,
   );
   frame.drawLine(
     detection.boundingBox.x2 * frame.width,
     detection.boundingBox.y1 * frame.height,
     detection.boundingBox.x2 * frame.width,
     detection.boundingBox.y2 * frame.height,
-    paint
+    paint,
   );
   frame.drawLine(
     detection.boundingBox.x2 * frame.width,
     detection.boundingBox.y2 * frame.height,
     detection.boundingBox.x1 * frame.width,
     detection.boundingBox.y2 * frame.height,
-    paint
+    paint,
   );
   frame.drawLine(
     detection.boundingBox.x1 * frame.width,
     detection.boundingBox.y2 * frame.height,
     detection.boundingBox.x1 * frame.width,
     detection.boundingBox.y1 * frame.height,
-    paint
+    paint,
   );
 
   // Draw keypoints
@@ -264,72 +229,9 @@ export function drawDetections(
           start.coord.y * frame.height,
           end.coord.x * frame.width,
           end.coord.y * frame.height,
-          paint
+          paint,
         );
       }
     }
   }
-}
-
-export function isPointInRectangle(rectPoints: Point[], fixedPoint: Point): boolean {
-  "worklet";
-  /**
-   * Helper function to calculate the cross product of two vectors
-   */
-  const crossProduct = (v1: Point, v2: Point): number => {
-    return v1.x * v2.y - v1.y * v2.x;
-  };
-
-  const n = rectPoints.length;
-  let prevSign: boolean | null = null;
-
-  for (let i = 0; i < n; i++) {
-    const current = rectPoints[i];
-    const next = rectPoints[(i + 1) % n]; // Wrap around to the first vertex
-
-    // Calculate edge vector and vector to the fixed point
-    const edgeVector: Point = { x: next.x - current.x, y: next.y - current.y };
-    const pointVector: Point = { x: fixedPoint.x - current.x, y: fixedPoint.y - current.y };
-
-    // Compute the cross product
-    const cp = crossProduct(pointVector, edgeVector);
-
-    // Determine the sign of the cross product
-    const currentSign = cp > 0;
-    if (prevSign === null) {
-      prevSign = currentSign;
-    } else if (prevSign !== currentSign) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-// get the body part which is in the middle of the frame
-export function getHitBodyPartFromKeypoints(keypoints: Keypoints | null): BODY_PART  {
-  "worklet";
-  if(keypoints === null || Object.keys(keypoints).length === 0) return BODY_PART.NOTHING;
-
-
-  if(keypoints[KEYPOINTS.LEFT_SHOULDER] && keypoints[KEYPOINTS.RIGHT_SHOULDER] && keypoints[KEYPOINTS.LEFT_HIP] && keypoints[KEYPOINTS.RIGHT_HIP]){
-    const chestCoordinates = [
-      keypoints[KEYPOINTS.LEFT_SHOULDER].coord,
-      keypoints[KEYPOINTS.RIGHT_SHOULDER].coord,
-      keypoints[KEYPOINTS.RIGHT_HIP].coord,
-      keypoints[KEYPOINTS.LEFT_HIP].coord,
-    ];
-      console.log(chestCoordinates);
-      if( isPointInRectangle(chestCoordinates, {x: 0.5, y: 0.5})){
-        return BODY_PART.CHEST;
-      }
-  
-  
- 
-  }
-
- 
-
-return BODY_PART.NOTHING;
-
 }

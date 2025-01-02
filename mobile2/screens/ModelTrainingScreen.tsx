@@ -23,9 +23,7 @@ const ModelTrainingScreen = () => {
       console.log("Received training_ready_for_player message");
       setTakePhotos(false);
     };
-    modelTrainingWebsocketService.setTrainingReadyForPlayerEventListener(
-      handleTrainingReady
-    );
+    modelTrainingWebsocketService.setTrainingReadyForPlayerEventListener(handleTrainingReady);
   }, []);
 
   // Function to send photos asynchronously
@@ -58,23 +56,11 @@ const ModelTrainingScreen = () => {
       {!takePhotos ? (
         <Button title="Take Photos" onPress={() => setTakePhotos(true)} />
       ) : (
-        <Button
-          title="Stop taking photos"
-          onPress={() => setTakePhotos(false)}
-        />
+        <Button title="Stop taking photos" onPress={() => setTakePhotos(false)} />
       )}
-      <Button
-        title="Next player "
-        onPress={() => setPlayerNumber(playerNumber + 1)}
-      />
-      <Button
-        title="Previous player "
-        onPress={() => setPlayerNumber(playerNumber - 1)}
-      />
-      <Button
-        title="Start training"
-        onPress={() => modelTrainingWebsocketService.sendStartModelTraining()}
-      />
+      <Button title="Next player " onPress={() => setPlayerNumber(playerNumber + 1)} />
+      <Button title="Previous player " onPress={() => setPlayerNumber(playerNumber - 1)} />
+      <Button title="Start training" onPress={() => modelTrainingWebsocketService.sendStartModelTraining()} />
       <TrainingCameraView
         takePhotos={takePhotos}
         handleImageCapture={handleImageCapture}
