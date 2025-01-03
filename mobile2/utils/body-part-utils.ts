@@ -285,6 +285,20 @@ function isHandHit(keypoints: Keypoints): boolean {
   return false;
 }
 
+function isHeadHit(keypoints: Keypoints): boolean {
+  "worklet";
+
+  if (keypoints[KEYPOINTS.NOSE]?.coord && keypoints[KEYPOINTS.LEFT_SHOULDER]?.coord) {
+    const noseToShoulderDistance = distance(keypoints[KEYPOINTS.NOSE].coord, keypoints[KEYPOINTS.LEFT_SHOULDER].coord);
+    const headSize = noseToShoulderDistance;
+    console.log(headSize);
+    const isHeadHit = distance(keypoints[KEYPOINTS.NOSE].coord, { x: 0.5, y: 0.5 }) < headSize;
+    return isHeadHit;
+  }
+
+  return false;
+}
+
 export function getHitBodyPartFromKeypoints(
   keypoints: Keypoints | null,
   scopeCoordinates: Point = { x: 0.5, y: 0.5 },
@@ -298,12 +312,18 @@ export function getHitBodyPartFromKeypoints(
   if (keypoints === null || Object.keys(keypoints).length === 0) {
     return BODY_PART.NOTHING;
   }
+  console.log(keypoints[KEYPOINTS.NOSE]?.coord);
+
   if (isLegHit(keypoints)) {
     return BODY_PART.LEG;
   }
 
   if (isHandHit(keypoints)) {
     return BODY_PART.ARM;
+  }
+
+  if (isHeadHit(keypoints)) {
+    return BODY_PART.HEAD;
   }
   if (isChestHit(keypoints)) {
     return BODY_PART.CHEST;

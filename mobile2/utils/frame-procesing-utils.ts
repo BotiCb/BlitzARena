@@ -114,7 +114,7 @@ export function decodeYoloPoseOutput(outputTensor: any[], numDetections: number)
       const keypointConfidence = outputTensor[0][j * numDetections + i + 2 * numDetections];
       const keypointIndex = Math.floor((j - 5) / 3);
 
-      if (keypointConfidence < 0.5) {
+      if (keypointConfidence < 0.3) {
         continue;
       }
       keypoints[keypointIndex] = {

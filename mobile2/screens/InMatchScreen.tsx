@@ -1,4 +1,5 @@
 import CameraView from "@/components/CameraView";
+import { Scope } from "@/components/Scope";
 
 import Skeleton from "@/components/SkeletonView";
 import { Detection } from "@/utils/types";
@@ -28,7 +29,7 @@ const InMatchScreen = () => {
     const interval = setInterval(() => {
       if (detections.value) {
         setDetectedPerson(
-          people[detections.value.classification.id] + " " + detections.value.classification.confidenceAdvantage + " " +
+           people[detections.value.classification.id] + " " + detections.value.classification.confidenceAdvantage + " " +
           bodyParts[detections.value.bodyPart] + " ",
         );
       } else {
@@ -43,10 +44,8 @@ const InMatchScreen = () => {
     <View style={{ flex: 1 }}>
       <Text>{detectedPerson}</Text>
       <CameraView ref={cameraRef} plugins={[plugin, plugin2]} detections={detections} />
-      {/* {pose && <Skeleton pose={pose} width={width} height={height} />} */}
-      {/* <Button
-        title="Go to Home"
-      /> */}
+    
+      <Scope  />
     </View>
   );
 };
