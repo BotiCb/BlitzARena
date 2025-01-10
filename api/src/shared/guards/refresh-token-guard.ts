@@ -5,6 +5,7 @@ import { Request } from 'express';
 import { UserModel } from '../schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class RefreshTokenGuard implements CanActivate {
@@ -26,6 +27,13 @@ export class RefreshTokenGuard implements CanActivate {
       const user = await this.userModel.findOne({ _id: payload.id }).exec();
       if (!user) {
         throw new UnauthorizedException();
+      }
+      if (!user.refreshTokenHash) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+      const isMatch = token == user.refreshTokenHash;
+      if (!isMatch) {
+        throw new UnauthorizedException('Invalid refresh token');
       }
       request['user'] = user;
       request['token'] = token;

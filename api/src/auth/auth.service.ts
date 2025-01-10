@@ -39,7 +39,7 @@ export class AuthService {
       secret: config.get('auth.refreshTokenSecret'),
     });
 
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    const hashedRefreshToken = refreshToken;
     user.refreshTokenHash = hashedRefreshToken;
 
     user.lastLogin = new Date();
@@ -52,21 +52,28 @@ export class AuthService {
   }
 
   async refreshAccessToken(refreshToken: string, user: UserModel): Promise<AccessTokenDto> {
-    if (!user.refreshTokenHash) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-    const isMatch = await bcrypt.compare(refreshToken, user.refreshTokenHash);
-    if (!isMatch) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+    const payload = { email: user.email, id: user._id.toString() };
 
     // Generate a new access token
-    const newAccessToken = await this.jwtService.signAsync(
-      { email: user.email, id: user._id.toString() },
-      { expiresIn: '15m' }
-    );
+    const newAccessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '1m',
+      secret: config.get('auth.jwtSecret'),
+    });
 
-    return { access_token: newAccessToken };
+    const newRefreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '7d',
+      secret: config.get('auth.refreshTokenSecret'),
+    });
+    const hashedRefreshToken = newRefreshToken;
+    user.refreshTokenHash = hashedRefreshToken;
+
+    user.lastLogin = new Date();
+    await user.save();
+
+    return {
+      access_token: newAccessToken,
+      refresh_token: newRefreshToken,
+    };
   }
 
   async logout(user: UserModel): Promise<void> {
