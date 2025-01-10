@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
+    "@react-native-community/hooks": "^3.0.0",
     "@react-native-community/image-editor": "^4.2.1",
     "@react-navigation/native": "^6.0.2",
     "@shopify/react-native-skia": "^1.5.10",

@@ -8,12 +8,11 @@ import { useTensorflowModel } from "react-native-fast-tflite";
 
 const ModelTrainingScreen = () => {
   const [takePhotos, setTakePhotos] = useState(false);
-  const lastDetectionsRef = useRef<ObjectDetection[]>([]); // Prevent multiple send processes
+  const lastDetectionsRef = useRef<ObjectDetection[]>([]); 
   const [playerNumber, setPlayerNumber] = useState(0);
 
-  // Add photo to the queue
   const handleImageCapture = (trainingImage: TrainingImage) => {
-    modelTrainingWebsocketService.sendPhoto(trainingImage); // Trigger sending process
+    modelTrainingWebsocketService.sendPhoto(trainingImage);
   };
 
   useEffect(() => {
@@ -31,7 +30,6 @@ const ModelTrainingScreen = () => {
     delegate,
   );
 
-  // Function to send photos asynchronously
 
   return (
     <View style={{ flex: 1 }}>
@@ -47,7 +45,6 @@ const ModelTrainingScreen = () => {
       <TrainingCameraView
         takePhotos={takePhotos}
         handleImageCapture={handleImageCapture}
-        lastDetectionsRef={lastDetectionsRef}
         playerNumber={playerNumber}
         plugin={plugin}
       />

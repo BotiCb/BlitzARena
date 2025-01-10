@@ -11,6 +11,8 @@ import { Detection } from "../utils/types/detection-types";
 import { ISharedValue, useSharedValue, worklet, Worklets } from "react-native-worklets-core";
 import { Skia } from "@shopify/react-native-skia";
 import { InBattleFrameProcessor } from "@/services/frame-processing/frame-processors";
+import { useIsFocused } from "@react-navigation/native";
+import { useAppState } from "@react-native-community/hooks";
 
 function tensorToString(tensor: TensorflowModel["inputs"][number]): string {
   return `${tensor.dataType} [${tensor.shape}]`;
@@ -22,7 +24,12 @@ interface CameraViewProps {
 }
 
 const CameraView = forwardRef<any, CameraViewProps>(({ plugins, detections }, ref) => {
-  const device = useCameraDevices()[0]; // Using back camera as default
+  const device = useCameraDevices()[0];
+
+    const isFocused = useIsFocused();
+    const appState = useAppState();
+  
+    const isActive = isFocused && appState === "active";
 
   const { hasPermission, requestPermission } = useCameraPermission();
   if (!hasPermission) {
@@ -78,7 +85,7 @@ const CameraView = forwardRef<any, CameraViewProps>(({ plugins, detections }, re
         <Camera
           style={StyleSheet.absoluteFill}
           device={device}
-          isActive={true}
+          isActive={isActive}
           frameProcessor={InBattleFrameProcessor(plugin, plugin2, lastUpdateTime, detections)}
           pixelFormat="yuv"
           outputOrientation={"device"}

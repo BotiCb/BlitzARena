@@ -12,11 +12,12 @@ import { ImageCropData } from "@react-native-community/image-editor/lib/typescri
 import { trainingFrameProcessor } from "@/services/frame-processing/frame-processors";
 import { takeCroppedTrainingImage } from "@/services/frame-processing/training-camera-utils";
 import { TRAINING_CAMERA_CONSTANTS } from "@/utils/constants/frame-processing-constans";
+import { useIsFocused } from "@react-navigation/native";
+import { useAppState } from "@react-native-community/hooks";
 
 interface TrainingCameraViewProps {
   takePhotos: boolean;
   handleImageCapture: (trainingImage: TrainingImage) => void;
-  lastDetectionsRef: React.MutableRefObject<ObjectDetection[]>;
   playerNumber: number;
   plugin: TensorflowPlugin;
 }
@@ -27,10 +28,14 @@ function tensorToString(tensor: TensorflowModel["inputs"][number]): string {
 const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   takePhotos,
   handleImageCapture,
-  lastDetectionsRef,
   playerNumber,
   plugin,
 }) => {
+  const isFocused = useIsFocused();
+  const appState = useAppState();
+
+  const isActive = isFocused && appState === "active";
+
   const camera = useRef<Camera>(null);
   const device = useCameraDevices()[0];
   const { hasPermission, requestPermission } = useCameraPermission();
@@ -42,11 +47,10 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
 
   const format = useCameraFormat(device, [
     {
-      videoResolution: { 
+      videoResolution: {
         width: TRAINING_CAMERA_CONSTANTS.WIDTH,
-        height: TRAINING_CAMERA_CONSTANTS.HEIGHT 
+        height: TRAINING_CAMERA_CONSTANTS.HEIGHT,
       },
-      //photoResolution: { width: 4000, height: 4000*(3/4) },
     },
   ]);
   const lastUpdateTime = useSharedValue<number>(Date.now());
@@ -73,13 +77,14 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
           console.error("Error cropping image:", error);
         }
       }
-    }, TRAINING_CAMERA_CONSTANTS.TAKE_PHOTO_INTERVAL); // Capture photo every 500ms
+    }, TRAINING_CAMERA_CONSTANTS.TAKE_PHOTO_INTERVAL);
 
     return () => clearInterval(interval);
   }, [takePhotos, handleImageCapture, hasPermission]);
+
   const paint = Skia.Paint();
-  paint.setColor(Skia.Color("red"));
-  paint.setStrokeWidth(3);
+  paint.setColor(Skia.Color(TRAINING_CAMERA_CONSTANTS.PAINT_COLOR));
+  paint.setStrokeWidth(TRAINING_CAMERA_CONSTANTS.PAINT_STROKE_WIDTH);
 
   useEffect(() => {
     const model = plugin.model;
@@ -104,7 +109,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
       <Camera
         style={StyleSheet.absoluteFill}
         device={device}
-        isActive={true}
+        isActive={isActive}
         pixelFormat="yuv"
         outputOrientation="preview"
         photo={true}
