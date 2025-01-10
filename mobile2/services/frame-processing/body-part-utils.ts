@@ -1,6 +1,6 @@
-import { Point } from "react-native-vision-camera";
-import { Keypoints, KEYPOINTS, BODY_PART } from "../utils/types";
-
+import { BODY_PART_DETECTIONS_CONSTANTS } from "@/utils/constants/detection-constants";
+import { Keypoints, KEYPOINTS, BODY_PART } from "../../utils/types/detection-types";
+import { Point } from "../../utils/types/detection-types";
 function distance(p1: Point, p2: Point): number {
   "worklet";
   return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
@@ -8,9 +8,7 @@ function distance(p1: Point, p2: Point): number {
 
 export function isPointInRectangle(rectPoints: Point[], fixedPoint: Point): boolean {
   "worklet";
-  /**
-   * Helper function to calculate the cross product of two vectors
-   */
+
   const crossProduct = (v1: Point, v2: Point): number => {
     return v1.x * v2.y - v1.y * v2.x;
   };
@@ -20,19 +18,16 @@ export function isPointInRectangle(rectPoints: Point[], fixedPoint: Point): bool
 
   for (let i = 0; i < n; i++) {
     const current = rectPoints[i];
-    const next = rectPoints[(i + 1) % n]; // Wrap around to the first vertex
+    const next = rectPoints[(i + 1) % n];
 
-    // Calculate edge vector and vector to the fixed point
     const edgeVector: Point = { x: next.x - current.x, y: next.y - current.y };
     const pointVector: Point = {
       x: fixedPoint.x - current.x,
       y: fixedPoint.y - current.y,
     };
 
-    // Compute the cross product
     const cp = crossProduct(pointVector, edgeVector);
 
-    // Determine the sign of the cross product
     const currentSign = cp > 0;
     if (prevSign === null) {
       prevSign = currentSign;
@@ -92,7 +87,7 @@ function isChestHit(keypoints: Keypoints): boolean {
       keypoints[KEYPOINTS.LEFT_HIP].coord,
     ];
 
-    if (isPointInRectangle(chestCoordinates, { x: 0.5, y: 0.5 })) {
+    if (isPointInRectangle(chestCoordinates, BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT)) {
       return true;
     }
   }
@@ -102,14 +97,14 @@ function isChestHit(keypoints: Keypoints): boolean {
     distanceFromTheLeftPart = distanceFromPointToSegment(
       keypoints[KEYPOINTS.LEFT_SHOULDER].coord,
       keypoints[KEYPOINTS.LEFT_HIP].coord,
-      { x: 0.5, y: 0.5 },
+      BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
     );
   }
 
   const isLeftPartHit =
     distanceFromTheLeftPart <
     (keypoints[KEYPOINTS.LEFT_SHOULDER]?.coord && keypoints[KEYPOINTS.LEFT_HIP]?.coord
-      ? distance(keypoints[KEYPOINTS.LEFT_SHOULDER].coord, keypoints[KEYPOINTS.LEFT_HIP].coord) * 0.28
+      ? distance(keypoints[KEYPOINTS.LEFT_SHOULDER].coord, keypoints[KEYPOINTS.LEFT_HIP].coord) * BODY_PART_DETECTIONS_CONSTANTS.CHEST_SIDES_PADDING
       : Infinity);
 
   let distanceFromTheRightPart = Infinity;
@@ -117,14 +112,14 @@ function isChestHit(keypoints: Keypoints): boolean {
     distanceFromTheRightPart = distanceFromPointToSegment(
       keypoints[KEYPOINTS.RIGHT_SHOULDER].coord,
       keypoints[KEYPOINTS.RIGHT_HIP].coord,
-      { x: 0.5, y: 0.5 },
+      BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
     );
   }
 
   const isRightPartHit =
     distanceFromTheRightPart <
     (keypoints[KEYPOINTS.RIGHT_SHOULDER]?.coord && keypoints[KEYPOINTS.RIGHT_HIP]?.coord
-      ? distance(keypoints[KEYPOINTS.RIGHT_SHOULDER].coord, keypoints[KEYPOINTS.RIGHT_HIP].coord) * 0.28
+      ? distance(keypoints[KEYPOINTS.RIGHT_SHOULDER].coord, keypoints[KEYPOINTS.RIGHT_HIP].coord) * BODY_PART_DETECTIONS_CONSTANTS.CHEST_SIDES_PADDING
       : Infinity);
 
   let distanceFromTheTopPart = Infinity;
@@ -132,14 +127,14 @@ function isChestHit(keypoints: Keypoints): boolean {
     distanceFromTheTopPart = distanceFromPointToSegment(
       keypoints[KEYPOINTS.LEFT_SHOULDER].coord,
       keypoints[KEYPOINTS.RIGHT_SHOULDER].coord,
-      { x: 0.5, y: 0.5 },
+      BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
     );
   }
 
   const isTopPartHit =
     distanceFromTheTopPart <
     (keypoints[KEYPOINTS.LEFT_SHOULDER]?.coord && keypoints[KEYPOINTS.RIGHT_SHOULDER]?.coord
-      ? distance(keypoints[KEYPOINTS.LEFT_SHOULDER].coord, keypoints[KEYPOINTS.RIGHT_SHOULDER].coord) * 0.28
+      ? distance(keypoints[KEYPOINTS.LEFT_SHOULDER].coord, keypoints[KEYPOINTS.RIGHT_SHOULDER].coord) * BODY_PART_DETECTIONS_CONSTANTS.CHEST_TOP_PADDING
       : Infinity);
 
   return isLeftPartHit || isRightPartHit || isTopPartHit;
@@ -153,14 +148,14 @@ function isLegHit(keypoints: Keypoints): boolean {
     distanceFromLeftUpperLeg = distanceFromPointToSegment(
       keypoints[KEYPOINTS.LEFT_HIP].coord,
       keypoints[KEYPOINTS.LEFT_KNEE].coord,
-      { x: 0.5, y: 0.5 },
+      BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
     );
   }
 
   const isLeftUpperLegHit =
     distanceFromLeftUpperLeg <
     (keypoints[KEYPOINTS.LEFT_HIP]?.coord && keypoints[KEYPOINTS.LEFT_KNEE]?.coord
-      ? distance(keypoints[KEYPOINTS.LEFT_HIP].coord, keypoints[KEYPOINTS.LEFT_KNEE].coord) * 0.28
+      ? distance(keypoints[KEYPOINTS.LEFT_HIP].coord, keypoints[KEYPOINTS.LEFT_KNEE].coord) * BODY_PART_DETECTIONS_CONSTANTS.UPPER_LEG_PADDING
       : Infinity);
 
   let distanceFromRightUpperLeg = Infinity;
@@ -168,14 +163,14 @@ function isLegHit(keypoints: Keypoints): boolean {
     distanceFromRightUpperLeg = distanceFromPointToSegment(
       keypoints[KEYPOINTS.RIGHT_HIP].coord,
       keypoints[KEYPOINTS.RIGHT_KNEE].coord,
-      { x: 0.5, y: 0.5 },
+      BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
     );
   }
 
   const isRightUpperLegHit =
     distanceFromRightUpperLeg <
     (keypoints[KEYPOINTS.RIGHT_HIP]?.coord && keypoints[KEYPOINTS.RIGHT_KNEE]?.coord
-      ? distance(keypoints[KEYPOINTS.RIGHT_HIP].coord, keypoints[KEYPOINTS.RIGHT_KNEE].coord) * 0.28
+      ? distance(keypoints[KEYPOINTS.RIGHT_HIP].coord, keypoints[KEYPOINTS.RIGHT_KNEE].coord) * BODY_PART_DETECTIONS_CONSTANTS.UPPER_LEG_PADDING
       : Infinity);
 
   let distanceFromLeftLowerLeg = Infinity;
@@ -183,14 +178,14 @@ function isLegHit(keypoints: Keypoints): boolean {
     distanceFromLeftLowerLeg = distanceFromPointToSegment(
       keypoints[KEYPOINTS.LEFT_KNEE].coord,
       keypoints[KEYPOINTS.LEFT_ANKLE].coord,
-      { x: 0.5, y: 0.5 },
+      BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
     );
   }
 
   const isLeftLowerLegHit =
     distanceFromLeftLowerLeg <
     (keypoints[KEYPOINTS.LEFT_KNEE]?.coord && keypoints[KEYPOINTS.LEFT_ANKLE]?.coord
-      ? distance(keypoints[KEYPOINTS.LEFT_KNEE].coord, keypoints[KEYPOINTS.LEFT_ANKLE].coord) * 0.28
+      ? distance(keypoints[KEYPOINTS.LEFT_KNEE].coord, keypoints[KEYPOINTS.LEFT_ANKLE].coord) * BODY_PART_DETECTIONS_CONSTANTS.LOWER_LEG_PADDING
       : Infinity);
 
   let distanceFromRightLowerLeg = Infinity;
@@ -198,14 +193,14 @@ function isLegHit(keypoints: Keypoints): boolean {
     distanceFromRightLowerLeg = distanceFromPointToSegment(
       keypoints[KEYPOINTS.RIGHT_KNEE].coord,
       keypoints[KEYPOINTS.RIGHT_ANKLE].coord,
-      { x: 0.5, y: 0.5 },
+      BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
     );
   }
 
   const isRightLowerLegHit =
     distanceFromRightLowerLeg <
     (keypoints[KEYPOINTS.RIGHT_KNEE]?.coord && keypoints[KEYPOINTS.RIGHT_ANKLE]?.coord
-      ? distance(keypoints[KEYPOINTS.RIGHT_KNEE].coord, keypoints[KEYPOINTS.RIGHT_ANKLE].coord) * 0.28
+      ? distance(keypoints[KEYPOINTS.RIGHT_KNEE].coord, keypoints[KEYPOINTS.RIGHT_ANKLE].coord) * BODY_PART_DETECTIONS_CONSTANTS.LOWER_LEG_PADDING
       : Infinity);
 
   if (isLeftUpperLegHit || isRightUpperLegHit || isLeftLowerLegHit || isRightLowerLegHit) {
@@ -223,14 +218,14 @@ function isHandHit(keypoints: Keypoints): boolean {
     distanceFromLeftUpperArm = distanceFromPointToSegment(
       keypoints[KEYPOINTS.LEFT_SHOULDER].coord,
       keypoints[KEYPOINTS.LEFT_ELBOW].coord,
-      { x: 0.5, y: 0.5 },
+      BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
     );
   }
 
   const isLeftUpperArmHit =
     distanceFromLeftUpperArm <
     (keypoints[KEYPOINTS.LEFT_SHOULDER]?.coord && keypoints[KEYPOINTS.LEFT_ELBOW]?.coord
-      ? distance(keypoints[KEYPOINTS.LEFT_SHOULDER].coord, keypoints[KEYPOINTS.LEFT_ELBOW].coord) * 0.28
+      ? distance(keypoints[KEYPOINTS.LEFT_SHOULDER].coord, keypoints[KEYPOINTS.LEFT_ELBOW].coord) * BODY_PART_DETECTIONS_CONSTANTS.UPPER_ARM_PADDING
       : Infinity);
 
   let distanceFromRightUpperArm = Infinity;
@@ -238,14 +233,14 @@ function isHandHit(keypoints: Keypoints): boolean {
     distanceFromRightUpperArm = distanceFromPointToSegment(
       keypoints[KEYPOINTS.RIGHT_SHOULDER].coord,
       keypoints[KEYPOINTS.RIGHT_ELBOW].coord,
-      { x: 0.5, y: 0.5 },
+      BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
     );
   }
 
   const isRightUpperArmHit =
     distanceFromRightUpperArm <
     (keypoints[KEYPOINTS.RIGHT_SHOULDER]?.coord && keypoints[KEYPOINTS.RIGHT_ELBOW]?.coord
-      ? distance(keypoints[KEYPOINTS.RIGHT_SHOULDER].coord, keypoints[KEYPOINTS.RIGHT_ELBOW].coord) * 0.28
+      ? distance(keypoints[KEYPOINTS.RIGHT_SHOULDER].coord, keypoints[KEYPOINTS.RIGHT_ELBOW].coord) * BODY_PART_DETECTIONS_CONSTANTS.UPPER_ARM_PADDING
       : Infinity);
 
   let distanceFromLeftLowerArm = Infinity;
@@ -253,14 +248,14 @@ function isHandHit(keypoints: Keypoints): boolean {
     distanceFromLeftLowerArm = distanceFromPointToSegment(
       keypoints[KEYPOINTS.LEFT_ELBOW].coord,
       keypoints[KEYPOINTS.LEFT_WRIST].coord,
-      { x: 0.5, y: 0.5 },
+      BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
     );
   }
 
   const isLeftLowerArmHit =
     distanceFromLeftLowerArm <
     (keypoints[KEYPOINTS.LEFT_ELBOW]?.coord && keypoints[KEYPOINTS.LEFT_WRIST]?.coord
-      ? distance(keypoints[KEYPOINTS.LEFT_ELBOW].coord, keypoints[KEYPOINTS.LEFT_WRIST].coord) * 0.28
+      ? distance(keypoints[KEYPOINTS.LEFT_ELBOW].coord, keypoints[KEYPOINTS.LEFT_WRIST].coord) * BODY_PART_DETECTIONS_CONSTANTS.LOWER_ARM_PADDING
       : Infinity);
 
   let distanceFromRightLowerArm = Infinity;
@@ -268,14 +263,14 @@ function isHandHit(keypoints: Keypoints): boolean {
     distanceFromRightLowerArm = distanceFromPointToSegment(
       keypoints[KEYPOINTS.RIGHT_ELBOW].coord,
       keypoints[KEYPOINTS.RIGHT_WRIST].coord,
-      { x: 0.5, y: 0.5 },
+      BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
     );
   }
 
   const isRightLowerArmHit =
     distanceFromRightLowerArm <
     (keypoints[KEYPOINTS.RIGHT_ELBOW]?.coord && keypoints[KEYPOINTS.RIGHT_WRIST]?.coord
-      ? distance(keypoints[KEYPOINTS.RIGHT_ELBOW].coord, keypoints[KEYPOINTS.RIGHT_WRIST].coord) * 0.28
+      ? distance(keypoints[KEYPOINTS.RIGHT_ELBOW].coord, keypoints[KEYPOINTS.RIGHT_WRIST].coord) * BODY_PART_DETECTIONS_CONSTANTS.LOWER_ARM_PADDING
       : Infinity);
 
   if (isLeftUpperArmHit || isRightUpperArmHit || isLeftLowerArmHit || isRightLowerArmHit) {
@@ -291,7 +286,7 @@ function isHeadHit(keypoints: Keypoints): boolean {
   if (keypoints[KEYPOINTS.NOSE]?.coord && keypoints[KEYPOINTS.LEFT_SHOULDER]?.coord) {
     const noseToShoulderDistance = distance(keypoints[KEYPOINTS.NOSE].coord, keypoints[KEYPOINTS.LEFT_SHOULDER].coord);
     const headSize = noseToShoulderDistance;
-    const isHeadHit = distance(keypoints[KEYPOINTS.NOSE].coord, { x: 0.5, y: 0.5 }) < headSize;
+    const isHeadHit = distance(keypoints[KEYPOINTS.NOSE].coord, BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT) < headSize;
     return isHeadHit;
   }
 
@@ -300,7 +295,7 @@ function isHeadHit(keypoints: Keypoints): boolean {
 
 export function getHitBodyPartFromKeypoints(
   keypoints: Keypoints | null,
-  scopeCoordinates: Point = { x: 0.5, y: 0.5 },
+  scopeCoordinates: Point = BODY_PART_DETECTIONS_CONSTANTS.CENTER_POINT,
 ): BODY_PART {
   "worklet";
 

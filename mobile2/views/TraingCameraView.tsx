@@ -3,14 +3,15 @@ import RNFS from "react-native-fs";
 import { View, Text, StyleSheet } from "react-native";
 import { Camera, useCameraDevices, useCameraPermission, useCameraFormat } from "react-native-vision-camera";
 import { Skia } from "@shopify/react-native-skia";
-import { ObjectDetection } from "@/services/utils/types";
+import { ObjectDetection } from "@/utils/types/detection-types";
 import { TensorflowModel, TensorflowPlugin, useTensorflowModel } from "react-native-fast-tflite";
-import { TrainingImage } from "@/services/websocket/utils/types";
+import { TrainingImage } from "@/utils/types/websocket-types";
 import { useSharedValue } from "react-native-worklets-core";
 import ImageEditor from "@react-native-community/image-editor";
 import { ImageCropData } from "@react-native-community/image-editor/lib/typescript/src/types";
 import { trainingFrameProcessor } from "@/services/frame-processing/frame-processors";
 import { takeCroppedTrainingImage } from "@/services/frame-processing/training-camera-utils";
+import { TRAINING_CAMERA_CONSTANTS } from "@/utils/constants/frame-processing-constans";
 
 interface TrainingCameraViewProps {
   takePhotos: boolean;
@@ -41,7 +42,10 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
 
   const format = useCameraFormat(device, [
     {
-      videoResolution: { width: 640, height: 480 },
+      videoResolution: { 
+        width: TRAINING_CAMERA_CONSTANTS.WIDTH,
+        height: TRAINING_CAMERA_CONSTANTS.HEIGHT 
+      },
       //photoResolution: { width: 4000, height: 4000*(3/4) },
     },
   ]);
@@ -69,7 +73,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
           console.error("Error cropping image:", error);
         }
       }
-    }, 500); // Capture photo every 500ms
+    }, TRAINING_CAMERA_CONSTANTS.TAKE_PHOTO_INTERVAL); // Capture photo every 500ms
 
     return () => clearInterval(interval);
   }, [takePhotos, handleImageCapture, hasPermission]);

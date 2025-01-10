@@ -1,4 +1,4 @@
-import { TrainingImage, WebSocketMessageType, WebSocketMsg } from "./utils/types";
+import { TrainingImage, WebSocketMessageType, WebSocketMsg } from "../../utils/types/websocket-types";
 import websocketService from "./websocket.service";
 
 class ModelTrainingWebSocketService {

@@ -6,7 +6,7 @@ import { Camera, useCameraDevices, useCameraPermission, useCameraFormat } from "
 
 import { TensorflowModel, TensorflowPlugin } from "react-native-fast-tflite";
 
-import { Detection } from "../services/utils/types";
+import { Detection } from "../utils/types/detection-types";
 
 import { ISharedValue, useSharedValue, worklet, Worklets } from "react-native-worklets-core";
 import { Skia } from "@shopify/react-native-skia";
@@ -81,7 +81,6 @@ const CameraView = forwardRef<any, CameraViewProps>(({ plugins, detections }, re
           isActive={true}
           frameProcessor={InBattleFrameProcessor(plugin, plugin2, lastUpdateTime, detections)}
           pixelFormat="yuv"
-          // format={format}
           outputOrientation={"device"}
         />
       ) : (

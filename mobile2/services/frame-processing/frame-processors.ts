@@ -1,4 +1,4 @@
-import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
+import { YOLO_POSE_CONSTANTS } from "@/utils/constants/detection-constants";
 import { SkPaint } from "@shopify/react-native-skia";
 import {
   DrawableFrame,
@@ -8,12 +8,13 @@ import {
   useFrameProcessor,
   useSkiaFrameProcessor,
 } from "react-native-vision-camera";
-import { Classification, Detection, ObjectDetection } from "../utils/types";
+import { Classification, Detection, ObjectDetection } from "../../utils/types/detection-types";
 import { TensorflowPlugin } from "react-native-fast-tflite";
 import * as useResizePlugin from "vision-camera-resize-plugin";
 import { decodeYoloClassifyOutput, decodeYoloPoseOutput } from "./yolo-output-decoders";
 import { getHitBodyPartFromKeypoints } from "./body-part-utils";
 import { ISharedValue } from "react-native-worklets-core";
+import { CAMERA_CONSTANTS, TRAINING_CAMERA_CONSTANTS } from "@/utils/constants/frame-processing-constans";
 
 const { resize } = useResizePlugin.createResizePlugin();
 
@@ -53,16 +54,11 @@ export function drawDetections(frame: DrawableFrame, detection: ObjectDetection,
   // Draw keypoints
 
   if (detection.keypoints) {
-    for (const [startIdx, endIdx] of MOVENET_CONSTANTS.BODY_CONNECTIONS) {
+    for (const [startIdx, endIdx] of YOLO_POSE_CONSTANTS.BODY_CONNECTIONS) {
       const start = detection.keypoints[startIdx];
       const end = detection.keypoints[endIdx];
 
-      if (
-        start &&
-        end &&
-        start.confidence > MOVENET_CONSTANTS.TRESHOLD &&
-        end.confidence > MOVENET_CONSTANTS.TRESHOLD
-      ) {
+      if (start && end) {
         frame.drawLine(
           start.coord.x * frame.width,
           start.coord.y * frame.height,
@@ -79,14 +75,14 @@ export function trainingFrameProcessor(
   plugin: TensorflowPlugin,
   lastUpdateTime: ISharedValue<number>,
   detections: ISharedValue<ObjectDetection | null>,
-  paint : SkPaint
+  paint: SkPaint,
 ): DrawableFrameProcessor {
   return useSkiaFrameProcessor(
     frame => {
       "worklet";
       frame.render();
       if (plugin.state === "loaded") {
-        runAtTargetFps(5, () => {
+        runAtTargetFps(TRAINING_CAMERA_CONSTANTS.FPS, () => {
           "worklet";
           const resized = resize(frame, {
             scale: { width: plugin.model.inputs[0].shape[1], height: plugin.model.inputs[0].shape[2] },
@@ -107,7 +103,10 @@ export function trainingFrameProcessor(
       }
 
       const currentTime = Date.now();
-      if (currentTime - lastUpdateTime.value > 500) {
+      if (
+        currentTime - lastUpdateTime.value >
+        (1000 / TRAINING_CAMERA_CONSTANTS.FPS) * TRAINING_CAMERA_CONSTANTS.MAX_FRAMES_WITHOUT_DETECTION
+      ) {
         detections.value = null;
       }
       if (detections.value) {
@@ -129,7 +128,7 @@ export function InBattleFrameProcessor(
       // frame.render();
 
       if (plugin.state === "loaded" && plugin2.state === "loaded") {
-        runAtTargetFps(5, () => {
+        runAtTargetFps(CAMERA_CONSTANTS.FPS, () => {
           "worklet";
           let resized = resize(frame, {
             scale: {
@@ -182,7 +181,10 @@ export function InBattleFrameProcessor(
       }
 
       const currentTime = Date.now();
-      if (currentTime - lastUpdateTime.value > 700) {
+      if (
+        currentTime - lastUpdateTime.value >
+        (1000 / CAMERA_CONSTANTS.FPS) * CAMERA_CONSTANTS.MAX_FRAMES_WITHOUT_DETECTION
+      ) {
         detections.value = null;
       }
     },

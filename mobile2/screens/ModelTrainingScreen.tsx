@@ -1,7 +1,7 @@
 import TrainingCameraView from "@/views/TraingCameraView";
 import modelTrainingWebsocketService from "@/services/websocket/model-training.websocket.service";
-import { TrainingImage } from "@/services/websocket/utils/types";
-import { ObjectDetection } from "@/services/utils/types";
+import { TrainingImage } from "@/utils/types/websocket-types";
+import { ObjectDetection } from "@/utils/types/detection-types";
 import { useEffect, useRef, useState } from "react";
 import { View, Text, Button, Platform } from "react-native";
 import { useTensorflowModel } from "react-native-fast-tflite";
@@ -24,16 +24,15 @@ const ModelTrainingScreen = () => {
     modelTrainingWebsocketService.setTrainingReadyForPlayerEventListener(handleTrainingReady);
   }, []);
 
-
   const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
-  
-    const plugin = useTensorflowModel(
-      require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
-      delegate,
-    );
+
+  const plugin = useTensorflowModel(
+    require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
+    delegate,
+  );
 
   // Function to send photos asynchronously
-  
+
   return (
     <View style={{ flex: 1 }}>
       <Text>ModelTrainingScreen Player: {playerNumber}</Text>

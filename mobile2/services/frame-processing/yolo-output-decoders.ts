@@ -1,34 +1,23 @@
 import { DrawableFrame, Frame } from "react-native-vision-camera";
-import { BoundingBox, Classification, ObjectDetection, Keypoints, BODY_PART, Point, KEYPOINTS } from "../utils/types";
+import {
+  BoundingBox,
+  Classification,
+  ObjectDetection,
+  Keypoints,
+  BODY_PART,
+  Point,
+  KEYPOINTS,
+} from "../../utils/types/detection-types";
 import RNFS from "react-native-fs";
-import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
+import { YOLO_POSE_CONSTANTS } from "@/utils/constants/detection-constants";
 import { Skia, SkPaint } from "@shopify/react-native-skia/lib/typescript/src/skia/types";
 import { worklet } from "react-native-worklets-core";
-import { TrainingImage, WebSocketMessageType, WebSocketMsg } from "@/services/websocket/utils/types";
+import { TrainingImage, WebSocketMessageType, WebSocketMsg } from "@/utils/types/websocket-types";
 import websocketService from "@/services/websocket/websocket.service";
 
 // Keypoint names (you can expand or adjust these based on your model)
-const keypointNames = [
-  "nose",
-  "leftEye",
-  "rightEye",
-  "leftEar",
-  "rightEar",
-  "leftShoulder",
-  "rightShoulder",
-  "leftElbow",
-  "rightElbow",
-  "leftWrist",
-  "rightWrist",
-  "leftHip",
-  "rightHip",
-  "leftKnee",
-  "rightKnee",
-  "leftAnkle",
-  "rightAnkle",
-];
 
-export function nonMaximumSuppression(detections: ObjectDetection[], iouThreshold = 0.5): ObjectDetection[] {
+export function nonMaximumSuppression(detections: ObjectDetection[]): ObjectDetection[] {
   "worklet";
 
   // Helper function to calculate IoU
@@ -63,7 +52,9 @@ export function nonMaximumSuppression(detections: ObjectDetection[], iouThreshol
     finalDetections.push(current);
 
     // Filter out detections with IoU >= threshold
-    detections = detections.filter(det => calculateIoU(current.boundingBox, det.boundingBox) < iouThreshold);
+    detections = detections.filter(
+      det => calculateIoU(current.boundingBox, det.boundingBox) < YOLO_POSE_CONSTANTS.IOU_TRESHOLD,
+    );
   }
 
   return finalDetections;
@@ -95,7 +86,7 @@ export function decodeYoloPoseOutput(outputTensor: any[], numDetections: number)
 
   for (let i = 0; i < numDetections; i++) {
     const confidence = outputTensor[0][i + numDetections * 4];
-    if (confidence < 0.5) {
+    if (confidence < YOLO_POSE_CONSTANTS.DETECTION_TRESHOLD) {
       continue;
     }
     const xc = outputTensor[0][i];
@@ -114,11 +105,11 @@ export function decodeYoloPoseOutput(outputTensor: any[], numDetections: number)
       const keypointConfidence = outputTensor[0][j * numDetections + i + 2 * numDetections];
       const keypointIndex = Math.floor((j - 5) / 3);
 
-      if (keypointConfidence < 0.3) {
+      if (keypointConfidence < YOLO_POSE_CONSTANTS.KEYPOINT_TRESHOLD) {
         continue;
       }
       keypoints[keypointIndex] = {
-        name: MOVENET_CONSTANTS.KEYPONTS[keypointIndex],
+        name: YOLO_POSE_CONSTANTS.KEYPOINTS[keypointIndex],
         coord: {
           x,
           y: 1 - y,
@@ -144,7 +135,7 @@ export function decodeYoloPoseOutput(outputTensor: any[], numDetections: number)
   }
   outputTensor.length = 0;
   // Apply NMS after decoding all detections
-  return getClosestDetectionToCenter(nonMaximumSuppression(detections, 0.5));
+  return getClosestDetectionToCenter(nonMaximumSuppression(detections));
 }
 
 export function decodeYoloClassifyOutput(array: any): Classification {
@@ -177,5 +168,3 @@ export function decodeYoloClassifyOutput(array: any): Classification {
     confidenceAdvantage: confidenceAdvantage,
   };
 }
-
-

@@ -1,7 +1,7 @@
 import CameraView from "@/views/CameraView";
 import { Scope } from "@/components/Scope";
 
-import { Detection } from "@/services/utils/types";
+import { Detection } from "@/utils/types/detection-types";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 

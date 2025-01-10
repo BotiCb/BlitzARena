@@ -1,4 +1,4 @@
-import { WebSocketMsg } from "./utils/types";
+import { WebSocketMsg } from "../../utils/types/websocket-types";
 
 type WebSocketListener = (message: any) => void;
 
