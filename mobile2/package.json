@@ -37,6 +37,8 @@
     "react-native": "0.74.5",
     "react-native-fast-tflite": "^1.5.1",
     "react-native-fs": "^2.20.0",
+    "react-native-reanimated": "^3.16.6",
+    "react-native-safe-area-context": "^5.1.0",
     "react-native-svg": "^15.8.0",
     "react-native-vision-camera": "^4.6.3",
     "react-native-web": "~0.19.10",
