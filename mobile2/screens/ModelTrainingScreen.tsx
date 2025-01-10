@@ -1,21 +1,19 @@
-import TrainingCameraView from "@/components/TraingCameraView";
+import TrainingCameraView from "@/views/TraingCameraView";
 import modelTrainingWebsocketService from "@/services/websocket/model-training.websocket.service";
 import { TrainingImage } from "@/services/websocket/utils/types";
-import { ObjectDetection } from "@/utils/types";
+import { ObjectDetection } from "@/services/utils/types";
 import { useEffect, useRef, useState } from "react";
-import { View, Text, Button } from "react-native";
+import { View, Text, Button, Platform } from "react-native";
+import { useTensorflowModel } from "react-native-fast-tflite";
 
 const ModelTrainingScreen = () => {
   const [takePhotos, setTakePhotos] = useState(false);
-  const photoQueue = useRef<TrainingImage[]>([]); // Queue to store Base64 photos
-  const isSending = useRef(false);
   const lastDetectionsRef = useRef<ObjectDetection[]>([]); // Prevent multiple send processes
   const [playerNumber, setPlayerNumber] = useState(0);
 
   // Add photo to the queue
   const handleImageCapture = (trainingImage: TrainingImage) => {
-    photoQueue.current.push(trainingImage); // Add new photo to the queue
-    sendPhotosToServer(); // Trigger sending process
+    modelTrainingWebsocketService.sendPhoto(trainingImage); // Trigger sending process
   };
 
   useEffect(() => {
@@ -26,30 +24,16 @@ const ModelTrainingScreen = () => {
     modelTrainingWebsocketService.setTrainingReadyForPlayerEventListener(handleTrainingReady);
   }, []);
 
+
+  const delegate = Platform.OS === "ios" ? "core-ml" : undefined;
+  
+    const plugin = useTensorflowModel(
+      require("../assets/models/yolo11n-pose_saved_model/yolo11n-pose_integer_quant.tflite"),
+      delegate,
+    );
+
   // Function to send photos asynchronously
-  const sendPhotosToServer = async () => {
-    if (isSending.current || photoQueue.current.length === 0) return;
-
-    isSending.current = true;
-
-    while (photoQueue.current.length > 0) {
-      const photo: TrainingImage | undefined = photoQueue.current.shift(); // Remove the first photo from the queue
-
-      if (photo) {
-        try {
-          // Send the photo to the server via WebSocket
-
-          modelTrainingWebsocketService.sendTrainingImage(photo);
-        } catch (error) {
-          console.error("Error sending photo:", error);
-          photoQueue.current.unshift(photo); // Re-add the photo to the front of the queue
-          break; // Exit the loop to retry later
-        }
-      }
-    }
-
-    isSending.current = false;
-  };
+  
   return (
     <View style={{ flex: 1 }}>
       <Text>ModelTrainingScreen Player: {playerNumber}</Text>
@@ -66,6 +50,7 @@ const ModelTrainingScreen = () => {
         handleImageCapture={handleImageCapture}
         lastDetectionsRef={lastDetectionsRef}
         playerNumber={playerNumber}
+        plugin={plugin}
       />
     </View>
   );

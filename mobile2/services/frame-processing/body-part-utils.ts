@@ -1,5 +1,5 @@
 import { Point } from "react-native-vision-camera";
-import { Keypoints, KEYPOINTS, BODY_PART } from "./types";
+import { Keypoints, KEYPOINTS, BODY_PART } from "../utils/types";
 
 function distance(p1: Point, p2: Point): number {
   "worklet";
@@ -291,7 +291,6 @@ function isHeadHit(keypoints: Keypoints): boolean {
   if (keypoints[KEYPOINTS.NOSE]?.coord && keypoints[KEYPOINTS.LEFT_SHOULDER]?.coord) {
     const noseToShoulderDistance = distance(keypoints[KEYPOINTS.NOSE].coord, keypoints[KEYPOINTS.LEFT_SHOULDER].coord);
     const headSize = noseToShoulderDistance;
-    console.log(headSize);
     const isHeadHit = distance(keypoints[KEYPOINTS.NOSE].coord, { x: 0.5, y: 0.5 }) < headSize;
     return isHeadHit;
   }
@@ -312,7 +311,6 @@ export function getHitBodyPartFromKeypoints(
   if (keypoints === null || Object.keys(keypoints).length === 0) {
     return BODY_PART.NOTHING;
   }
-  console.log(keypoints[KEYPOINTS.NOSE]?.coord);
 
   if (isLegHit(keypoints)) {
     return BODY_PART.LEG;

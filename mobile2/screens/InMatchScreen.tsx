@@ -1,8 +1,7 @@
-import CameraView from "@/components/CameraView";
+import CameraView from "@/views/CameraView";
 import { Scope } from "@/components/Scope";
 
-import Skeleton from "@/components/SkeletonView";
-import { Detection } from "@/utils/types";
+import { Detection } from "@/services/utils/types";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -29,13 +28,17 @@ const InMatchScreen = () => {
     const interval = setInterval(() => {
       if (detections.value) {
         setDetectedPerson(
-           people[detections.value.classification.id] + " " + detections.value.classification.confidenceAdvantage + " " +
-          bodyParts[detections.value.bodyPart] + " ",
+          people[detections.value.classification.id] +
+            " " +
+            detections.value.classification.confidenceAdvantage +
+            " " +
+            bodyParts[detections.value.bodyPart] +
+            " ",
         );
       } else {
         setDetectedPerson("");
       }
-    }, 300);
+    }, 200);
 
     return () => clearInterval(interval);
   }, []);
@@ -44,8 +47,8 @@ const InMatchScreen = () => {
     <View style={{ flex: 1 }}>
       <Text>{detectedPerson}</Text>
       <CameraView ref={cameraRef} plugins={[plugin, plugin2]} detections={detections} />
-    
-      <Scope  />
+
+      <Scope />
     </View>
   );
 };

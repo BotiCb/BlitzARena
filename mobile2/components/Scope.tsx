@@ -17,7 +17,5 @@ const styles = StyleSheet.create({
         position: "absolute",
         height: "100%",
         width: "100%",
-        borderColor: "red",
-        borderWidth: 1,
     }
 });

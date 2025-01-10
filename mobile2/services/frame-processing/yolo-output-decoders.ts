@@ -1,5 +1,5 @@
 import { DrawableFrame, Frame } from "react-native-vision-camera";
-import { BoundingBox, Classification, ObjectDetection, Keypoints, BODY_PART, Point, KEYPOINTS } from "./types";
+import { BoundingBox, Classification, ObjectDetection, Keypoints, BODY_PART, Point, KEYPOINTS } from "../utils/types";
 import RNFS from "react-native-fs";
 import { MOVENET_CONSTANTS } from "@/constants/MovenetConstants";
 import { Skia, SkPaint } from "@shopify/react-native-skia/lib/typescript/src/skia/types";
@@ -178,60 +178,4 @@ export function decodeYoloClassifyOutput(array: any): Classification {
   };
 }
 
-export function drawDetections(frame: DrawableFrame, detection: ObjectDetection, paint: SkPaint) {
-  "worklet";
 
-  // Draw bounding box
-  frame.drawLine(
-    detection.boundingBox.x1 * frame.width,
-    detection.boundingBox.y1 * frame.height,
-    detection.boundingBox.x2 * frame.width,
-    detection.boundingBox.y1 * frame.height,
-    paint,
-  );
-  frame.drawLine(
-    detection.boundingBox.x2 * frame.width,
-    detection.boundingBox.y1 * frame.height,
-    detection.boundingBox.x2 * frame.width,
-    detection.boundingBox.y2 * frame.height,
-    paint,
-  );
-  frame.drawLine(
-    detection.boundingBox.x2 * frame.width,
-    detection.boundingBox.y2 * frame.height,
-    detection.boundingBox.x1 * frame.width,
-    detection.boundingBox.y2 * frame.height,
-    paint,
-  );
-  frame.drawLine(
-    detection.boundingBox.x1 * frame.width,
-    detection.boundingBox.y2 * frame.height,
-    detection.boundingBox.x1 * frame.width,
-    detection.boundingBox.y1 * frame.height,
-    paint,
-  );
-
-  // Draw keypoints
-
-  if (detection.keypoints) {
-    for (const [startIdx, endIdx] of MOVENET_CONSTANTS.BODY_CONNECTIONS) {
-      const start = detection.keypoints[startIdx];
-      const end = detection.keypoints[endIdx];
-
-      if (
-        start &&
-        end &&
-        start.confidence > MOVENET_CONSTANTS.TRESHOLD &&
-        end.confidence > MOVENET_CONSTANTS.TRESHOLD
-      ) {
-        frame.drawLine(
-          start.coord.x * frame.width,
-          start.coord.y * frame.height,
-          end.coord.x * frame.width,
-          end.coord.y * frame.height,
-          paint,
-        );
-      }
-    }
-  }
-}
