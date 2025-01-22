@@ -1,27 +1,22 @@
-import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 
-import { useAuth } from '~/contexts/AuthContext';
-import { RootStackTypes } from '~/navigation/types';
 import AuthService from '~/services/AuthService';
 import { LoginResponse } from '~/utils/types';
 
 const LoginScreen = () => {
-  const { refreshAuthContext } = useAuth();
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const navigation = useNavigation<RootStackTypes>();
 
   const handleLogin = async () => {
     setLoading(true);
     setError('');
     try {
       const response = await AuthService.login(username, password);
-      console.log(response);
 
       switch (response) {
         case LoginResponse.EMPTY_INPUT:
@@ -36,8 +31,6 @@ const LoginScreen = () => {
         case LoginResponse.SERVER_ERROR:
           setError('An error occurred. Please try again later.');
           break;
-        default:
-          refreshAuthContext();
       }
     } catch (err) {
       console.log(err);

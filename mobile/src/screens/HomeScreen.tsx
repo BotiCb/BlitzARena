@@ -7,10 +7,9 @@ import { USER_ENDPOINTS } from '~/services/restApi/Endpoints';
 import { apiClient } from '~/services/restApi/RestApiService';
 
 const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { userInfo, refreshAuthContext } = useAuth();
+  const { userInfo } = useAuth();
   const handleLogout = async () => {
     await AuthService.logout();
-    refreshAuthContext();
   };
 
   const handleGetProfile = async () => {

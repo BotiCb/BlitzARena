@@ -66,10 +66,8 @@ class AuthService {
   }
 
   static async logout(): Promise<void> {
-    console.log('logout');
     try {
       const response: AxiosResponse = await apiClient.post(AUTH_ENDPOINTS.LOGOUT);
-      console.log(response);
 
       this.deleteUserData();
     } catch (err: any) {
@@ -84,7 +82,6 @@ class AuthService {
 
     try {
       const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, { email, password });
-      console.log(response.data);
       if (response.status === 200 && response.data?.access_token && response.data?.refresh_token) {
         await SecureStore.setItemAsync('jwtToken', response.data.access_token);
         await SecureStore.setItemAsync('refreshToken', response.data.refresh_token);
