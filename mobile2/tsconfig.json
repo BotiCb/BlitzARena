@@ -3,19 +3,19 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "../mobile/src/screens/home.tsx",
+    "app/LoginScreen.tsx",
+    "app/SplashScreen.tsx"
   ],
   "scripts": {
-  "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
-}
-
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+  }
 }

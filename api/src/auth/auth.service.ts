@@ -22,7 +22,7 @@ export class AuthService {
 
   async login(loginUserDto: LoginRequestDto): Promise<{ access_token: string; refresh_token: string }> {
     const { email, password } = loginUserDto;
-    const user = await this.userService.findOneByEmail(email);
+    const user = await this.userModel.findOne({ email }).exec();
 
     if (!user || !(await bcrypt.compare(password, user.hashedPassword))) {
       throw new UnauthorizedException('Invalid credentials');
@@ -31,7 +31,7 @@ export class AuthService {
     const payload = { email: user.email, id: user._id.toString() };
 
     const accessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '1m',
+      expiresIn: '15s',
       secret: config.get('auth.jwtSecret'),
     });
     const refreshToken = await this.jwtService.signAsync(payload, {

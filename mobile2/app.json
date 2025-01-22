@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "your-app-scheme",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -43,13 +43,13 @@
             "targetSdkVersion": 34,
             "buildToolsVersion": "34.0.0",
             "package": "com.android"
-            
           },
           "ios": {
             "deploymentTarget": "13.4"
           }
         }
-      ]
+      ],
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true
