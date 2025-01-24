@@ -1,12 +1,15 @@
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Button, Text, StyleSheet } from 'react-native';
 import AuthService from 'src/services/AuthService';
 
 import { useAuth } from '~/contexts/AuthContext';
+import { AppStackParamList } from '~/navigation/types';
 import { USER_ENDPOINTS } from '~/services/restApi/Endpoints';
 import { apiClient } from '~/services/restApi/RestApiService';
 
-const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+const HomeScreen = () => {
+  const navigation = useNavigation<NavigationProp<AppStackParamList>>();
   const { userInfo } = useAuth();
   const handleLogout = async () => {
     await AuthService.logout();
