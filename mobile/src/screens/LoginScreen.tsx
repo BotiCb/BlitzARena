@@ -5,12 +5,10 @@ import AuthService from '~/services/AuthService';
 import { LoginResponse } from '~/utils/types';
 
 const LoginScreen = () => {
-
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
 
   const handleLogin = async () => {
     setLoading(true);

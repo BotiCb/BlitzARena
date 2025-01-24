@@ -1,8 +1,13 @@
-export type RootStackTypes = {
+export type RootStackParamList = {
   AuthStack: undefined;
   AppStack: undefined;
 };
-export type AuthStackTypes = {
+export type AuthStackParamList = {
   LoginScreen: undefined;
   RegisterScreen: undefined;
+};
+
+export type AppStackParamList = {
+  CreateLobby: undefined;
+  Home: undefined;
 };

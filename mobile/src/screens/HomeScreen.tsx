@@ -26,6 +26,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       <Text style={styles.title}>{userInfo?.email}</Text>
       <Button title="Logout" onPress={handleLogout} />
       <Button title="GetProfile" onPress={handleGetProfile} />
+      <Button title="Create Lobby" onPress={() => navigation.navigate('CreateLobby')} />
     </View>
   );
 };
