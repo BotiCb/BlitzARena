@@ -7,7 +7,7 @@ import { CreateLobbyDto } from "./dto/create-lobby.dto";
 @Controller('lobby')
 export class LobbyController {
 
-    @Post()
+    @Post('create')
     @UserRole()
     createLobby(@CurrentUser() user: UserModel, @Body() createLobbyDto: CreateLobbyDto) {
         console.log(user.firstName, createLobbyDto.maxPlayers );

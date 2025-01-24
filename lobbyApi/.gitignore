@@ -1,0 +1,8 @@
+val
+venv
+.idea
+*.pt
+*.npy
+*.pyc
+**/*.pyc
+*~

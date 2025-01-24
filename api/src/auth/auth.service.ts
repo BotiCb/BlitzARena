@@ -31,7 +31,7 @@ export class AuthService {
     const payload = { email: user.email, id: user._id.toString() };
 
     const accessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '15s',
+      expiresIn: '15m',
       secret: config.get('auth.jwtSecret'),
     });
     const refreshToken = await this.jwtService.signAsync(payload, {
