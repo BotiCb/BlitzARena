@@ -8,6 +8,10 @@ export type AuthStackParamList = {
 };
 
 export type AppStackParamList = {
-  CreateLobby: undefined;
+  LobbyStack: undefined;
   Home: undefined;
+};
+
+export type LobbyStackParamList = {
+  CreateLobby: undefined;
 };
