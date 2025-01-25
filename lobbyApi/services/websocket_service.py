@@ -1,10 +1,12 @@
-from fastapi import WebSocket
-from typing import Dict
+from fastapi import WebSocket, HTTPException
+from typing import Dict, Callable
+
 
 class WebSocketService:
     def __init__(self):
         # This stores connections by player ID within each lobby
         self.connections: Dict[str, WebSocket] = {}
+        self.message_handlers: Dict[str, Callable[[str, dict], None]] = {}
 
     async def add_connection(self, player_id: str, websocket: WebSocket):
         """Add a player's WebSocket connection."""
@@ -26,3 +28,23 @@ class WebSocketService:
             await self.connections[player_id].send_json(message)
         else:
             print(f"Player {player_id} not connected")
+
+
+    def register_handler(self, message_type: str, handler: Callable[[str, dict], None]):
+            """Register a handler for a specific message type."""
+            if message_type in self.message_handlers:
+                raise ValueError(f"Handler for message type '{message_type}' already exists")
+            self.message_handlers[message_type] = handler
+
+    async def handle_message(self, player_id: str, message: dict):
+        """Dispatch a message to the appropriate handler."""
+        if(message == None):
+            await self.send_to_player(player_id, {"message": "empty message received"})
+        message_type = message.get("type")
+        if not message_type:
+           await self.send_to_player(player_id, {"message": "type field is required"})
+        handler = self.message_handlers.get(message_type)
+        if not handler:
+            await self.send_to_player(player_id, {"message": f"Handler for message type '{message_type}' not found"})
+            return
+        await handler(player_id, message)
