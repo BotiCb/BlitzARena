@@ -1,11 +1,11 @@
 from fastapi import Depends
-from services.lobby_service import LobbyService
+from services.game_service import GameService
 
-# Create a singleton instance of LobbyService
-lobby_service_instance = LobbyService()
+# Create a singleton instance of GameService
+game_service_instance = GameService()
 
-def get_lobby_service() -> LobbyService:
+def get_game_service() -> GameService:
     """
-    Dependency to get the singleton instance of LobbyService.
+    Dependency to get the singleton instance of GameService.
     """
-    return lobby_service_instance
+    return game_service_instance

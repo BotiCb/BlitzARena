@@ -37,6 +37,7 @@ class WebSocketService:
             self.message_handlers[message_type] = handler
 
     async def handle_message(self, player_id: str, message: dict):
+
         """Dispatch a message to the appropriate handler."""
         if(message == None):
             await self.send_to_player(player_id, {"message": "empty message received"})

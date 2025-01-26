@@ -1,0 +1,83 @@
+import uuid
+from typing import Dict
+from fastapi import WebSocket, HTTPException, Depends
+
+from models.game_instance import GameInstance
+
+
+class GameService:
+    def __init__(self):
+        self.games: Dict[str, GameInstance] = {}  # {game_id: Lobby}
+
+    def generate_game_id(self) -> str:
+        """Generate a unique game ID using UUID."""
+        return str(uuid.uuid4())
+
+    def is_game_exists(self, game_id: str) -> bool:
+        """Check if a game exists."""
+        return game_id in self.games
+
+    async def create_game(self):
+        """Create a new game."""
+        game_id = self.generate_game_id()
+        self.games[game_id] = GameInstance(game_id)
+        return self.games[game_id]
+
+    async def delete_game(self, game_id: str):
+        """Delete a game and remove all its connections."""
+        if not self.is_game_exists(game_id):
+            raise HTTPException(status_code=404, detail="Lobby not found")
+        game = self.games.pop(game_id)
+        for player in game.players:
+            await game.remove_websocket_connection(player.player_id)
+        return {"message": f"Lobby {game_id} deleted successfully"}
+
+    async def add_player(self, game_id: str, player_id: str):
+        """Add a player to a game."""
+        if not self.is_game_exists(game_id):
+            raise HTTPException(status_code=404, detail="Lobby not found")
+        self.games[game_id].add_player(player_id)
+        return {"message": f"Player {player_id} added to game {game_id}"}
+
+    async def get_game(self, game_id: str):
+        if not self.is_game_exists(game_id):
+            raise HTTPException(status_code=404, detail="Lobby not found")
+        return await self.games[game_id].get_game_info()
+
+    async def remove_player(self, game_id: str, player_id: str):
+        """Remove a player from a game."""
+        if not self.is_game_exists(game_id):
+            raise HTTPException(status_code=404, detail="Lobby not found")
+        self.games[game_id].remove_player(player_id)
+        return {"message": f"Player {player_id} removed from game {game_id}"}
+
+    async def add_websocket_connection(self, game_id: str, player_id: str, websocket: WebSocket):
+        """Add a WebSocket connection for a player."""
+        if not self.is_game_exists(game_id):
+            raise HTTPException(status_code=404, detail="Lobby not found")
+        await self.games[game_id].add_websocket_connection(player_id, websocket)
+
+    async def remove_websocket_connection(self, game_id: str, player_id: str):
+        """Remove a WebSocket connection for a player."""
+        if not self.is_game_exists(game_id):
+            raise HTTPException(status_code=404, detail="Lobby not found")
+        await self.games[game_id].remove_websocket_connection(player_id)
+
+    async def handle_websocket_message(self, game_id: str, websocket: WebSocket, message: dict):
+        """Handle WebSocket messages from a player."""
+        if not self.is_game_exists(game_id):
+            raise HTTPException(status_code=404, detail="Lobby not found")
+        game = self.games[game_id]
+
+        # Identify the player ID from the WebSocket connection
+        player_id = None
+        for pid, conn in game.websockets.connections.items():
+            if conn == websocket:
+                player_id = pid
+                break
+
+        if not player_id:
+            raise HTTPException(status_code=400, detail="Player not found for this WebSocket")
+
+        await game.handle_websocket_message(player_id, message)
+
