@@ -1,6 +1,7 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Depends
 
 from dependecies.dependency_injection import get_game_service
+from models.message import Message
 from services.game_service import GameService
 
 
@@ -22,9 +23,13 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str, player_id: str,
         print(f"Player {player_id} connected to game {game_id}")
 
         while True:
-            data = await websocket.receive_json()
-            print(f"Received message from player {player_id}: {data}")
-            await game_service.handle_websocket_message(game_id, websocket, data)
+            try:
+                data = await websocket.receive_json()
+                message = Message(data)
+                print(f"Received message from player {player_id}: {message.type} - {message.data}")
+                await game_service.handle_websocket_message(game_id, websocket, message)
+            except ValueError as e:
+                await websocket.send_json({"error": "Invalid message format"})
 
     except WebSocketDisconnect:
         await game_service.remove_websocket_connection(game_id, player_id)

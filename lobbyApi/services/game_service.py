@@ -3,6 +3,7 @@ from typing import Dict
 from fastapi import WebSocket, HTTPException, Depends
 
 from models.game_instance import GameInstance
+from models.message import Message
 
 
 class GameService:
@@ -42,7 +43,7 @@ class GameService:
     async def get_game(self, game_id: str):
         if not self.is_game_exists(game_id):
             raise HTTPException(status_code=404, detail="Lobby not found")
-        return await self.games[game_id].get_game_info()
+        return self.games[game_id].get_game_info()
 
     async def remove_player(self, game_id: str, player_id: str):
         """Remove a player from a game."""
@@ -63,7 +64,7 @@ class GameService:
             raise HTTPException(status_code=404, detail="Lobby not found")
         await self.games[game_id].remove_websocket_connection(player_id)
 
-    async def handle_websocket_message(self, game_id: str, websocket: WebSocket, message: dict):
+    async def handle_websocket_message(self, game_id: str, websocket: WebSocket, message: Message):
         """Handle WebSocket messages from a player."""
         if not self.is_game_exists(game_id):
             raise HTTPException(status_code=404, detail="Lobby not found")

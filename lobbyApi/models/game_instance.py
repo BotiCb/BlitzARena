@@ -1,7 +1,9 @@
 from typing import List, Dict
 from fastapi import WebSocket, HTTPException
 
+from models.message import Message
 from models.player import Player
+from services.lobby_service import LobbyService
 from services.websocket_service import WebSocketService
 
 
@@ -10,20 +12,49 @@ class GameInstance:
         self.game_id = game_id
         self.players: List[Player] = []
         self.websockets = WebSocketService()
-
+        self.current_phase = "lobby"
+        # Initialize services
+        self.lobby_service = LobbyService(self)
+        self.websockets.register_handler("remove_player", self.remove_player)
+        self.websockets.register_handler("new_host", self.new_host)
 
     def add_player(self, player_id: str):
         if self.is_player_in_game(player_id):
             raise HTTPException(status_code=400, detail="Player already in game")
-        self.players.append(Player(player_id))
+        is_host = len(self.players) == 0
+        new_player = Player(player_id, is_host=is_host)
+        self.players.append(new_player)
 
-    def remove_player(self, player_id: str):
-        if not self.is_player_in_game(player_id):
-            raise HTTPException(status_code=400, detail="Player not in game")
-        self.players = [player for player in self.players if player.player_id != player_id]
+    async def remove_player(self, player_id: str, message: dict):
+
+        if self.is_host(player_id):
+            player_to_remove = self.get_player(message.get("player_id", 0))
+            if player_to_remove:
+                await self.websockets.send_to_player(player_to_remove.id,
+                                                     {"message": "You have been removed from the game"})
+                await self.remove_websocket_connection(player_to_remove.id)
+                self.players.remove(player_to_remove)
+                await self.websockets.send_to_all(
+                    {"message": f"Player {player_to_remove.id} has been removed from the game"})
+        else:
+            await self.websockets.send_to_player(player_id, {"message": "Only the host can remove players"})
+
+    async def new_host(self, player_id: str, message: dict):
+        if self.is_host(player_id):
+            player_to_promote = self.get_player(message.get("player_id", 0))
+            if player_to_promote:
+                player_to_promote.is_host = True
+                self.get_player(player_id).is_host = False
+                await self.websockets.send_to_player(player_to_promote.id,
+                                                     {"message": "You have been promoted to host"})
+                await self.websockets.send_to_all_except(player_to_promote.id,
+                    {"message": f"Player {player_to_promote.id} has been promoted to host"})
 
     def is_player_in_game(self, player_id: str) -> bool:
-        return any(player.player_id == player_id for player in self.players)
+        return any(player.id == player_id for player in self.players)
+
+    def is_all_players_ready(self) -> bool:
+        return all(player.ready for player in self.players)
 
     async def add_websocket_connection(self, player_id: str, websocket: WebSocket):
         if not self.is_player_in_game(player_id):
@@ -31,16 +62,48 @@ class GameInstance:
         if player_id in self.websockets.connections:
             raise HTTPException(status_code=400, detail="Player already connected")
         await self.websockets.add_connection(player_id, websocket)
-        await self.websockets.send_to_all({"message": f"Player {player_id} connected to game {self.game_id}"})
-
+        self.get_player(player_id).is_connected = True
+        await self.websockets.send_to_player(player_id, {
+            "message": self.get_game_info(),
+        })
+        await self.websockets.send_to_all_except(player_id,
+                                                 {"message": f"Player {player_id} connected to game {self.game_id}"})
 
     async def remove_websocket_connection(self, player_id: str):
         await self.websockets.remove_connection(player_id)
+        player=self.get_player(player_id)
+        player.is_connected = False
+        if self.is_host(player_id):
+            await self.set_new_host()
+        player.is_host = False
+
         await self.websockets.send_to_all({"message": f"Player {player_id} disconnected from game {self.game_id}"})
 
-    async def handle_websocket_message(self, player_id: str, message: dict):
+
+    async def handle_websocket_message(self, player_id: str, message: Message):
         """Delegate message handling to WebSocketService."""
         await self.websockets.handle_message(player_id, message)
 
-    async def get_game_info(self):
-        return {"game_id": self.game_id, "players": [player.player_id for player in self.players]}
+    def get_game_info(self):
+        return {"game_id": self.game_id, "players": [player.get_player_info() for player in self.players]}
+
+    def get_player(self, player_id: str) -> Player:
+        """Get a player by their ID."""
+        for player in self.players:
+            if player.id == player_id:
+                return player
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    def is_host(self, player_id: str) -> bool:
+        return self.get_player(player_id).is_host
+
+    def get_earliest_connected_player(self) -> Player | None:
+        connected_players = [p for p in self.players if p.is_connected]
+        return min(connected_players, key=lambda p: p.added_at, default=None)
+
+    async def set_new_host(self):
+        new_host = self.get_earliest_connected_player()
+        new_host.set_host(True)
+        await self.websockets.send_to_all({"message": f"New host is {new_host.id}"})
+
+
