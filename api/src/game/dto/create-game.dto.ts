@@ -1,6 +1,6 @@
 import { IsNumber, IsPositive } from "class-validator"
 
-export class CreateLobbyDto {
+export class CreateGameDto {
     @IsPositive()
     @IsNumber()
     maxPlayers: number

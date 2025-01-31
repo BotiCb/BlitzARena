@@ -6,7 +6,6 @@ export class DetailedUserProfileDto {
   lastName: string;
   photoUrl: string;
   bio: string;
-  createdAt: Date;
   email: string;
   lastLogin: Date;
 
@@ -16,7 +15,6 @@ export class DetailedUserProfileDto {
     this.lastName = user.lastName;
     this.photoUrl = user.photoUrl;
     this.bio = user.bio;
-    this.createdAt = user.createdAt;
     this.email = user.email;
   }
 }

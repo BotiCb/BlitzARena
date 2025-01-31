@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { CustomMongooseModule } from './modules/custom-mongoose/custom-mongoose.module';
 import { EmailModule } from './modules/email/email.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
+import { AxiosModule } from './modules/axios/axios.module';
 @Module({
-  imports: [CustomMongooseModule, FileUploadModule, EmailModule],
-  exports: [CustomMongooseModule, FileUploadModule, EmailModule],
+  imports: [CustomMongooseModule, FileUploadModule, EmailModule, AxiosModule],
+  exports: [CustomMongooseModule, FileUploadModule, EmailModule, AxiosModule],
 })
 export class SharedModule {}

@@ -29,6 +29,7 @@ interface Config {
   auth: {
     jwtSecret: string;
     refreshTokenSecret: string;
+    servicejwtSecret: string;
   };
   email: {
     smtpHost: string;
@@ -94,6 +95,12 @@ export const config = convict<Config>({
       format: String,
       default: '',
       env: 'REFRESH_TOKEN_SIGNING_SECRET',
+    },
+    servicejwtSecret: {
+      doc: 'The secret used for signing service JWT tokens',
+      format: String,
+      default: '',
+      env: 'SERVICE_JWT_SIGNING_SECRET',
     },
   },
   email: {

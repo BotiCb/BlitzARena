@@ -5,7 +5,6 @@ export class UserProfileDto {
   lastName: string;
   photoUrl: string;
   bio: string;
-  createdAt: Date;
   email: string;
 
   constructor(user: UserModel) {
@@ -14,7 +13,6 @@ export class UserProfileDto {
     this.lastName = user.lastName;
     this.photoUrl = user.photoUrl;
     this.bio = user.bio;
-    this.createdAt = user.createdAt;
     this.email = user.email;
   }
 }

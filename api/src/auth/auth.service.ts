@@ -56,7 +56,7 @@ export class AuthService {
 
     // Generate a new access token
     const newAccessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '1m',
+      expiresIn: '1d',
       secret: config.get('auth.jwtSecret'),
     });
 
@@ -96,7 +96,6 @@ export class AuthService {
       lastName,
       email,
       hashedPassword,
-      createdAt: new Date(),
     });
 
     this.emailService.succesfullRegistration(createdUser);

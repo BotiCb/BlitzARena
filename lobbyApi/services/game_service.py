@@ -18,10 +18,14 @@ class GameService:
         """Check if a game exists."""
         return game_id in self.games
 
-    async def create_game(self):
+    async def create_game(self, data: dict):
+
         """Create a new game."""
+        max_players = data.get("max_players", 0)
+        if max_players <= 0:
+            raise HTTPException(status_code=400, detail="Max players must be greater than 0")
         game_id = self.generate_game_id()
-        self.games[game_id] = GameInstance(game_id)
+        self.games[game_id] = GameInstance(game_id, max_players)
         return self.games[game_id]
 
     async def delete_game(self, game_id: str):
@@ -35,21 +39,17 @@ class GameService:
 
     async def add_player(self, game_id: str, player_id: str):
         """Add a player to a game."""
-        if not self.is_game_exists(game_id):
-            raise HTTPException(status_code=404, detail="Lobby not found")
-        self.games[game_id].add_player(player_id)
+        self.get_game(game_id).add_player(player_id)
         return {"message": f"Player {player_id} added to game {game_id}"}
 
-    async def get_game(self, game_id: str):
+    def get_game(self, game_id: str) -> GameInstance:
         if not self.is_game_exists(game_id):
             raise HTTPException(status_code=404, detail="Lobby not found")
-        return self.games[game_id].get_game_info()
+        return self.games[game_id]
 
-    async def remove_player(self, game_id: str, player_id: str):
+    def remove_player(self, game_id: str, player_id: str):
         """Remove a player from a game."""
-        if not self.is_game_exists(game_id):
-            raise HTTPException(status_code=404, detail="Lobby not found")
-        self.games[game_id].remove_player(player_id)
+        self.get_game(game_id).remove_player(player_id)
         return {"message": f"Player {player_id} removed from game {game_id}"}
 
     async def add_websocket_connection(self, game_id: str, player_id: str, websocket: WebSocket):

@@ -16,5 +16,4 @@ class Player:
         """Set the host status for the player."""
         self.is_host = is_host
 
-    def get_player_info(self):
-        return {"player_id": self.id, "ready": self.ready, "is_host": self.is_host, "is_connected": self.is_connected}
+

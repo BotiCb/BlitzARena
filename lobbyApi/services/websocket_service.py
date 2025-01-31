@@ -2,6 +2,7 @@ from fastapi import WebSocket
 from typing import Dict, Callable, Optional
 
 from models.message import Message
+from utils.dto_convention_converter import convert_dict_to_camel_case
 
 
 class WebSocketService:
@@ -18,32 +19,34 @@ class WebSocketService:
         if player_id in self.connections:
             del self.connections[player_id]
 
-    async def send_to_all(self, message: dict):
-        """Send a message to all connected players."""
-        for websocket in self.connections.values():
-            try:
-                await websocket.send_json(message)
-            except Exception as e:
-                print(f"Failed to send message to all: {e}")
-
-    async def send_to_all_except(self, player_id: str, message: dict):
-        for websocket in self.connections.values():
-            if websocket != self.connections.get(player_id):
-                try:
-                    await websocket.send_json(message)
-                except Exception as e:
-                    print(f"Failed to send message to all: {e}")
-
-    async def send_to_player(self, player_id: str, message: dict):
-        """Send a message to a specific player."""
+    async def send_to_player(self, player_id: str, message: Message):
+        """Send a Message instance to a specific player."""
         websocket = self.connections.get(player_id)
         if websocket:
             try:
-                await websocket.send_json(message)
+                message_dict = convert_dict_to_camel_case(message.to_dict())
+                await websocket.send_json(message_dict)
             except Exception as e:
                 print(f"Failed to send message to player {player_id}: {e}")
-        else:
-            print(f"Player {player_id} is not connected.")
+
+    async def send_to_all(self, message: Message):
+        """Send a Message instance to all connected players."""
+        message_dict = convert_dict_to_camel_case(message.to_dict())
+        for websocket in self.connections.values():
+            try:
+                await websocket.send_json(message_dict)
+            except Exception as e:
+                print(f"Failed to send message to all: {e}")
+
+    async def send_to_all_except(self, player_id: str, message: Message):
+        """Send a Message instance to all except specified player."""
+        message_dict = convert_dict_to_camel_case(message.to_dict())
+        for pid, websocket in self.connections.items():
+            if pid != player_id:
+                try:
+                    await websocket.send_json(message_dict)
+                except Exception as e:
+                    print(f"Failed to send message to {pid}: {e}")
 
     def register_handler(self, message_type: str, handler: Callable[[str, dict], None]):
         """Register a handler for a specific message type."""
@@ -67,4 +70,4 @@ class WebSocketService:
 
     async def _send_error(self, player_id: str, error_message: str):
         """Send an error message to a player."""
-        await self.send_to_player(player_id, {"error": error_message})
+        await self.send_to_player(player_id, Message({"type": "error", "data": error_message}))
