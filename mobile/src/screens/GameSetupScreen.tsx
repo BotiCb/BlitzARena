@@ -1,6 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AxiosResponse } from 'axios';
 import React, { useState } from 'react';
 import { View, Text, Button } from 'react-native';
 
@@ -8,6 +7,7 @@ import { AppStackParamList } from '~/navigation/types';
 import { GAME_ENDPOINTS } from '~/services/restApi/Endpoints';
 import { apiClient } from '~/services/restApi/RestApiService';
 import { CreateGameRequestDto } from '~/services/restApi/dto/request.dto';
+import { CreateGameResponseDto } from '~/services/restApi/dto/response.dto';
 
 const GameSetupScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AppStackParamList>>();
@@ -32,11 +32,13 @@ const GameSetupScreen = () => {
     try {
       setError(null);
       setIsLoading(true);
-      const response: AxiosResponse = await apiClient.post(
-        GAME_ENDPOINTS.CREATE,
-        new CreateGameRequestDto(maxPlayers)
-      );
-      console.log(response.status);
+      const response: CreateGameResponseDto = (
+        await apiClient.post(GAME_ENDPOINTS.CREATE, new CreateGameRequestDto(maxPlayers))
+      ).data;
+      navigation.navigate('GameStack', {
+        gameId: response.gameId,
+        userSessionId: response.sessionId,
+      });
     } catch (err: any) {
       setError(err.response.data.message + 'please try again later');
     } finally {

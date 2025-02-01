@@ -1,29 +1,27 @@
-import { TrainingImage, WebSocketMessageType, WebSocketMsg } from "../../utils/types/websocket-types";
-import websocketService from "./websocket.service";
+import { AbstractCustomWebSocketService } from './custom-websocket.abstract-service';
+import { TrainingImage, WebSocketMessageType, WebSocketMsg } from './websocket-types';
 
-class ModelTrainingWebSocketService {
+export class ModelTrainingWebSocketService extends AbstractCustomWebSocketService {
   private isSendingPhotos: boolean = false;
   private photoQueue: TrainingImage[] = [];
 
   setTrainingReadyForPlayerEventListener(eventListener: () => void) {
-    websocketService.onMessageType("training_ready_for_player", eventListener);
+    this.websocketService.onMessageType('training_ready_for_player', eventListener);
   }
 
   private sendTrainingImage(trainingImage: TrainingImage) {
     const wsMessage: WebSocketMsg = {
       type: WebSocketMessageType.TRAINING_DATA,
-      user_id: "1",
       data: JSON.stringify(trainingImage),
     };
-    websocketService.sendMessage(wsMessage);
+    this.websocketService.sendMessage(wsMessage);
   }
 
   sendStartModelTraining() {
     const wsMessage: WebSocketMsg = {
       type: WebSocketMessageType.TRAINING_START,
-      user_id: "1",
     };
-    websocketService.sendMessage(wsMessage);
+    this.websocketService.sendMessage(wsMessage);
   }
 
   addPhotoToQueue(trainingImage: TrainingImage) {
@@ -48,7 +46,7 @@ class ModelTrainingWebSocketService {
 
           this.sendTrainingImage(photo);
         } catch (error) {
-          console.error("Error sending photo:", error);
+          console.error('Error sending photo:', error);
           this.photoQueue.unshift(photo); // Re-add the photo to the front of the queue
           break; // Exit the loop to retry later
         }
@@ -58,5 +56,3 @@ class ModelTrainingWebSocketService {
     this.isSendingPhotos = false;
   }
 }
-
-export default new ModelTrainingWebSocketService();

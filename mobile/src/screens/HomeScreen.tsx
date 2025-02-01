@@ -30,6 +30,7 @@ const HomeScreen = () => {
       <Button title="Logout" onPress={handleLogout} />
       <Button title="GetProfile" onPress={handleGetProfile} />
       <Button title="Create Game" onPress={() => navigation.navigate('CreateGame')} />
+      <Button title="Join Game" onPress={() => navigation.navigate('JoinGame')} />
     </View>
   );
 };

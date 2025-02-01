@@ -10,7 +10,7 @@ export class UserInfoResponseDto {
     lastName: string,
     photoUrl: string,
     email: string,
-    userId: string,
+    userId: string
   ) {
     this.firstName = firstName;
     this.lastName = lastName;
@@ -28,3 +28,19 @@ export enum LoginResponse {
 }
 
 export type LoginResponseType = LoginResponse | UserInfoResponseDto;
+
+export class CreateGameResponseDto {
+  gameId: string;
+  sessionId: string;
+  constructor(gameId: string, sessionId: string) {
+    this.gameId = gameId;
+    this.sessionId = sessionId;
+  }
+}
+
+export class JoinGameResponseDto {
+  sessionId: string;
+  constructor(sessionId: string) {
+    this.sessionId = sessionId;
+  }
+}

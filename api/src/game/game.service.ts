@@ -83,6 +83,11 @@ export class GameService {
       if (error.response && error.response.status === 403) {
         throw new HttpException('The game is full', 403);
       }
+
+      if (error.response && error.response.status === 404) {
+        throw new HttpException('Game not found', 404);
+      }
+
       this.logger.error(error.message);
       throw new HttpException('The game could not be joined', 503);
     }

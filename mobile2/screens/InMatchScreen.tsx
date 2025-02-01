@@ -1,4 +1,4 @@
-import CameraView from "@/views/CameraView";
+  import CameraView from "@/views/CameraView";
 import { Scope } from "@/components/Scope";
 
 import { Detection } from "@/utils/types/detection-types";

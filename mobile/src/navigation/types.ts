@@ -10,8 +10,13 @@ export type AuthStackParamList = {
 export type AppStackParamList = {
   CreateGame: undefined;
   Home: undefined;
+  GameStack: {
+    gameId: string;
+    userSessionId: string;
+  };
+  JoinGame: undefined;
 };
 
-export type LobbyStackParamList = {
-  CreateLobby: undefined;
+export type GameStackParamList = {
+  Lobby: undefined;
 };

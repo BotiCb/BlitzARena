@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import AuthService from '~/services/AuthService';
-import { UserInfoResponseDto } from '~/utils/types';
+import { UserInfoResponseDto } from '~/services/restApi/dto/response.dto';
 
 interface AuthContextType {
   userInfo: UserInfoResponseDto | null;
