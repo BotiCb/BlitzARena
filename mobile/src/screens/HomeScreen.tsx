@@ -29,7 +29,7 @@ const HomeScreen = () => {
       <Text style={styles.title}>{userInfo?.email}</Text>
       <Button title="Logout" onPress={handleLogout} />
       <Button title="GetProfile" onPress={handleGetProfile} />
-      <Button title="Create Lobby" onPress={() => navigation.navigate('LobbyStack')} />
+      <Button title="Create Game" onPress={() => navigation.navigate('CreateGame')} />
     </View>
   );
 };

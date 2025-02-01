@@ -4,10 +4,9 @@ import { jwtDecode } from 'jwt-decode';
 
 import { AUTH_ENDPOINTS, USER_ENDPOINTS } from './restApi/Endpoints';
 import { apiClient, refreshTokenApiClient } from './restApi/RestApiService';
+import { LoginResponse, LoginResponseType, UserInfoResponseDto } from './restApi/dto/response.dto';
 import { AsyncStore } from './storage/AsyncStorage';
 import { SecureStore } from './storage/SecoreStore';
-
-import { LoginResponse, LoginResponseType, UserInfo } from '~/utils/types';
 
 interface JwtPayload {
   exp: number;
@@ -23,11 +22,11 @@ class AuthService {
     return !!token && !!refreshToken;
   }
 
-  static async getCurrentUser(): Promise<UserInfo | null> {
+  static async getCurrentUser(): Promise<UserInfoResponseDto | null> {
     try {
       const userInfoString = await AsyncStore.getItemAsync('userInfo');
       if (userInfoString) {
-        return JSON.parse(userInfoString) as UserInfo;
+        return JSON.parse(userInfoString) as UserInfoResponseDto;
       } else {
         return null;
       }
@@ -67,7 +66,7 @@ class AuthService {
 
   static async logout(): Promise<void> {
     try {
-      const response: AxiosResponse = await apiClient.post(AUTH_ENDPOINTS.LOGOUT);
+      await apiClient.post(AUTH_ENDPOINTS.LOGOUT);
 
       this.deleteUserData();
     } catch (err: any) {
@@ -86,7 +85,8 @@ class AuthService {
         await SecureStore.setItemAsync('jwtToken', response.data.access_token);
         await SecureStore.setItemAsync('refreshToken', response.data.refresh_token);
 
-        const userResponse: UserInfo = (await apiClient.get(USER_ENDPOINTS.GET_PROFILE)).data;
+        const userResponse: UserInfoResponseDto = (await apiClient.get(USER_ENDPOINTS.GET_PROFILE))
+          .data;
         await AsyncStore.setItemAsync('userInfo', JSON.stringify(userResponse));
 
         userStateChangeEventEmitter.emit('userInfo', userResponse);
@@ -113,7 +113,7 @@ class AuthService {
     }
   }
 
-  static async getUserInfo(): Promise<UserInfo | null> {
+  static async getUserInfo(): Promise<UserInfoResponseDto | null> {
     const userInfoString = await AsyncStore.getItemAsync('userInfo');
     return userInfoString ? JSON.parse(userInfoString) : null;
   }
@@ -125,11 +125,11 @@ class AuthService {
     userStateChangeEventEmitter.emit('userInfo', null);
   }
 
-  static onUserInfoChange(listener: (userInfo: UserInfo | null) => void): void {
+  static onUserInfoChange(listener: (userInfo: UserInfoResponseDto | null) => void): void {
     userStateChangeEventEmitter.on('userInfo', listener);
   }
 
-  static offUserInfoChange(listener: (userInfo: UserInfo | null) => void): void {
+  static offUserInfoChange(listener: (userInfo: UserInfoResponseDto | null) => void): void {
     userStateChangeEventEmitter.off('userInfo', listener);
   }
 }

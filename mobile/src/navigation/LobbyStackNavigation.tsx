@@ -3,14 +3,14 @@ import React from 'react';
 
 import { LobbyStackParamList } from './types';
 
-import LobbySetupScreen from '~/screens/LobbySetupScreen';
+import GameSetupScreen from '~/screens/GameSetupScreen';
 
 const Stack = createStackNavigator<LobbyStackParamList>();
 
 const LobbyStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="CreateLobby" component={LobbySetupScreen} />
+      <Stack.Screen name="CreateLobby" component={GameSetupScreen} />
     </Stack.Navigator>
   );
 };

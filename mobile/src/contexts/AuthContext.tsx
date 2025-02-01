@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import AuthService from '~/services/AuthService';
-import { UserInfo } from '~/utils/types';
+import { UserInfoResponseDto } from '~/utils/types';
 
 interface AuthContextType {
-  userInfo: UserInfo | null;
+  userInfo: UserInfoResponseDto | null;
   isLoggedIn: boolean;
   refreshAuthContext: () => void;
   isLoading: boolean;
@@ -21,7 +21,7 @@ export const useAuth = (): AuthContextType => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfoResponseDto | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initializeAuthContext();
 
-    const handleUserInfoChange = (userInfo: UserInfo | null) => {
+    const handleUserInfoChange = (userInfo: UserInfoResponseDto | null) => {
       setUserInfo(userInfo);
       setIsLoggedIn(!!userInfo);
     };

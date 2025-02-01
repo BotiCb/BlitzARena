@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 
 import AuthService from '~/services/AuthService';
-import { LoginResponse } from '~/utils/types';
+import { LoginResponse } from '~/services/restApi/dto/response.dto';
 
 const LoginScreen = () => {
   const [username, setUsername] = useState('');

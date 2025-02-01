@@ -1,6 +1,6 @@
 import { HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import { UserModel } from 'src/shared/schemas/user.schema';
-import { CreateGameDto } from './dto/create-game.dto';
+import { CreateGameDto } from './dto/input/create-game.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { GameModel } from 'src/shared/schemas/game.schema';
@@ -61,9 +61,8 @@ export class GameService {
 
     try {
       const sessionId = this.generateSessionIdforUser();
-    await this.axiosService.apiClient.post(`/game/${gameId}/add-player/${sessionId}`);
+      await this.axiosService.apiClient.post(`/game/${gameId}/add-player/${sessionId}`);
 
-    
       const game = await this.getGameById(gameId);
 
       if (!game) {
@@ -89,10 +88,7 @@ export class GameService {
     }
   }
 
-
-  async exitFromGame(user: UserModel): Promise<void> {
-      
-  }
+  async exitFromGame(user: UserModel): Promise<void> {}
 
   private generateSessionIdforUser(): string {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
