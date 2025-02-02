@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import AppStack from './AppStackNavigation';
 import AuthStackNavigation from './AuthStackNavigation';

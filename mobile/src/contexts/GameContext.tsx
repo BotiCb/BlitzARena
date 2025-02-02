@@ -1,12 +1,13 @@
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import { GameWebSocketService } from '~/services/websocket/game.websocket.service';
-import { ModelTrainingWebSocketService } from '~/services/websocket/model-training.websocket.service';
 import { WebSocketService } from '~/services/websocket/websocket.service';
+import { Player } from '~/utils/models';
 
 type GameContextType = {
   gameId: string;
   userSessionId: string;
+  players: Player[];
   gameWebsocketService: GameWebSocketService;
 };
 
@@ -19,12 +20,13 @@ export const GameProvider: React.FC<{
 }> = ({ gameId, userSessionId, children }) => {
   const websocketService = WebSocketService.getInstance();
   const gameWebsocketService = GameWebSocketService.getInstance();
-  const handleGameInfoEvent = (message: any) => {
-    console.log(message);
-  };
+  const [players, setPlayers] = useState<Player[]>([]);
 
   useEffect(() => {
-    gameWebsocketService.setGameInfoEventListener(handleGameInfoEvent);
+    gameWebsocketService.setWebSocketEventListeners();
+    gameWebsocketService.setPlayersHandlerFunction(setPlayers);
+    gameWebsocketService.setGameId(gameId);
+
     websocketService.connect(gameId, userSessionId);
 
     return () => {
@@ -32,7 +34,7 @@ export const GameProvider: React.FC<{
     };
   }, []);
   return (
-    <GameContext.Provider value={{ gameId, userSessionId, gameWebsocketService }}>
+    <GameContext.Provider value={{ gameId, userSessionId, gameWebsocketService, players }}>
       {children}
     </GameContext.Provider>
   );

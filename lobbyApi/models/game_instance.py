@@ -21,7 +21,7 @@ class GameInstance:
         self.websockets.register_handler("new_host", self.new_host)
         self.websockets.register_handler("exit_from_game", self.exit_from_game)
 
-    def add_player(self, player_id: str):
+    async def add_player(self, player_id: str):
         if self.is_player_in_game(player_id):
             raise HTTPException(status_code=400, detail="Player already in game")
         if len(self.players) >= self.max_players:
@@ -31,6 +31,8 @@ class GameInstance:
         is_host = len(self.players) == 0
         new_player = Player(player_id, is_host=is_host)
         self.players.append(new_player)
+        if(len(self.players)):
+            await self.websockets.send_to_all(Message({"type": "player_joined", "data": PlayerInfoDto(new_player)}))
 
     async def remove_player(self, player_id: str, message: dict):
 

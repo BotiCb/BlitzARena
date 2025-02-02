@@ -9,7 +9,7 @@ import { UserProfileDto } from './dto/output/user-profile.dto';
 import { UserInfoDto } from './dto/output/user-info.dto';
 import { isObjectId } from 'src/shared/utils/mapper';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { DetailedUserProfileDto } from './dto/output/detailed-user-profile';
+import { DetailedUserProfileDto, InGameUserInfoDto } from './dto/output/detailed-user-profile';
 import { EmailService } from 'src/shared/modules/email/email.service';
 import { UserRole } from 'src/shared/decorators/user-roles.decorator';
 @ApiTags('users')
@@ -62,6 +62,22 @@ export class UsersController {
     }
 
     return this.usersService.updateUser(user, dto, file);
+  }
+
+  @UserRole()
+  @Get('ingameinfo/:gameId')
+  async getInGameUserInfos(@CurrentUser() user: UserModel, @Param('gameId') gameId: string): Promise<InGameUserInfoDto[]> {
+    return (await this.usersService.findByGameId(gameId)).map(this.userMapper.fromUserModelToInGameUserInfoDto);
+  }
+
+  @UserRole()
+  @Get('ingameinfo/session-id/:sessionId')
+  async getInGameUserInfo( @Param('sessionId') sessionId: string): Promise<InGameUserInfoDto> {
+    const user = await this.usersService.findBySessionId(sessionId);
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+    return this.userMapper.fromUserModelToInGameUserInfoDto(user);
   }
 
   @UserRole()

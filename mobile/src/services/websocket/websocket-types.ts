@@ -16,3 +16,10 @@ export type TrainingImage = {
   photo: string;
   detectedPlayer: string;
 };
+
+export type PlayerWSInfo = {
+  playerId: string;
+  isConnected: boolean;
+  isHost: boolean;
+  isReady: boolean;
+};

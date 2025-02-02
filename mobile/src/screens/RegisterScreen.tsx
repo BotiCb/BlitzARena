@@ -2,8 +2,8 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
-import { AuthStackParamList } from '~/navigation/types';
 
+import { AuthStackParamList } from '~/navigation/types';
 import { AUTH_ENDPOINTS } from '~/services/restApi/Endpoints';
 import { apiClient } from '~/services/restApi/RestApiService';
 import { RegisterRequestDto } from '~/services/restApi/dto/request.dto';

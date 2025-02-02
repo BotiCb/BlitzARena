@@ -44,3 +44,16 @@ export class JoinGameResponseDto {
     this.sessionId = sessionId;
   }
 }
+
+export class PlayerInfoResponseDto {
+  sessionId: string;
+  photoUrl: string;
+  firstName: string;
+  lastName: string;
+  constructor(sessionId: string, photoUrl: string, firstName: string, lastName: string) {
+    this.sessionId = sessionId;
+    this.photoUrl = photoUrl;
+    this.firstName = firstName;
+    this.lastName = lastName;
+  }
+}

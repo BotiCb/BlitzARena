@@ -4,7 +4,7 @@ import { UserModel } from '../shared/schemas/user.schema';
 
 import { UserInfoDto } from './dto/output/user-info.dto';
 
-import { DetailedUserProfileDto } from './dto/output/detailed-user-profile';
+import { DetailedUserProfileDto, InGameUserInfoDto } from './dto/output/detailed-user-profile';
 
 @Injectable()
 export class UserMapper {
@@ -20,5 +20,9 @@ export class UserMapper {
 
   toDetailedUserInfoDto(user: UserModel): DetailedUserProfileDto {
     return new DetailedUserProfileDto(user);
+  }
+
+  fromUserModelToInGameUserInfoDto(user: UserModel): InGameUserInfoDto {
+    return new InGameUserInfoDto(user);
   }
 }

@@ -39,7 +39,7 @@ class GameService:
 
     async def add_player(self, game_id: str, player_id: str):
         """Add a player to a game."""
-        self.get_game(game_id).add_player(player_id)
+        await self.get_game(game_id).add_player(player_id)
         return {"message": f"Player {player_id} added to game {game_id}"}
 
     def get_game(self, game_id: str) -> GameInstance:

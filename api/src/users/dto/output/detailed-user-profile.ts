@@ -18,3 +18,18 @@ export class DetailedUserProfileDto {
     this.email = user.email;
   }
 }
+
+
+export class InGameUserInfoDto {
+  firstName: string;
+  lastName: string;
+  photoUrl: string;
+  sessionId: string;
+
+  constructor(user: UserModel) {
+    this.firstName = user.firstName;
+    this.lastName = user.lastName;
+    this.photoUrl = user.photoUrl;
+    this.sessionId = user.recentSessionId;
+  }
+}

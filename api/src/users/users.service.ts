@@ -50,6 +50,15 @@ export class UsersService {
     return user;
   }
 
+
+  findByGameId(gameId: string): Promise<UserModel[]> {
+    return this.userModel.find({ recentGameId: gameId }).exec();
+  }
+
+  findBySessionId(sessionId: string): Promise<UserModel> {
+    return this.userModel.findOne({ recentSessionId: sessionId }).exec();
+  }
+
   async updatePassword(user: UserModel, passwords: UpdateUserDto, isAdmin?: boolean) {
     if (isAdmin) {
       return await this.changePassword(user, passwords.newPassword);
