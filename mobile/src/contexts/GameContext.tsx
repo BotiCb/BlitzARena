@@ -29,7 +29,7 @@ export const GameProvider: React.FC<{
 
     return () => {
       websocketService.close();
-    }
+    };
   }, []);
   return (
     <GameContext.Provider value={{ gameId, userSessionId, gameWebsocketService }}>

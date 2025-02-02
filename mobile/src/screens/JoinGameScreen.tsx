@@ -4,10 +4,11 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Camera, Code, useCameraDevices, useCodeScanner } from 'react-native-vision-camera';
+
 import { AppStackParamList } from '~/navigation/types';
-import { JoinGameResponseDto } from '~/services/restApi/dto/response.dto';
 import { GAME_ENDPOINTS } from '~/services/restApi/Endpoints';
 import { apiClient } from '~/services/restApi/RestApiService';
+import { JoinGameResponseDto } from '~/services/restApi/dto/response.dto';
 
 export const JoinGameScreen = () => {
   const device = useCameraDevices()[0];
@@ -32,7 +33,7 @@ export const JoinGameScreen = () => {
         navigation.navigate('GameStack', {
           gameId,
           userSessionId: response.sessionId,
-        })
+        });
       } catch (err: any) {
         setIsActive(true);
         setIsScanning(true);

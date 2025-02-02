@@ -85,7 +85,7 @@ export class AuthService {
     const { firstName, lastName, email, password } = createUserDto;
 
     if ((await this.userModel.findOne({ email }).exec()) !== null) {
-      throw new HttpException('User already exists', 400);
+      throw new HttpException('User already exists', 409);
     }
     const saltRounds = 10;
     const salt = await bcrypt.genSalt(saltRounds);

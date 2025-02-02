@@ -1,6 +1,9 @@
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 
+import { AuthStackParamList } from '~/navigation/types';
 import AuthService from '~/services/AuthService';
 import { LoginResponse } from '~/services/restApi/dto/response.dto';
 
@@ -9,6 +12,8 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const navigation = useNavigation<StackNavigationProp<AuthStackParamList>>();
 
   const handleLogin = async () => {
     setLoading(true);
@@ -60,6 +65,7 @@ const LoginScreen = () => {
         onPress={handleLogin}
         disabled={loading}
       />
+      <Button title="Register" onPress={() => navigation.navigate('RegisterScreen')} />
     </View>
   );
 };
