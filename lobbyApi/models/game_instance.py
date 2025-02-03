@@ -18,7 +18,7 @@ class GameInstance:
         # Initialize services
         self.lobby_service = LobbyService(self)
         self.websockets.register_handler("remove_player", self.remove_player)
-        self.websockets.register_handler("new_host", self.new_host)
+        self.websockets.register_handler("set_host", self.new_host)
         self.websockets.register_handler("exit_from_game", self.exit_from_game)
 
     async def add_player(self, player_id: str):
@@ -56,8 +56,7 @@ class GameInstance:
             if player_to_promote:
                 player_to_promote.is_host = True
                 self.get_player(player_id).is_host = False
-                await self.websockets.send_to_player(player_to_promote.id, Message({"type": "host_role_received", "data": player_to_promote.id}))
-                await self.websockets.send_to_all_except(player_to_promote.id,Message({"type": "new_host", "data": player_to_promote.id}))
+                await self.websockets.send_to_all(Message({"type": "new_host", "data": player_to_promote.id}))
 
     async def exit_from_game(self, player_id: str, message: dict):
         player_to_remove = self.get_player(player_id)

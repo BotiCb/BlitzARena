@@ -1,6 +1,6 @@
 export type WebSocketMsg = {
   type: WebSocketMessageType;
-  data?: string;
+  data?: any;
 };
 
 export enum WebSocketMessageType {
@@ -10,6 +10,8 @@ export enum WebSocketMessageType {
   TRAINING_DATA = 'training_data',
   TRAINING_END = 'training_end',
   TRAINING_READY_FOR_PLAYER = 'training_ready_for_player',
+  SET_PLAYER_AS_HOST = 'set_host',
+  REMOVE_PLAYER = 'remove_player',
 }
 
 export type TrainingImage = {

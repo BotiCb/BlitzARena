@@ -1,4 +1,7 @@
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { GameStackParamList } from '~/navigation/types';
 
 import { GameWebSocketService } from '~/services/websocket/game.websocket.service';
 import { WebSocketService } from '~/services/websocket/websocket.service';
@@ -9,6 +12,9 @@ type GameContextType = {
   userSessionId: string;
   players: Player[];
   gameWebsocketService: GameWebSocketService;
+  areYouHost: boolean;
+  setPlayerAsHost: (playerId: string) => void;
+  onRemovePlayer: (playerId: string) => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -21,20 +27,48 @@ export const GameProvider: React.FC<{
   const websocketService = WebSocketService.getInstance();
   const gameWebsocketService = GameWebSocketService.getInstance();
   const [players, setPlayers] = useState<Player[]>([]);
+  const [areYouHost, setAreYouHost] = useState<boolean>(false);
+  const navigation = useNavigation<StackNavigationProp<GameStackParamList>>();
+
+  const setPlayerAsHost = (playerId: string) => {
+    if (!areYouHost) {
+      return;
+    }
+    gameWebsocketService.setPlayerAsHost(playerId);
+  };
+
+  const onRemovePlayer = (playerId: string) => {
+    if (!areYouHost) {
+      return;
+    }
+    gameWebsocketService.removePlayer(playerId);
+  };
 
   useEffect(() => {
     gameWebsocketService.setWebSocketEventListeners();
     gameWebsocketService.setPlayersHandlerFunction(setPlayers);
     gameWebsocketService.setGameId(gameId);
-
+    gameWebsocketService.setSessionId(userSessionId);
+    gameWebsocketService.setAreYouHostHandlerFunction(setAreYouHost);
+    gameWebsocketService.setNavigationHandler(navigation);
     websocketService.connect(gameId, userSessionId);
+
 
     return () => {
       websocketService.close();
     };
   }, []);
   return (
-    <GameContext.Provider value={{ gameId, userSessionId, gameWebsocketService, players }}>
+    <GameContext.Provider
+      value={{
+        gameId,
+        userSessionId,
+        gameWebsocketService,
+        players,
+        areYouHost,
+        setPlayerAsHost,
+        onRemovePlayer,
+      }}>
       {children}
     </GameContext.Provider>
   );
