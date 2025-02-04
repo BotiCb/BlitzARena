@@ -47,11 +47,11 @@ export class WebSocketService {
       console.log('WebSocket connection closed:', event.reason);
       this.ws = null;
 
-      // if (!event.wasClean && this.reconnectAttempts < this.maxReconnectAttempts) {
-      //   this.reconnect();
-      // } else {
-      //   console.warn('Max reconnect attempts reached or connection closed cleanly');
-      // }
+      if (!event.wasClean && this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.reconnect();
+      } else {
+        console.warn('Max reconnect attempts reached or connection closed cleanly');
+      }
     };
 
     return this.ws;
@@ -61,14 +61,20 @@ export class WebSocketService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       const messageString = JSON.stringify(message);
       this.ws.send(messageString);
-      console.log('Sent message:', message.type);
-    } else {
-      console.error('WebSocket is not connected');
+      if (message.type === 'ping') {
+        console.log('Sent message:', message.type);
+      } else {
+        console.error('WebSocket is not connected');
+      }
     }
   }
 
   onMessageType(type: string, handler: WebSocketListener): void {
     this.messageHandlers[type] = handler;
+  }
+
+  offMessageType(type: string): void {
+    delete this.messageHandlers[type];
   }
 
   close(): void {
@@ -94,20 +100,20 @@ export class WebSocketService {
     }
   }
 
-  // private reconnect(): void {
-  //   this.reconnectAttempts++;
-  //   console.log(
-  //     `Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
-  //   );
+  private reconnect(): void {
+    this.reconnectAttempts++;
+    console.log(
+      `Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
+    );
 
-  //   setTimeout(() => {
-  //     if (this.gameId && this.userSessionId) {
-  //       this.connect(this.gameId, this.userSessionId);
-  //     } else {
-  //       console.error('Reconnect failed: URL is not stored');
-  //     }
-  //   }, this.reconnectDelay);
-  // }
+    setTimeout(() => {
+      if (this.gameId && this.userSessionId) {
+        this.connect(this.gameId, this.userSessionId);
+      } else {
+        console.error('Reconnect failed: URL is not stored');
+      }
+    }, this.reconnectDelay);
+  }
 
   isConnected(): boolean {
     return !!this.ws && this.ws.readyState === WebSocket.OPEN;

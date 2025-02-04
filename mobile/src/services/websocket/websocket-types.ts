@@ -12,6 +12,7 @@ export enum WebSocketMessageType {
   TRAINING_READY_FOR_PLAYER = 'training_ready_for_player',
   SET_PLAYER_AS_HOST = 'set_host',
   REMOVE_PLAYER = 'remove_player',
+  SET_MY_STATE = 'set_player_ready',
 }
 
 export type TrainingImage = {

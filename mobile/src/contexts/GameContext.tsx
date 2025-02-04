@@ -1,8 +1,8 @@
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { GameStackParamList } from '~/navigation/types';
 
+import { GameStackParamList } from '~/navigation/types';
 import { GameWebSocketService } from '~/services/websocket/game.websocket.service';
 import { WebSocketService } from '~/services/websocket/websocket.service';
 import { Player } from '~/utils/models';
@@ -13,6 +13,8 @@ type GameContextType = {
   players: Player[];
   gameWebsocketService: GameWebSocketService;
   areYouHost: boolean;
+  ping: number;
+  playerHandlerFunction: (players: Player[]) => void;
   setPlayerAsHost: (playerId: string) => void;
   onRemovePlayer: (playerId: string) => void;
 };
@@ -28,6 +30,7 @@ export const GameProvider: React.FC<{
   const gameWebsocketService = GameWebSocketService.getInstance();
   const [players, setPlayers] = useState<Player[]>([]);
   const [areYouHost, setAreYouHost] = useState<boolean>(false);
+  const [ping, setPing] = useState<number>(0);
   const navigation = useNavigation<StackNavigationProp<GameStackParamList>>();
 
   const setPlayerAsHost = (playerId: string) => {
@@ -45,17 +48,17 @@ export const GameProvider: React.FC<{
   };
 
   useEffect(() => {
-    gameWebsocketService.setWebSocketEventListeners();
     gameWebsocketService.setPlayersHandlerFunction(setPlayers);
+    gameWebsocketService.setPingHandlerFunction(setPing);
     gameWebsocketService.setGameId(gameId);
     gameWebsocketService.setSessionId(userSessionId);
     gameWebsocketService.setAreYouHostHandlerFunction(setAreYouHost);
     gameWebsocketService.setNavigationHandler(navigation);
+    gameWebsocketService.setWebSocketEventListeners();
     websocketService.connect(gameId, userSessionId);
 
-
     return () => {
-      websocketService.close();
+      gameWebsocketService.close();
     };
   }, []);
   return (
@@ -68,6 +71,8 @@ export const GameProvider: React.FC<{
         areYouHost,
         setPlayerAsHost,
         onRemovePlayer,
+        playerHandlerFunction: setPlayers,
+        ping,
       }}>
       {children}
     </GameContext.Provider>

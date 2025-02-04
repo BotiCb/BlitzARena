@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+
 import { PlayerInfo } from '~/atoms/PlayerInfo';
 import { Player } from '~/utils/models';
 

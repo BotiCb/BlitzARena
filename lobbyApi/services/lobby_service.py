@@ -17,13 +17,9 @@ class LobbyService:
         player = self.game_instance.get_player(player_id)
         is_ready = message.get("is_ready", False)
         player.set_ready(is_ready)
-        if not is_ready:
-            await self.websocket_service.send_to_player(player_id, Message({"type": "player_status", "data": {"is_ready": False}}))
-            await self.websocket_service.send_to_all_except(player_id, Message({"type": "set_player_unready", "data": player_id }))
-            return
 
-        await self.websocket_service.send_to_player(player_id, Message({"type": "player_status", "data": {"is_ready": True}}))
-        await self.websocket_service.send_to_all_except(player_id, Message({"type": "set_player_ready", "data": player_id }))
+        await self.websocket_service.send_to_all(Message({"type": "player_status", "data":
+                {"is_ready": is_ready, "player_id": player_id}}))
 
 
         # Check if all players are ready

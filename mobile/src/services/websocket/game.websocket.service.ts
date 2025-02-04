@@ -1,21 +1,21 @@
+import { StackNavigationProp } from '@react-navigation/stack';
+
 import { AbstractCustomWebSocketService } from './custom-websocket.abstract-service';
 import { PlayerWSInfo, WebSocketMessageType, WebSocketMsg } from './websocket-types';
 import { USER_ENDPOINTS } from '../restApi/Endpoints';
 import { apiClient } from '../restApi/RestApiService';
 import { PlayerInfoResponseDto } from '../restApi/dto/response.dto';
 
+import { GameStackParamList } from '~/navigation/types';
 import { mergePlayerArray, mergePlayer } from '~/utils/mappers';
 import { Player } from '~/utils/models';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { GameStackParamList } from '~/navigation/types';
 
 // game.websocket.service.ts
 export class GameWebSocketService extends AbstractCustomWebSocketService {
-  private playersHandlerFunction: (players: any) => void = () => {};
   private areYouHostHandlerFunction: (areYouHost: boolean) => void = () => {};
   private navigator: StackNavigationProp<GameStackParamList> | null = null;
-  private gameId: string = '';
-  private sessionId: string = '';
+  private pinghandlerFunction: (ping: number) => void = () => {};
+  private pingInterval: NodeJS.Timeout | null = null;
 
   setWebSocketEventListeners() {
     this.websocketService.onMessageType('game_info', this.handleGameInfoEvent);
@@ -26,44 +26,62 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     this.websocketService.onMessageType('player_removed', this.handlePlayerRemovedEvent);
     this.websocketService.onMessageType('new_host', this.handleNewHostEvent);
     this.websocketService.onMessageType('you_were_removed', this.handleYouWereRemovedEvent);
+    this.websocketService.onMessageType('pong', this.handlePongEvent);
+    this.startPingInterval();
   }
-
-  setPlayersHandlerFunction = (handler: (players: Player[]) => void) => {
-    this.playersHandlerFunction = handler;
+  private startPingInterval() {
+    if (!this.pingInterval) {
+      this.pingInterval = setInterval(() => {
+        const currentTime = Date.now();
+        this.websocketService.sendMessage({
+          type: WebSocketMessageType.PING,
+          data: {
+            timestamp: currentTime,
+          },
+        });
+      }, 1000);
+    }
+  }
+  private handlePongEvent = (message: WebSocketMsg) => {
+    const sentTimestamp = message.data.timestamp;
+    const currentTime = Date.now();
+    const latency = currentTime - sentTimestamp;
+    this.pinghandlerFunction(latency);
   };
 
   setAreYouHostHandlerFunction = (handler: (areYouHost: boolean) => void) => {
     this.areYouHostHandlerFunction = handler;
   };
 
-  setGameId = (gameId: string) => {
-    this.gameId = gameId;
-  };
-
-  setSessionId = (sessionId: string) => {
-    this.sessionId = sessionId;
-  };
   setNavigationHandler = (navigator: StackNavigationProp<GameStackParamList>) => {
     this.navigator = navigator;
   };
 
+  setPingHandlerFunction = (handler: (ping: number) => void) => {
+    this.pinghandlerFunction = handler;
+  };
+
   handleGameInfoEvent = async (message: WebSocketMsg) => {
-    if (!this.gameId) {
+    if (!AbstractCustomWebSocketService.gameId) {
       throw new Error('Game id is not set');
     }
 
     try {
       const playerDetails: PlayerInfoResponseDto[] = (
-        await apiClient.get(USER_ENDPOINTS.GET_PLAYERS_IN_GAME(this.gameId))
+        await apiClient.get(
+          USER_ENDPOINTS.GET_PLAYERS_IN_GAME(AbstractCustomWebSocketService.gameId)
+        )
       ).data;
 
       const playersInGame: PlayerWSInfo[] = message.data.players;
       if (
-        playersInGame.find((player: PlayerWSInfo) => player.playerId === this.sessionId)?.isHost
+        playersInGame.find(
+          (player: PlayerWSInfo) => player.playerId === AbstractCustomWebSocketService.sessionId
+        )?.isHost
       ) {
         this.areYouHostHandlerFunction(true);
       }
-      this.playersHandlerFunction(mergePlayerArray(playersInGame, playerDetails));
+      GameWebSocketService.playersHandlerFunction(mergePlayerArray(playersInGame, playerDetails));
     } catch (e) {
       console.log(e);
     }
@@ -79,7 +97,10 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       const mergedPlayer = mergePlayer(connectedPlayer, playerDetails);
       console.log(mergedPlayer);
       // Correctly use previous state to avoid nested arrays
-      this.playersHandlerFunction((prevPlayers: Player[]) => [...prevPlayers, mergedPlayer]);
+      GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => [
+        ...prevPlayers,
+        mergedPlayer,
+      ]);
     } catch (e) {
       console.log(e);
     }
@@ -88,7 +109,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   handlePlayerConnectedEvent = async (message: WebSocketMsg) => {
     const connectedPlayerId: string = message.data;
 
-    this.playersHandlerFunction((prevPlayers: Player[]) => {
+    GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
       return prevPlayers.map((player: Player) => {
         if (player.sessionID === connectedPlayerId) {
           return { ...player, isConnected: true }; // Immutable update
@@ -101,7 +122,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   handlePlayerDisconnectedEvent = async (message: WebSocketMsg) => {
     const disconnectedPlayerId: string = message.data;
 
-    this.playersHandlerFunction((prevPlayers: Player[]) => {
+    GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
       return prevPlayers.map((player: Player) => {
         if (player.sessionID === disconnectedPlayerId) {
           return { ...player, isConnected: false };
@@ -114,19 +135,19 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   handlePlayerLeftEvent = async (message: WebSocketMsg) => {
     const leftPlayerId: string = message.data;
 
-    this.playersHandlerFunction((prevPlayers: Player[]) => {
+    GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
       return prevPlayers.filter((player: Player) => player.sessionID !== leftPlayerId);
     });
   };
 
   handleNewHostEvent = async (message: WebSocketMsg) => {
     const newHostId: string = message.data;
-    if (newHostId === this.sessionId) {
+    if (newHostId === AbstractCustomWebSocketService.sessionId) {
       this.areYouHostHandlerFunction(true);
     } else {
       this.areYouHostHandlerFunction(false);
     }
-    this.playersHandlerFunction((prevPlayers: Player[]) => {
+    GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
       return prevPlayers.map((player: Player) => {
         if (player.sessionID === newHostId) {
           return { ...player, isHost: true };
@@ -156,7 +177,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
 
   handlePlayerRemovedEvent = async (message: WebSocketMsg) => {
     const removedPlayerId: string = message.data;
-    this.playersHandlerFunction((prevPlayers: Player[]) => {
+    GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
       return prevPlayers.filter((player: Player) => player.sessionID !== removedPlayerId);
     });
   };
@@ -166,5 +187,21 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       throw new Error('Navigator is not set');
     }
     this.navigator.popToTop();
+  };
+
+  close = () => {
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
+    this.websocketService.close();
+    this.websocketService.offMessageType('game_info');
+    this.websocketService.offMessageType('player_joined');
+    this.websocketService.offMessageType('player_connected');
+    this.websocketService.offMessageType('player_disconnected');
+    this.websocketService.offMessageType('player_exited');
+    this.websocketService.offMessageType('player_removed');
+    this.websocketService.offMessageType('new_host');
+    this.websocketService.offMessageType('you_were_removed');
   };
 }

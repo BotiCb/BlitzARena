@@ -8,7 +8,8 @@ from utils.dto_convention_converter import convert_dict_to_camel_case
 class WebSocketService:
     def __init__(self):
         self.connections: Dict[str, WebSocket] = {}  # Stores connections by player ID
-        self.message_handlers: Dict[str, Callable[[str, dict], None]] = {}  # Handlers for message types
+        self.message_handlers: Dict[str, Callable[[str, dict], None]] = {}
+        self.register_handler('ping', self.pong)
 
     async def add_connection(self, player_id: str, websocket: WebSocket):
         """Add a player's WebSocket connection."""
@@ -71,3 +72,8 @@ class WebSocketService:
     async def _send_error(self, player_id: str, error_message: str):
         """Send an error message to a player."""
         await self.send_to_player(player_id, Message({"type": "error", "data": error_message}))
+
+    async def pong(self, player_id: str, message: dict):
+        timestamp = message.get("timestamp")
+        if timestamp is not None:
+            await self.send_to_player(player_id, Message({"type": "pong", "data": {"timestamp": timestamp}}))
