@@ -26,8 +26,6 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str, player_id: str,
             try:
                 data = await websocket.receive_json()
                 message = Message(data)
-                if message.type != "ping":
-                    print(f"Received message from player {player_id}: {message.type} - {message.data}")
                 await game_service.handle_websocket_message(game_id, websocket, message)
             except ValueError as e:
                 await websocket.send_json({"error": "Invalid message format"})
@@ -40,6 +38,6 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str, player_id: str,
         await websocket.close()
 
     except Exception as e:
-        await websocket.send_json({"error": "An unexpected error occurred"})
+        await websocket.send_json({"error": "An unexpected error occurred ", "detail": str(e)})
         await websocket.close()
-        print(f"Unexpected error: {e}")
+        print(f"Unexpected error: ", e)

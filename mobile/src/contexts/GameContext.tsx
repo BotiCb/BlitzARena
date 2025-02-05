@@ -18,6 +18,7 @@ type GameContextType = {
   playerHandlerFunction: (players: Player[]) => void;
   setPlayerAsHost: (playerId: string) => void;
   onRemovePlayer: (playerId: string) => void;
+  onStartNextGamePhase: () => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -49,6 +50,13 @@ export const GameProvider: React.FC<{
     gameWebsocketService.removePlayer(playerId);
   };
 
+  const onStartNextGamePhase = () => {
+    if (!areYouHost) {
+      return;
+    }
+    gameWebsocketService.startNextGamePhase();
+  };
+
   useEffect(() => {
     gameWebsocketService.setPlayersHandlerFunction(setPlayers);
     gameWebsocketService.setPingHandlerFunction(setPing);
@@ -77,6 +85,7 @@ export const GameProvider: React.FC<{
         onRemovePlayer,
         playerHandlerFunction: setPlayers,
         ping,
+        onStartNextGamePhase,
       }}>
       {children}
     </GameContext.Provider>

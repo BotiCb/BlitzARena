@@ -28,8 +28,8 @@ export class LobbyWebSocketService extends AbstractCustomWebSocketService {
     });
   };
 
-  async setMyStatus(isReady: boolean) {
-    await this.websocketService.sendMessage({
+  setMyStatus(isReady: boolean) {
+    this.websocketService.sendMessage({
       type: WebSocketMessageType.SET_MY_STATE,
       data: {
         isReady,

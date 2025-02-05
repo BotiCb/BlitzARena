@@ -1,8 +1,8 @@
 import uuid
 from typing import Dict
-from fastapi import WebSocket, HTTPException, Depends
+from fastapi import WebSocket, HTTPException
 
-from models.game_instance import GameInstance
+from game.game_instance import GameInstance
 from models.message import Message
 
 
@@ -11,6 +11,7 @@ class GameService:
         self.games: Dict[str, GameInstance] = {}  # {game_id: Lobby}
 
     def generate_game_id(self) -> str:
+
         """Generate a unique game ID using UUID."""
         return str(uuid.uuid4())
 

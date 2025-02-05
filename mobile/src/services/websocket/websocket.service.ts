@@ -63,9 +63,9 @@ export class WebSocketService {
       this.ws.send(messageString);
       if (message.type !== 'ping') {
         console.log('Sent message:', message.type);
-      } else {
-        console.error('WebSocket is not connected');
       }
+    } else {
+      console.error('WebSocket is not connected');
     }
   }
 
@@ -90,6 +90,9 @@ export class WebSocketService {
     try {
       const parsedMessage = JSON.parse(message) as WebSocketMsg;
       const type = parsedMessage.type;
+      if (type !== 'pong') {
+        console.log('Received message:', message);
+      }
       if (this.messageHandlers[type]) {
         this.messageHandlers[type](parsedMessage);
       } else {

@@ -13,6 +13,7 @@ export enum WebSocketMessageType {
   SET_PLAYER_AS_HOST = 'set_host',
   REMOVE_PLAYER = 'remove_player',
   SET_MY_STATE = 'set_player_ready',
+  NEXT_GAME_PHASE = 'start_next_phase',
 }
 
 export type TrainingImage = {
@@ -27,10 +28,9 @@ export type PlayerWSInfo = {
   isReady: boolean;
 };
 
-
 export type GameWSInfo = {
   gameId: string;
   players: PlayerWSInfo[];
   currentPhase: string;
   max_players: number;
-}
+};

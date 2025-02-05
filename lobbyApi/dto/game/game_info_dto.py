@@ -1,7 +1,7 @@
 from typing import List
 
 from dto.player.player_info_dto import PlayerInfoDto
-from models.game_instance import GameInstance
+from game.game_instance import GameInstance
 
 
 class GameInfoDto:

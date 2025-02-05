@@ -16,6 +16,7 @@ export const LobbyScreen = () => {
     onRemovePlayer,
     playerHandlerFunction,
     ping,
+    onStartNextGamePhase,
   } = useGame();
 
   const [ready, setReady] = useState(false);
@@ -56,7 +57,9 @@ export const LobbyScreen = () => {
         onRemovePlayer={onRemovePlayer}
       />
       <Button onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />
-      {isEveryOneReady && areYouHost && <Button title="Start Game" />}
+      {isEveryOneReady && areYouHost && (
+        <Button title="Start Game" onPress={onStartNextGamePhase} />
+      )}
     </View>
   );
 };

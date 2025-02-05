@@ -1,5 +1,5 @@
 from fastapi import WebSocket
-from typing import Dict, Callable, Optional
+from typing import Dict, Callable, Optional, Coroutine, Any
 
 from models.message import Message
 from utils.dto_convention_converter import convert_dict_to_camel_case
@@ -8,7 +8,7 @@ from utils.dto_convention_converter import convert_dict_to_camel_case
 class WebSocketService:
     def __init__(self):
         self.connections: Dict[str, WebSocket] = {}  # Stores connections by player ID
-        self.message_handlers: Dict[str, Callable[[str, dict], None]] = {}
+        self.message_handlers: Dict[str, Callable[[str, dict], Coroutine[Any, Any, None]]] = {}
         self.register_handler('ping', self.pong)
 
     async def add_connection(self, player_id: str, websocket: WebSocket):
@@ -50,21 +50,31 @@ class WebSocketService:
                     print(f"Failed to send message to {pid}: {e}")
 
     def register_handler(self, message_type: str, handler: Callable[[str, dict], None]):
+        print(f"Registered handler for message type '{message_type}'")
         """Register a handler for a specific message type."""
         if message_type in self.message_handlers:
             raise ValueError(f"Handler for message type '{message_type}' already exists")
         self.message_handlers[message_type] = handler
 
-    async def handle_message(self, player_id: str, message: Message):
-        """Dispatch a message to the appropriate handler."""
-        handler = self.message_handlers[message.type]
-        if not handler:
-            await self._send_error(player_id, f"No handler found for message type '{message.type}'.")
-            return
+    def unregister_handler(self, message_type: str):
+        if message_type in self.message_handlers:
+            print(f"Unregistered handler for message type '{message_type}'")
+            del self.message_handlers[message_type]
 
+    async def handle_message(self, player_id: str, message: Message):
         try:
-            # Pass only the data part to the handler
+            """Dispatch a message to the appropriate handler."""
+            handler = self.message_handlers[message.type]
+            if message.type != "ping":
+                print(f"Received message from player {player_id}: {message.type} - {message.data}")
             await handler(player_id, message.data)
+
+        except KeyError as e:
+            print(f"No handler found for message type '{message.type}': {e}")
+            await self._send_error(player_id, f"No handler found for message type '{message.type}'.")
+
+        # Pass only the data part to the handler
+
         except Exception as e:
             print(f"Error handling message from player {player_id}: {e}")
             await self._send_error(player_id, error_message=str(e))

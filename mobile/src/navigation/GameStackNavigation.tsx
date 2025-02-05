@@ -6,6 +6,7 @@ import { AppStackParamList, GameStackParamList } from './types';
 
 import { GameProvider } from '~/contexts/GameContext';
 import { LobbyScreen } from '~/screens/LobbyScreen';
+import SplashScreen from '~/screens/SplashScreen';
 
 const Stack = createStackNavigator<GameStackParamList>();
 
@@ -17,6 +18,7 @@ const GameStack = () => {
     <GameProvider gameId={gameId} userSessionId={userSessionId}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Lobby" component={LobbyScreen} />
+        <Stack.Screen name="Loading" component={SplashScreen} />
       </Stack.Navigator>
     </GameProvider>
   );

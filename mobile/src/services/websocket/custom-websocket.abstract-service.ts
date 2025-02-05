@@ -5,7 +5,6 @@ import { Player } from '~/utils/models';
 export abstract class AbstractCustomWebSocketService {
   protected websocketService: WebSocketService = WebSocketService.getInstance();
   protected static playersHandlerFunction: (players: any) => void = () => {};
-  protected static gamePhaseHandlerFunction: (gamePhase: string) => void = () => {};
   protected static gameId: string = '';
   protected static sessionId: string = '';
 
@@ -20,10 +19,6 @@ export abstract class AbstractCustomWebSocketService {
 
   setPlayersHandlerFunction = (handler: (players: Player[]) => void) => {
     AbstractCustomWebSocketService.playersHandlerFunction = handler;
-  };
-
-  setGamePhaseHandlerFunction = (handler: (gamePhase: string) => void) => {
-    AbstractCustomWebSocketService.gamePhaseHandlerFunction = handler;
   };
 
   setGameId = (gameId: string) => {

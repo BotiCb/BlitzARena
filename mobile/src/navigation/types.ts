@@ -18,5 +18,6 @@ export type AppStackParamList = {
 };
 
 export type GameStackParamList = {
+  Loading: undefined;
   Lobby: undefined;
 };

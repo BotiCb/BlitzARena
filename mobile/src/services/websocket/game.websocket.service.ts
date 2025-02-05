@@ -9,10 +9,13 @@ import { PlayerInfoResponseDto } from '../restApi/dto/response.dto';
 import { GameStackParamList } from '~/navigation/types';
 import { mergePlayerArray, mergePlayer } from '~/utils/mappers';
 import { Player } from '~/utils/models';
+import { navigateToPhase } from '~/utils/utils';
 
 // game.websocket.service.ts
 export class GameWebSocketService extends AbstractCustomWebSocketService {
   private areYouHostHandlerFunction: (areYouHost: boolean) => void = () => {};
+  private gamePhaseHandlerFunction: (gamePhase: string) => void = () => {};
+
   private navigator: StackNavigationProp<GameStackParamList> | null = null;
   private pinghandlerFunction: (ping: number) => void = () => {};
   private pingInterval: NodeJS.Timeout | null = null;
@@ -62,13 +65,15 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   setPingHandlerFunction = (handler: (ping: number) => void) => {
     this.pinghandlerFunction = handler;
   };
+  setGamePhaseHandlerFunction = (handler: (gamePhase: string) => void) => {
+    this.gamePhaseHandlerFunction = handler;
+  };
 
   handleGameInfoEvent = async (message: WebSocketMsg) => {
     if (!AbstractCustomWebSocketService.gameId) {
       throw new Error('Game id is not set');
     }
     const gameInfo: GameWSInfo = message.data;
-    GameWebSocketService.gamePhaseHandlerFunction(gameInfo.currentPhase);
     try {
       const playerDetails: PlayerInfoResponseDto[] = (
         await apiClient.get(
@@ -85,6 +90,10 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
         this.areYouHostHandlerFunction(true);
       }
       GameWebSocketService.playersHandlerFunction(mergePlayerArray(playersInGame, playerDetails));
+      this.gamePhaseHandlerFunction(gameInfo.currentPhase);
+      if (this.navigator) {
+        navigateToPhase(gameInfo.currentPhase, this.navigator);
+      }
     } catch (e) {
       console.log(e);
     }
@@ -193,7 +202,16 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   };
 
   handleGamePhaseChangedEvent = async (message: WebSocketMsg) => {
-    GameWebSocketService.gamePhaseHandlerFunction(message.data);
+    this.gamePhaseHandlerFunction(message.data);
+    if (this.navigator) {
+      navigateToPhase(message.data, this.navigator);
+    }
+  };
+
+  startNextGamePhase = () => {
+    this.websocketService.sendMessage({
+      type: WebSocketMessageType.NEXT_GAME_PHASE,
+    });
   };
 
   close = () => {
