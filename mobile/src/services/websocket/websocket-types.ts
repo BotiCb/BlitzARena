@@ -26,3 +26,11 @@ export type PlayerWSInfo = {
   isHost: boolean;
   isReady: boolean;
 };
+
+
+export type GameWSInfo = {
+  gameId: string;
+  players: PlayerWSInfo[];
+  currentPhase: string;
+  max_players: number;
+}

@@ -8,6 +8,7 @@ import { WebSocketService } from '~/services/websocket/websocket.service';
 import { Player } from '~/utils/models';
 
 type GameContextType = {
+  gamePhase: string;
   gameId: string;
   userSessionId: string;
   players: Player[];
@@ -28,6 +29,7 @@ export const GameProvider: React.FC<{
 }> = ({ gameId, userSessionId, children }) => {
   const websocketService = WebSocketService.getInstance();
   const gameWebsocketService = GameWebSocketService.getInstance();
+  const [gamePhase, setGamePhase] = useState<string>('');
   const [players, setPlayers] = useState<Player[]>([]);
   const [areYouHost, setAreYouHost] = useState<boolean>(false);
   const [ping, setPing] = useState<number>(0);
@@ -50,6 +52,7 @@ export const GameProvider: React.FC<{
   useEffect(() => {
     gameWebsocketService.setPlayersHandlerFunction(setPlayers);
     gameWebsocketService.setPingHandlerFunction(setPing);
+    gameWebsocketService.setGamePhaseHandlerFunction(setGamePhase);
     gameWebsocketService.setGameId(gameId);
     gameWebsocketService.setSessionId(userSessionId);
     gameWebsocketService.setAreYouHostHandlerFunction(setAreYouHost);
@@ -64,6 +67,7 @@ export const GameProvider: React.FC<{
   return (
     <GameContext.Provider
       value={{
+        gamePhase,
         gameId,
         userSessionId,
         gameWebsocketService,

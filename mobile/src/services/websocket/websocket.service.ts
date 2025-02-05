@@ -61,7 +61,7 @@ export class WebSocketService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       const messageString = JSON.stringify(message);
       this.ws.send(messageString);
-      if (message.type === 'ping') {
+      if (message.type !== 'ping') {
         console.log('Sent message:', message.type);
       } else {
         console.error('WebSocket is not connected');

@@ -39,4 +39,3 @@ class LobbyService:
     async def transition_to_training(self):
         """Transition the game from lobby to training phase."""
         self.game_instance.transition_to_phase("training")
-        await self.websocket_service.send_to_all(Message({"type": "transition_to_training"}))

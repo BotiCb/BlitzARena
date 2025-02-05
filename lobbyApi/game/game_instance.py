@@ -132,3 +132,7 @@ class GameInstance:
         await self.websockets.send_to_all(
             Message({"type": "new_host", "data": new_host.id})
         )
+
+    async def transition_to_phase(self, phase: str):
+        self.current_phase = phase
+        self.websockets.send_to_all(Message({"type": "game_phase", "data": phase}))

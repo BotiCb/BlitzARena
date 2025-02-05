@@ -1,7 +1,7 @@
 import { StackNavigationProp } from '@react-navigation/stack';
 
 import { AbstractCustomWebSocketService } from './custom-websocket.abstract-service';
-import { PlayerWSInfo, WebSocketMessageType, WebSocketMsg } from './websocket-types';
+import { GameWSInfo, PlayerWSInfo, WebSocketMessageType, WebSocketMsg } from './websocket-types';
 import { USER_ENDPOINTS } from '../restApi/Endpoints';
 import { apiClient } from '../restApi/RestApiService';
 import { PlayerInfoResponseDto } from '../restApi/dto/response.dto';
@@ -27,6 +27,8 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     this.websocketService.onMessageType('new_host', this.handleNewHostEvent);
     this.websocketService.onMessageType('you_were_removed', this.handleYouWereRemovedEvent);
     this.websocketService.onMessageType('pong', this.handlePongEvent);
+    this.websocketService.onMessageType('game_phase', this.handleGamePhaseChangedEvent);
+
     this.startPingInterval();
   }
   private startPingInterval() {
@@ -65,7 +67,8 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     if (!AbstractCustomWebSocketService.gameId) {
       throw new Error('Game id is not set');
     }
-
+    const gameInfo: GameWSInfo = message.data;
+    GameWebSocketService.gamePhaseHandlerFunction(gameInfo.currentPhase);
     try {
       const playerDetails: PlayerInfoResponseDto[] = (
         await apiClient.get(
@@ -73,7 +76,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
         )
       ).data;
 
-      const playersInGame: PlayerWSInfo[] = message.data.players;
+      const playersInGame: PlayerWSInfo[] = gameInfo.players;
       if (
         playersInGame.find(
           (player: PlayerWSInfo) => player.playerId === AbstractCustomWebSocketService.sessionId
@@ -187,6 +190,10 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       throw new Error('Navigator is not set');
     }
     this.navigator.popToTop();
+  };
+
+  handleGamePhaseChangedEvent = async (message: WebSocketMsg) => {
+    GameWebSocketService.gamePhaseHandlerFunction(message.data);
   };
 
   close = () => {
