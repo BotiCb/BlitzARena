@@ -5,6 +5,10 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
   private isSendingPhotos: boolean = false;
   private photoQueue: TrainingImage[] = [];
 
+  setWebSocketEventListeners(): void {
+    
+  }
+
   setTrainingReadyForPlayerEventListener(eventListener: () => void) {
     this.websocketService.onMessageType('training_ready_for_player', eventListener);
   }
@@ -38,21 +42,22 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     this.isSendingPhotos = true;
 
     while (this.photoQueue.length > 0) {
-      const photo: TrainingImage | undefined = this.photoQueue.shift(); // Remove the first photo from the queue
+      const photo: TrainingImage | undefined = this.photoQueue.shift();
 
       if (photo) {
         try {
-          // Send the photo to the server via WebSocket
-
           this.sendTrainingImage(photo);
         } catch (error) {
           console.error('Error sending photo:', error);
-          this.photoQueue.unshift(photo); // Re-add the photo to the front of the queue
-          break; // Exit the loop to retry later
+          this.photoQueue.unshift(photo); 
+          break;
         }
       }
     }
 
     this.isSendingPhotos = false;
+  }
+  close(): void {
+    
   }
 }

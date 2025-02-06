@@ -1,6 +1,6 @@
 import { WebSocketMsg } from './websocket-types';
 
-import { FASTAPI_BASE_URL } from '~/utils/constants';
+import { FASTAPI_BASE_URL } from '~/utils/constants/constants';
 
 type WebSocketListener = (message: any) => void;
 
