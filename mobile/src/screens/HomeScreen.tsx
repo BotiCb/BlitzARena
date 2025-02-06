@@ -9,7 +9,7 @@ import { USER_ENDPOINTS } from '~/services/restApi/Endpoints';
 import { apiClient } from '~/services/restApi/RestApiService';
 
 const HomeScreen = () => {
-  const navigation = useNavigation<NavigationProp<AppStackParamList>>();
+  const navigation = useNavigation<NavigationProp<AppStackParamList, 'Home'>>();
   const { userInfo } = useAuth();
   const handleLogout = async () => {
     await AuthService.logout();

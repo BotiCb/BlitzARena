@@ -56,7 +56,9 @@ export const GameProvider: React.FC<{
     }
     gameWebsocketService.startNextGamePhase();
   };
-
+  useEffect(() => {
+    gameWebsocketService.setNavigationHandler(navigation);
+  }, [navigation]);
   useEffect(() => {
     gameWebsocketService.setPlayersHandlerFunction(setPlayers);
     gameWebsocketService.setPingHandlerFunction(setPing);

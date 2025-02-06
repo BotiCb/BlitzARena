@@ -10,7 +10,7 @@ import { CreateGameRequestDto } from '~/services/restApi/dto/request.dto';
 import { CreateGameResponseDto } from '~/services/restApi/dto/response.dto';
 
 const GameSetupScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<AppStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<AppStackParamList, 'CreateGame'>>();
   const [maxPlayers, setMaxPlayers] = useState<number>(2);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

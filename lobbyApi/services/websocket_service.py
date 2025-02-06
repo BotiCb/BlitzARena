@@ -49,7 +49,7 @@ class WebSocketService:
                 except Exception as e:
                     print(f"Failed to send message to {pid}: {e}")
 
-    def register_handler(self, message_type: str, handler: Callable[[str, dict], None]):
+    def register_handler(self, message_type: str, handler: Callable[[str, dict], Coroutine[Any, Any, None]]):
         print(f"Registered handler for message type '{message_type}'")
         """Register a handler for a specific message type."""
         if message_type in self.message_handlers:

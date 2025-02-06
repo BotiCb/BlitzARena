@@ -18,7 +18,7 @@ const RegisterScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const navigation = useNavigation<StackNavigationProp<AuthStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<AuthStackParamList, 'RegisterScreen'>>();
 
   const handleRegister = async () => {
     setLoading(true);

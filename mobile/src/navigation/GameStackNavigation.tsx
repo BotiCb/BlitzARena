@@ -1,27 +1,32 @@
 import { useRoute, RouteProp } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import React, { useEffect } from 'react';
+import React from 'react';
 
-import { AppStackParamList, GameStackParamList } from './types';
+import { AppStackParamList } from './types';
 
-import { GameProvider } from '~/contexts/GameContext';
+import { GameProvider, useGame } from '~/contexts/GameContext';
 import { LobbyScreen } from '~/screens/LobbyScreen';
 import SplashScreen from '~/screens/SplashScreen';
-
-const Stack = createStackNavigator<GameStackParamList>();
 
 const GameStack = () => {
   const route = useRoute<RouteProp<AppStackParamList, 'GameStack'>>();
   const { gameId, userSessionId } = route.params;
-  useEffect(() => {});
+
   return (
     <GameProvider gameId={gameId} userSessionId={userSessionId}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Lobby" component={LobbyScreen} />
-        <Stack.Screen name="Loading" component={SplashScreen} />
-      </Stack.Navigator>
+      <GameContent />
     </GameProvider>
   );
+};
+
+const GameContent = () => {
+  const { gamePhase } = useGame();
+
+  switch (gamePhase) {
+    case 'lobby':
+      return <LobbyScreen />;
+    default:
+      return <SplashScreen />;
+  }
 };
 
 export default GameStack;

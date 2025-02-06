@@ -20,7 +20,7 @@ export const JoinGameScreen = () => {
   const [isScanning, setIsScanning] = useState(true);
   const [error, setError] = useState('');
 
-  const navigation = useNavigation<StackNavigationProp<AppStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<AppStackParamList, 'JoinGame'>>();
 
   const handleCodeScanned = async (codes: Code[]) => {
     if (codes[0].value?.startsWith('Game ID: ') && isScanning) {

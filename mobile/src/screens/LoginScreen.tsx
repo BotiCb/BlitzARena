@@ -13,7 +13,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const navigation = useNavigation<StackNavigationProp<AuthStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<AuthStackParamList, 'LoginScreen'>>();
 
   const handleLogin = async () => {
     setLoading(true);

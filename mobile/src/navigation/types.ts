@@ -17,7 +17,9 @@ export type AppStackParamList = {
   JoinGame: undefined;
 };
 
+// types.ts
 export type GameStackParamList = {
+  GameMain: undefined; // Add this
   Loading: undefined;
   Lobby: undefined;
 };

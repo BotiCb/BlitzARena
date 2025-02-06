@@ -9,7 +9,6 @@ import { PlayerInfoResponseDto } from '../restApi/dto/response.dto';
 import { GameStackParamList } from '~/navigation/types';
 import { mergePlayerArray, mergePlayer } from '~/utils/mappers';
 import { Player } from '~/utils/models';
-import { navigateToPhase } from '~/utils/utils';
 
 // game.websocket.service.ts
 export class GameWebSocketService extends AbstractCustomWebSocketService {
@@ -91,9 +90,6 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       }
       GameWebSocketService.playersHandlerFunction(mergePlayerArray(playersInGame, playerDetails));
       this.gamePhaseHandlerFunction(gameInfo.currentPhase);
-      if (this.navigator) {
-        navigateToPhase(gameInfo.currentPhase, this.navigator);
-      }
     } catch (e) {
       console.log(e);
     }
@@ -108,7 +104,6 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
 
       const mergedPlayer = mergePlayer(connectedPlayer, playerDetails);
       console.log(mergedPlayer);
-      // Correctly use previous state to avoid nested arrays
       GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => [
         ...prevPlayers,
         mergedPlayer,
@@ -124,7 +119,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
       return prevPlayers.map((player: Player) => {
         if (player.sessionID === connectedPlayerId) {
-          return { ...player, isConnected: true }; // Immutable update
+          return { ...player, isConnected: true };
         }
         return player;
       });
@@ -203,9 +198,6 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
 
   handleGamePhaseChangedEvent = async (message: WebSocketMsg) => {
     this.gamePhaseHandlerFunction(message.data);
-    if (this.navigator) {
-      navigateToPhase(message.data, this.navigator);
-    }
   };
 
   startNextGamePhase = () => {
