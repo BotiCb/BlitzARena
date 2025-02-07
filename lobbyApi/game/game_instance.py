@@ -5,6 +5,7 @@ from fastapi import WebSocket, HTTPException
 from dto.player.player_info_dto import PlayerInfoDto
 from game.game_context import GameContext
 from game_phase_services.lobby_phase_service import LobbyService
+from game_phase_services.model_training_phase_service import ModelTrainingPhaseService
 from game_phase_services.phase_service import PhaseService
 
 from models.message import Message
@@ -28,7 +29,8 @@ class GameInstance:
             get_current_phase=lambda: self.current_phase
         )
         self.phase_services: Dict[str, PhaseService] = {
-            "lobby": LobbyService(self.context)
+            "lobby": LobbyService(self.context),
+            "training": ModelTrainingPhaseService(self.context),
             # Add other phases here (e.g., "training": TrainingService(self.context))
         }
         self.current_phase_service = self.phase_services.get(self.current_phase)

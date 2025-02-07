@@ -1,5 +1,6 @@
 import { useRoute, RouteProp } from '@react-navigation/native';
 import React from 'react';
+import {Text } from 'react-native';
 
 import { AppStackParamList } from './types';
 
@@ -20,16 +21,22 @@ const GameStack = () => {
 };
 
 const GameContent = () => {
-  const { gamePhase } = useGame();
-
-  switch (gamePhase) {
-    case 'lobby':
-      return <LobbyScreen />;
-    case 'training':
-      return <ModelTrainingScreen />;
-    default:
-      return <SplashScreen />;
-  }
+  const { gamePhase, ping } = useGame();
+  return (
+    <>
+      <Text>{ping}</Text>
+      {(() => {
+        switch (gamePhase) {
+          case 'lobby':
+            return <LobbyScreen />;
+          case 'training':
+            return <ModelTrainingScreen />;
+          default:
+            return <SplashScreen />;
+        }
+      })()}
+    </>
+  );
 };
 
 export default GameStack;

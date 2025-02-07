@@ -3,17 +3,17 @@ import { ImageCropData } from '@react-native-community/image-editor/lib/typescri
 import RNFS from 'react-native-fs';
 import { Camera } from 'react-native-vision-camera';
 import { ISharedValue } from 'react-native-worklets-core';
-import { ObjectDetection } from '~/utils/types';
+
 import { TrainingImage } from '../websocket/websocket-types';
+
 import { TRAINING_CAMERA_CONSTANTS } from '~/utils/constants/frame-processing-constans';
-
-
+import { ObjectDetection } from '~/utils/types';
 
 export async function takeCroppedTrainingImage(
   camera: Camera,
   detections: ISharedValue<ObjectDetection | null>,
   lastUpdateTime: ISharedValue<number>,
-  playerNumber: number,
+  playerId: string,
   takePhotos: boolean
 ): Promise<TrainingImage | null> {
   while (Date.now() - lastUpdateTime.value > TRAINING_CAMERA_CONSTANTS.MAX_TAKE_PHOTO_TIME_DELTA) {
@@ -62,7 +62,7 @@ export async function takeCroppedTrainingImage(
     await RNFS.unlink(photo.path);
     const trainingImage: TrainingImage = {
       photo: base64Image,
-      detectedPlayer: playerNumber.toString(),
+      detectedPlayer: playerId,
     };
 
     return trainingImage;

@@ -20,7 +20,7 @@ const RootNavigation = () => {
 
   return (
     <NavigationContainer>
-      <RootStack.Navigator>
+      <RootStack.Navigator screenOptions={{ headerShown: false }}>
         {isLoggedIn ? (
           <RootStack.Screen name="AppStack" component={AppStack} />
         ) : (

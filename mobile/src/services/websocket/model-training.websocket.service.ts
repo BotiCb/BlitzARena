@@ -4,13 +4,19 @@ import { TrainingImage, WebSocketMessageType, WebSocketMsg } from './websocket-t
 export class ModelTrainingWebSocketService extends AbstractCustomWebSocketService {
   private isSendingPhotos: boolean = false;
   private photoQueue: TrainingImage[] = [];
-
+  private isTakingPhotosHandlerFunction: (takePhotos: boolean) => void = () => {};
   setWebSocketEventListeners(): void {
-    
+    this.websocketService.onMessageType(
+      'training_ready_for_player',
+      this.trainingReadyForPlayerEventListener
+    );
   }
 
-  setTrainingReadyForPlayerEventListener(eventListener: () => void) {
-    this.websocketService.onMessageType('training_ready_for_player', eventListener);
+  setTakingPhotosHandlerFunction(handler: (takePhotos: boolean) => void) {
+    this.isTakingPhotosHandlerFunction = handler;
+  }
+  trainingReadyForPlayerEventListener() {
+    this.isTakingPhotosHandlerFunction(false);
   }
 
   private sendTrainingImage(trainingImage: TrainingImage) {
@@ -49,7 +55,7 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
           this.sendTrainingImage(photo);
         } catch (error) {
           console.error('Error sending photo:', error);
-          this.photoQueue.unshift(photo); 
+          this.photoQueue.unshift(photo);
           break;
         }
       }
@@ -58,6 +64,6 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     this.isSendingPhotos = false;
   }
   close(): void {
-    
+    this.websocketService.offMessageType('training_ready_for_player');
   }
 }

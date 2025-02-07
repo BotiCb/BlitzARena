@@ -15,7 +15,6 @@ export const LobbyScreen = () => {
     userSessionId,
     onRemovePlayer,
     playerHandlerFunction,
-    ping,
     onStartNextGamePhase,
   } = useGame();
 
@@ -47,7 +46,6 @@ export const LobbyScreen = () => {
   }, []);
   return (
     <View>
-      <Text>Ping {ping}</Text>
       <QRCode value={'Game ID: ' + gameId} size={250} />
       <PlayerListComponent
         players={players}

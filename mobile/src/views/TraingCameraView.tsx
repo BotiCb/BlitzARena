@@ -21,7 +21,7 @@ import { ObjectDetection } from '~/utils/types';
 interface TrainingCameraViewProps {
   takePhotos: boolean;
   handleImageCapture: (trainingImage: TrainingImage) => void;
-  playerNumber: number;
+  playerId: string;
   plugin: TensorflowPlugin;
 }
 function tensorToString(tensor: TensorflowModel['inputs'][number]): string {
@@ -31,7 +31,7 @@ function tensorToString(tensor: TensorflowModel['inputs'][number]): string {
 const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   takePhotos,
   handleImageCapture,
-  playerNumber,
+  playerId,
   plugin,
 }) => {
   const isFocused = useIsFocused();
@@ -70,7 +70,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
             camera.current,
             detections,
             lastUpdateTime,
-            playerNumber,
+            playerId,
             takePhotos
           );
           if (trainingImage) {

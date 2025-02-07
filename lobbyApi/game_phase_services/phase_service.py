@@ -1,8 +1,14 @@
 # phase_service.py
 from abc import ABC, abstractmethod
 
+from game.game_context import GameContext
+
 
 class PhaseService(ABC):
+
+    def __init__(self, context: GameContext):
+        self.context = context
+        self._registered_handlers = []
     @abstractmethod
     def on_enter(self):
         """Called when the phase starts."""
@@ -12,3 +18,8 @@ class PhaseService(ABC):
     def on_exit(self):
         """Called when the phase ends."""
         pass
+
+    def _unregister_handlers(self):
+        for handler_type in self._registered_handlers:
+            self.context.websockets.unregister_handler(handler_type)
+        self._registered_handlers.clear()
