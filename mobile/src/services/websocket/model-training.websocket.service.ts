@@ -15,14 +15,14 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
   setTakingPhotosHandlerFunction(handler: (takePhotos: boolean) => void) {
     this.isTakingPhotosHandlerFunction = handler;
   }
-  trainingReadyForPlayerEventListener() {
+  trainingReadyForPlayerEventListener = () => {
     this.isTakingPhotosHandlerFunction(false);
   }
 
   private sendTrainingImage(trainingImage: TrainingImage) {
     const wsMessage: WebSocketMsg = {
       type: WebSocketMessageType.TRAINING_DATA,
-      data: JSON.stringify(trainingImage),
+      data: trainingImage,
     };
     this.websocketService.sendMessage(wsMessage);
   }

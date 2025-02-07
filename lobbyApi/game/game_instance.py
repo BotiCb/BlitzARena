@@ -15,18 +15,19 @@ from services.websocket_service import WebSocketService
 
 class GameInstance:
     def __init__(self, game_id: str, max_players: int = 4):
-        self.game_id = game_id
         self.max_players = max_players
         self.players: List[Player] = []
         self.current_phase = "lobby"
         self.websockets = WebSocketService()
+        self.game_id = game_id
 
         # Initialize context and phase services
         self.context = GameContext(
             websockets=self.websockets,
             players=self.players,
             transition_to_phase_callback=self.transition_to_phase,
-            get_current_phase=lambda: self.current_phase
+            get_current_phase=lambda: self.current_phase,
+            get_game_id=lambda: self.game_id,
         )
         self.phase_services: Dict[str, PhaseService] = {
             "lobby": LobbyService(self.context),

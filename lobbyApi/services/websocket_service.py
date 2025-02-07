@@ -65,21 +65,23 @@ class WebSocketService:
         try:
             """Dispatch a message to the appropriate handler."""
             handler = self.message_handlers[message.type]
-            if message.type != "ping":
+            if message.type != "ping" :
                 print(f"Received message from player {player_id}: {message.type} - {message.data}")
+            elif message.type == "training_data":
+                print(f"Received message from player {player_id}: {message.type} - {message.data.get('detected_player', 'Unknown')}")
             await handler(player_id, message.data)
 
         except KeyError as e:
             print(f"No handler found for message type '{message.type}': {e}")
-            await self._send_error(player_id, f"No handler found for message type '{message.type}'.")
+            await self.send_error(player_id, f"No handler found for message type '{message.type}'.")
 
         # Pass only the data part to the handler
 
         except Exception as e:
             print(f"Error handling message from player {player_id}: {e}")
-            await self._send_error(player_id, error_message=str(e))
+            await self.send_error(player_id, error_message=str(e))
 
-    async def _send_error(self, player_id: str, error_message: str):
+    async def send_error(self, player_id: str, error_message: str):
         """Send an error message to a player."""
         await self.send_to_player(player_id, Message({"type": "error", "data": error_message}))
 

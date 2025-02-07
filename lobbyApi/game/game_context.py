@@ -10,12 +10,14 @@ class GameContext:
         websockets: WebSocketService,
         players: List[Player],
         transition_to_phase_callback: callable,
-        get_current_phase: callable
+        get_current_phase: callable,
+        get_game_id: callable
     ):
         self.websockets = websockets
         self.players = players
         self._transition_to_phase = transition_to_phase_callback
         self._get_current_phase = get_current_phase
+        self.get_game_id = get_game_id
 
     def get_player(self, player_id: str) -> Player:
         for player in self.players:
