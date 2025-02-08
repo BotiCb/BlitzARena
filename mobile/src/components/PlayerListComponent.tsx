@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 
 import { PlayerInfo } from '~/atoms/PlayerInfo';
@@ -12,6 +12,8 @@ interface PlayerListComponentProps {
   onRemovePlayer: (playerId: string) => void;
 }
 
+
+
 export const PlayerListComponent: React.FC<PlayerListComponentProps> = ({
   players,
   areYouHost,
@@ -19,6 +21,7 @@ export const PlayerListComponent: React.FC<PlayerListComponentProps> = ({
   yourSessionId,
   onRemovePlayer,
 }) => {
+
   return (
     <View style={styles.container}>
       {players.map((player) => (

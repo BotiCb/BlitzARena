@@ -19,6 +19,8 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   private pinghandlerFunction: (ping: number) => void = () => {};
   private pingInterval: NodeJS.Timeout | null = null;
 
+  private pendingConnections = new Set<string>([]);
+
   setWebSocketEventListeners() {
     this.websocketService.onMessageType('game_info', this.handleGameInfoEvent);
     this.websocketService.onMessageType('player_joined', this.handlePlayerJoinedEvent);
@@ -98,23 +100,29 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   handlePlayerJoinedEvent = async (message: WebSocketMsg) => {
     try {
       const connectedPlayer: PlayerWSInfo = message.data;
+      this.pendingConnections.add(connectedPlayer.playerId);
       const playerDetails: PlayerInfoResponseDto = (
         await apiClient.get(USER_ENDPOINTS.GET_PLAYER_BY_SESSION_ID(connectedPlayer.playerId))
       ).data;
 
       const mergedPlayer = mergePlayer(connectedPlayer, playerDetails);
-      console.log(mergedPlayer);
       GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => [
         ...prevPlayers,
         mergedPlayer,
       ]);
     } catch (e) {
       console.log(e);
+    } finally {
+      this.pendingConnections.delete(message.data.playerId);
     }
   };
 
   handlePlayerConnectedEvent = async (message: WebSocketMsg) => {
-    const connectedPlayerId: string = message.data;
+    const connectedPlayerId: string = message.data.trim();
+    while (this.pendingConnections.has(connectedPlayerId)) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      console.log('Waiting for player to end the joining process...');
+    }
 
     GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
       return prevPlayers.map((player: Player) => {
@@ -127,7 +135,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   };
 
   handlePlayerDisconnectedEvent = async (message: WebSocketMsg) => {
-    const disconnectedPlayerId: string = message.data;
+    const disconnectedPlayerId: string = message.data as string;
 
     GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
       return prevPlayers.map((player: Player) => {

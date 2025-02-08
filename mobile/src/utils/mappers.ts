@@ -6,7 +6,7 @@ import { PlayerWSInfo } from '~/services/websocket/websocket-types';
 
 export function mergePlayer(wsPlayer: PlayerWSInfo, playerInfo?: PlayerInfoResponseDto): Player {
   return new Player(
-    wsPlayer.playerId,
+    wsPlayer.playerId.trim(),
     playerInfo?.firstName || 'Unknown',
     playerInfo?.lastName || 'Unknown',
     playerInfo?.photoUrl || '',
