@@ -17,7 +17,8 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
   }
   trainingReadyForPlayerEventListener = () => {
     this.isTakingPhotosHandlerFunction(false);
-  }
+    this.photoQueue = [];
+  };
 
   private sendTrainingImage(trainingImage: TrainingImage) {
     const wsMessage: WebSocketMsg = {

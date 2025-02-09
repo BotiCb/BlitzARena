@@ -57,7 +57,7 @@ export class WebSocketService {
     return this.ws;
   }
 
-  sendMessage(message: WebSocketMsg): void {
+  async sendMessage(message: WebSocketMsg): Promise<void> {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       const messageString = JSON.stringify(message);
       this.ws.send(messageString);
