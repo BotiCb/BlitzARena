@@ -1,6 +1,5 @@
 import ImageEditor from '@react-native-community/image-editor';
 import { ImageCropData } from '@react-native-community/image-editor/lib/typescript/src/types';
-import RNFS from 'react-native-fs';
 import { Camera } from 'react-native-vision-camera';
 import { ISharedValue } from 'react-native-worklets-core';
 
@@ -19,13 +18,11 @@ export async function takeCroppedTrainingImage(
   while (Date.now() - lastUpdateTime.value > TRAINING_CAMERA_CONSTANTS.MAX_TAKE_PHOTO_TIME_DELTA) {
     await new Promise((resolve) => setTimeout(resolve, TRAINING_CAMERA_CONSTANTS.TAKE_PHOTO_DELAY));
     if (!detections.value || !takePhotos) {
-      console.log('Skipping photo');
       return null;
     }
   }
 
   const photoPromise = camera.takePhoto();
-  console.log(Date.now() - lastUpdateTime.value);
   const photo = await photoPromise;
   if (photo && detections.value) {
     let cropOptions: ImageCropData;
@@ -56,15 +53,11 @@ export async function takeCroppedTrainingImage(
     }
     const croppedPhoto = await ImageEditor.cropImage('file://' + photo.path, cropOptions);
 
-    const base64Image = await RNFS.readFile(croppedPhoto.uri, 'base64');
-    //delete the photo file after using it
-    await RNFS.unlink(croppedPhoto.uri);
-    await RNFS.unlink(photo.path);
     const trainingImage: TrainingImage = {
-      photo: base64Image,
+      photoUri: croppedPhoto.uri,
       detectedPlayer: playerId,
     };
-
+    console.log(trainingImage);
     return trainingImage;
   }
 

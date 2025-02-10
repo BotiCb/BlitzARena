@@ -65,10 +65,8 @@ class WebSocketService:
         try:
             """Dispatch a message to the appropriate handler."""
             handler = self.message_handlers[message.type]
-            if message.type != "ping" and message.type != "training_data":
+            if message.type != "ping":
                 print(f"Received message from player {player_id}: {message.type} - {message.data}")
-            elif message.type == "training_data":
-                print(f"Received message from player {player_id}: {message.type} - {message.data.get('detected_player', 'Unknown')}")
             await handler(player_id, message.data)
 
         except KeyError as e:

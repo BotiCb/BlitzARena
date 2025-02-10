@@ -4,7 +4,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { GameModel } from '../schemas/game.schema';
 
-
 @Injectable()
 export class PlayerInGameGuard implements CanActivate {
   constructor(
@@ -16,15 +15,15 @@ export class PlayerInGameGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-   const { gameId } = request.body;
-
+    const { gameId } = request.body;
+    console.log(gameId);
     const game = await this.gameModel.findOne({ gameId }).exec();
 
     if (!game) {
       throw new HttpException('Game not found', 404);
     }
 
-    if (!game.players.includes(user._id)) {
+    if (!game.players.map((player) => player.userId.toString()).includes(user._id.toString())) {
       throw new ForbiddenException('You are not a player in this game');
     }
 

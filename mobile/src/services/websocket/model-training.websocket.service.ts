@@ -1,5 +1,9 @@
+import RNFS from 'react-native-fs';
+
 import { AbstractCustomWebSocketService } from './custom-websocket.abstract-service';
-import { TrainingImage, WebSocketMessageType, WebSocketMsg } from './websocket-types';
+import { TrainingImage, WebSocketMessageType } from './websocket-types';
+import { MODEL_TRAINING_ENDPOINTS } from '../restApi/Endpoints';
+import { apiClient } from '../restApi/RestApiService';
 
 export class ModelTrainingWebSocketService extends AbstractCustomWebSocketService {
   private isSendingPhotos: boolean = false;
@@ -20,21 +24,6 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     this.photoQueue = [];
   };
 
-  private sendTrainingImage(trainingImage: TrainingImage) {
-    const wsMessage: WebSocketMsg = {
-      type: WebSocketMessageType.TRAINING_DATA,
-      data: trainingImage,
-    };
-    this.websocketService.sendMessage(wsMessage);
-  }
-
-  sendStartModelTraining() {
-    const wsMessage: WebSocketMsg = {
-      type: WebSocketMessageType.TRAINING_START,
-    };
-    this.websocketService.sendMessage(wsMessage);
-  }
-
   addPhotoToQueue(trainingImage: TrainingImage) {
     this.photoQueue.push(trainingImage);
   }
@@ -53,9 +42,8 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
 
       if (photo) {
         try {
-          this.sendTrainingImage(photo);
-        } catch (error) {
-          console.error('Error sending photo:', error);
+          await this.sendTrainingPhoto(photo);
+        } catch {
           this.photoQueue.unshift(photo);
           break;
         }
@@ -63,6 +51,32 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     }
 
     this.isSendingPhotos = false;
+  }
+
+  private async sendTrainingPhoto(trainingImage: TrainingImage) {
+    this.websocketService.sendMessage({
+      type: WebSocketMessageType.TRAINING_PHOTO_SENT,
+      data: {
+        detectedPlayer: trainingImage.detectedPlayer,
+      },
+    });
+    const formData = new FormData();
+    formData.append('file', {
+      uri: trainingImage.photoUri,
+      name: 'photo.jpg',
+      type: 'image/jpeg',
+    } as any);
+
+    formData.append('playerId', trainingImage.detectedPlayer);
+    formData.append('gameId', ModelTrainingWebSocketService.gameId);
+    console.log(formData);
+    const response = await apiClient.post(MODEL_TRAINING_ENDPOINTS.UPLOAD_PHOTO, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    console.log(response.status);
+    RNFS.unlink(trainingImage.photoUri);
   }
   close(): void {
     this.websocketService.offMessageType('training_ready_for_player');

@@ -20,6 +20,7 @@ class Player:
 
     def increment_training_photo_count(self):
         self.training_photo_count += 1
+        return self.training_photo_count
 
     def reset_training_photo_count(self):
         self.training_photo_count = 0
