@@ -12,10 +12,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class ModelTrainingController {
     constructor(private readonly modelTrainingService: ModelTrainingService) {}
 
-  @UserRole()
+ // @UserRole()
   @Post('upload-photo')
   @UseInterceptors(FileInterceptor('file'))
-  uploadPhoto(
+  async uploadPhoto(
     @CurrentUser() user: UserModel,
     @CurrentGame() game: GameModel,
     @UploadedFile() file: Express.Multer.File,
@@ -25,6 +25,6 @@ export class ModelTrainingController {
     if(!file) {
       throw new HttpException('No file uploaded', 400);
     }
-    return this.modelTrainingService.sendTrainingPhoto(file, dto.gameId, dto.playerId);
+    return await this.modelTrainingService.sendTrainingPhoto(file, dto.gameId, dto.playerId, parseInt(dto.photoSize));
   }
 }

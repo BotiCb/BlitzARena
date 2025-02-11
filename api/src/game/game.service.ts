@@ -19,6 +19,7 @@ export class GameService {
   async createGame(user: UserModel, createGameDto: CreateGameDto): Promise<CreateGameResponseDto> {
     try {
       const response = await this.axiosService.apiClient.post('/game/create-game', createGameDto);
+      await this.axiosService.modelTrainingApiClient.get('');
       const gameInfo: GameInfoDto = response.data;
       
       const sessionId = this.generateSessionIdforUser();

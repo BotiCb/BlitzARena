@@ -14,12 +14,12 @@ class ModelTrainingPhaseService(PhaseService):
         self.training_data_collected = []
 
     def on_enter(self):
-        self.context.websockets.register_handler("training_photo_sent", self.on_training_data_received)
+        self.context.websockets.register_handler("training_photo_sent", self.on_training_photo_sent)
 
     def on_exit(self):
         self._unregister_handlers()
 
-    async def on_training_data_received(self, player_id: str, message: dict):
+    async def on_training_photo_sent(self, player_id: str, message: dict):
         try:
             detected_player = message.get("detected_player")
             if detected_player in self.training_data_collected:
@@ -38,3 +38,8 @@ class ModelTrainingPhaseService(PhaseService):
 
         except KeyError as e:
             await self.context.websockets.send_error(player_id, f"Missing required key: {e}")
+
+    async def start_training(self):
+        await self.context.websockets.send_to_all(
+            Message({"type": "training_started", "data": {}}))
+        

@@ -42,7 +42,9 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
 
       if (photo) {
         try {
+          const startTime = Date.now();
           await this.sendTrainingPhoto(photo);
+          console.log(`Photo sent in ${Date.now() - startTime} ms`);
         } catch {
           this.photoQueue.unshift(photo);
           break;
