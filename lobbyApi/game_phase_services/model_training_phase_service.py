@@ -10,7 +10,7 @@ class ModelTrainingPhaseService(PhaseService):
 
     def __init__(self, context: GameContext):
         super().__init__(context)
-        self.max_photos_per_player = 10
+        self.max_photos_per_player =30
         self.training_data_collected = []
 
     def on_enter(self):

@@ -25,7 +25,6 @@ export class ModelTrainingController {
     if(!file) {
       throw new HttpException('No file uploaded', 400);
     }
-    console.log("photo uploaded");
     return this.modelTrainingService.sendTrainingPhoto(file, dto.gameId, dto.playerId);
   }
 }
