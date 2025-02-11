@@ -42,4 +42,3 @@ class ModelTrainingPhaseService(PhaseService):
     async def start_training(self):
         await self.context.websockets.send_to_all(
             Message({"type": "training_started", "data": {}}))
-        
