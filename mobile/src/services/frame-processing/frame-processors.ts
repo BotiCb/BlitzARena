@@ -21,7 +21,6 @@ import {
 } from '~/utils/constants/frame-processing-constans';
 import { Classification, Detection, ObjectDetection } from '~/utils/types';
 
-
 const { resize } = useResizePlugin.createResizePlugin();
 
 export function drawDetections(frame: DrawableFrame, detection: ObjectDetection, paint: SkPaint) {

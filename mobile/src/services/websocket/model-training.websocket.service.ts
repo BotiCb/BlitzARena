@@ -69,6 +69,7 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
 
     formData.append('playerId', trainingImage.detectedPlayer);
     formData.append('gameId', ModelTrainingWebSocketService.gameId);
+    formData.append('photoSize', trainingImage.photoSize.toString());
     console.log(formData);
     const response = await apiClient.post(MODEL_TRAINING_ENDPOINTS.UPLOAD_PHOTO, formData, {
       headers: {

@@ -13,7 +13,8 @@ export async function takeCroppedTrainingImage(
   detections: ISharedValue<ObjectDetection | null>,
   lastUpdateTime: ISharedValue<number>,
   playerId: string,
-  takePhotos: boolean
+  takePhotos: boolean,
+  imageSize: number
 ): Promise<TrainingImage | null> {
   while (Date.now() - lastUpdateTime.value > TRAINING_CAMERA_CONSTANTS.MAX_TAKE_PHOTO_TIME_DELTA) {
     await new Promise((resolve) => setTimeout(resolve, TRAINING_CAMERA_CONSTANTS.TAKE_PHOTO_DELAY));
@@ -56,8 +57,9 @@ export async function takeCroppedTrainingImage(
     const trainingImage: TrainingImage = {
       photoUri: croppedPhoto.uri,
       detectedPlayer: playerId,
+      photoSize: imageSize,
     };
-    console.log(trainingImage);
+    console.log(trainingImage.photoUri);
     return trainingImage;
   }
 

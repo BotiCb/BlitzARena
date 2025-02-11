@@ -12,8 +12,6 @@ interface PlayerListComponentProps {
   onRemovePlayer: (playerId: string) => void;
 }
 
-
-
 export const PlayerListComponent: React.FC<PlayerListComponentProps> = ({
   players,
   areYouHost,
@@ -21,7 +19,6 @@ export const PlayerListComponent: React.FC<PlayerListComponentProps> = ({
   yourSessionId,
   onRemovePlayer,
 }) => {
-
   return (
     <View style={styles.container}>
       {players.map((player) => (

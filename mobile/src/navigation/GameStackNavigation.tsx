@@ -1,13 +1,13 @@
 import { useRoute, RouteProp } from '@react-navigation/native';
 import React from 'react';
-import {Text } from 'react-native';
+import { Text } from 'react-native';
 
 import { AppStackParamList } from './types';
 
 import { GameProvider, useGame } from '~/contexts/GameContext';
 import { LobbyScreen } from '~/screens/LobbyScreen';
-import SplashScreen from '~/screens/SplashScreen';
 import ModelTrainingScreen from '~/screens/ModelTrainingScreen';
+import SplashScreen from '~/screens/SplashScreen';
 
 const GameStack = () => {
   const route = useRoute<RouteProp<AppStackParamList, 'GameStack'>>();

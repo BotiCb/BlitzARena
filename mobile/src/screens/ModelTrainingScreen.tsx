@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, Platform } from 'react-native';
 import { useTensorflowModel } from 'react-native-fast-tflite';
-import { useGame } from '~/contexts/GameContext';
 
+import { useGame } from '~/contexts/GameContext';
 import { ModelTrainingWebSocketService } from '~/services/websocket/model-training.websocket.service';
 import { TrainingImage } from '~/services/websocket/websocket-types';
 import TrainingCameraView from '~/views/TraingCameraView';

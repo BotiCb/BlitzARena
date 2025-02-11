@@ -1,23 +1,22 @@
-
 export const YOLO_POSE_CONSTANTS = {
   KEYPOINTS: [
-    "Nose",
-    "Left Eye",
-    "Right Eye",
-    "Left Ear",
-    "Right Ear",
-    "Left Shoulder",
-    "Right Shoulder",
-    "Left Elbow",
-    "Right Elbow",
-    "Left Wrist",
-    "Right Wrist",
-    "Left Hip",
-    "Right Hip",
-    "Left Knee",
-    "Right Knee",
-    "Left Ankle",
-    "Right Ankle",
+    'Nose',
+    'Left Eye',
+    'Right Eye',
+    'Left Ear',
+    'Right Ear',
+    'Left Shoulder',
+    'Right Shoulder',
+    'Left Elbow',
+    'Right Elbow',
+    'Left Wrist',
+    'Right Wrist',
+    'Left Hip',
+    'Right Hip',
+    'Left Knee',
+    'Right Knee',
+    'Left Ankle',
+    'Right Ankle',
   ],
 
   BODY_CONNECTIONS: [
@@ -43,9 +42,8 @@ export const YOLO_POSE_CONSTANTS = {
   DETECTION_TRESHOLD: 0.5,
 };
 
-
 export const BODY_PART_DETECTIONS_CONSTANTS = {
-  CENTER_POINT:   {
+  CENTER_POINT: {
     x: 0.5,
     y: 0.5,
   },
@@ -55,4 +53,4 @@ export const BODY_PART_DETECTIONS_CONSTANTS = {
   UPPER_LEG_PADDING: 0.28,
   LOWER_ARM_PADDING: 0.28,
   UPPER_ARM_PADDING: 0.28,
-}
+};

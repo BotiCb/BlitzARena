@@ -64,14 +64,15 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
     }
 
     const interval = setInterval(async () => {
-      if (camera.current && detections.value) {
+      if (camera.current && detections.value && plugin.model) {
         try {
           const trainingImage = await takeCroppedTrainingImage(
             camera.current,
             detections,
             lastUpdateTime,
             playerId,
-            takePhotos
+            takePhotos,
+            plugin.model.inputs[0].shape[1]
           );
           if (trainingImage) {
             handleImageCapture(trainingImage);

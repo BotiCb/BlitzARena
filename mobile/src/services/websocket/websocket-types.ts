@@ -19,6 +19,7 @@ export enum WebSocketMessageType {
 export type TrainingImage = {
   photoUri: string;
   detectedPlayer: string;
+  photoSize: number;
 };
 
 export type PlayerWSInfo = {
