@@ -1,0 +1,10 @@
+val
+venv
+.idea
+*.pt
+*.npy
+*.pyc
+**/*.pyc
+*~
+.env
+dataset/*

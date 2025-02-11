@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from utils.dto_convention_converter import convert_dict_to_snake_case, convert_dict_to_camel_case
 from utils.jwt_handler import verify_jwt
-from dependecies.dependency_injection import get_game_service
+from dependency_injection import get_game_service
 from services.game_service import GameService
 
 router = APIRouter()

@@ -1,10 +1,10 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Depends
 
-from dependecies.dependency_injection import get_game_service
+from dependency_injection import get_game_service
 from models.message import Message
 from services.game_service import GameService
 
-router = APIRouter()
+router = APIRouter()    
 
 
 @router.websocket("/{game_id}/player/{player_id}")
