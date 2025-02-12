@@ -56,12 +56,12 @@ const ModelTrainingScreen = () => {
       )}
       <Button title="Next player " onPress={() => setCurrentPlayer(1)} />
       <Button title="Previous player " onPress={() => setCurrentPlayer(-1)} />
-      <TrainingCameraView
+      {/* <TrainingCameraView
         takePhotos={takePhotos}
         handleImageCapture={handleImageCapture}
         playerId={playerId}
         plugin={plugin}
-      />
+      /> */}
     </View>
   );
 };

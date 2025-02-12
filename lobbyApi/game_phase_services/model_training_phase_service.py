@@ -20,6 +20,7 @@ class ModelTrainingPhaseService(PhaseService):
     def on_enter(self):
         self.context.websockets.register_handler("training_photo_sent", self.on_training_photo_sent)
         self.group_players()
+        print(f"Groups: {self.groups}")
         asyncio.create_task(self.send_groups())
 
 
