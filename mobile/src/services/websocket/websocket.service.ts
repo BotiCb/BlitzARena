@@ -13,6 +13,8 @@ export class WebSocketService {
   private reconnectDelay: number = 2000;
   private gameId: string | null = null;
   private userSessionId: string | null = null;
+  private messageQueue: WebSocketMsg[] = []; // Queue for outgoing messages
+  private isProcessingQueue: boolean = false; // Flag to track queue processing
 
   private constructor() {} // Private constructor to prevent direct instantiation
 
@@ -28,15 +30,19 @@ export class WebSocketService {
       return this.ws;
     }
 
+    this.gameId = gameId;
+    this.userSessionId = userSessionId;
+
     this.ws = new WebSocket(`${FASTAPI_BASE_URL}/${gameId}/player/${userSessionId}`);
 
     this.ws.onopen = () => {
       console.log('WebSocket connected');
       this.reconnectAttempts = 0;
+      this.processMessageQueue();
     };
 
-    this.ws.onmessage = (event: MessageEvent) => {
-      this.handleMessage(event.data);
+    this.ws.onmessage = async (event: MessageEvent) => {
+      await this.handleMessageAsync(event.data);
     };
 
     this.ws.onerror = (error: Event) => {
@@ -59,14 +65,38 @@ export class WebSocketService {
 
   async sendMessage(message: WebSocketMsg): Promise<void> {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      const messageString = JSON.stringify(message);
-      this.ws.send(messageString);
-      if (message.type !== 'ping') {
-        console.log('Sent message:', message.type);
-      }
+      this.messageQueue.push(message);
+      this.processMessageQueue();
     } else {
       console.error('WebSocket is not connected');
     }
+  }
+
+  private async processMessageQueue(): Promise<void> {
+    if (this.isProcessingQueue || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      return;
+    }
+
+    this.isProcessingQueue = true;
+
+    while (this.messageQueue.length > 0) {
+      const message = this.messageQueue.shift();
+      if (message) {
+        try {
+          const messageString = JSON.stringify(message);
+          this.ws.send(messageString);
+          if (message.type !== 'ping') {
+            console.log('Sent message:', message.type);
+          }
+        } catch (error) {
+          console.error('Error sending message:', error);
+          this.messageQueue.unshift(message);
+          break;
+        }
+      }
+    }
+
+    this.isProcessingQueue = false;
   }
 
   onMessageType(type: string, handler: WebSocketListener): void {
@@ -86,7 +116,7 @@ export class WebSocketService {
     }
   }
 
-  handleMessage(message: string): void {
+  private async handleMessageAsync(message: string): Promise<void> {
     try {
       const parsedMessage = JSON.parse(message) as WebSocketMsg;
       const type = parsedMessage.type;
@@ -94,12 +124,12 @@ export class WebSocketService {
         console.log('Received message:', message);
       }
       if (this.messageHandlers[type]) {
-        this.messageHandlers[type](parsedMessage);
+        await this.messageHandlers[type](parsedMessage);
       } else {
         console.log('No handler registered for message type:', type);
       }
     } catch (error) {
-      console.error('Error parsing message:', error);
+      console.error('Error parsing or handling message:', error);
     }
   }
 
