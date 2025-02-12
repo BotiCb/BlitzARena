@@ -12,6 +12,7 @@ const ModelTrainingScreen = () => {
   const [takePhotos, setTakePhotos] = useState(false);
   const [playerIndex, setPlayerIndex] = useState(0);
   const [playerId, setPlayerId] = useState<string>(players[playerIndex].sessionID);
+  const [progress, setProgress] = useState(0);
   const modelTrainingWebsocketService = ModelTrainingWebSocketService.getInstance();
 
   const handleImageCapture = (trainingImage: TrainingImage) => {
@@ -20,6 +21,7 @@ const ModelTrainingScreen = () => {
 
   useEffect(() => {
     modelTrainingWebsocketService.setTakingPhotosHandlerFunction(setTakePhotos);
+    modelTrainingWebsocketService.setProgressHandlerFunction(setProgress);
     modelTrainingWebsocketService.setWebSocketEventListeners();
   }, []);
 
@@ -45,6 +47,7 @@ const ModelTrainingScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
+      <Text>Progress: {progress}</Text>
       <Text>Player: {players[playerIndex].firstName + ' ' + players[playerIndex].lastName}</Text>
       {!takePhotos ? (
         <Button title="Take Photos" onPress={() => setTakePhotos(true)} />
@@ -53,10 +56,6 @@ const ModelTrainingScreen = () => {
       )}
       <Button title="Next player " onPress={() => setCurrentPlayer(1)} />
       <Button title="Previous player " onPress={() => setCurrentPlayer(-1)} />
-      <Button
-        title="Start training"
-        onPress={() => modelTrainingWebsocketService.sendStartModelTraining()}
-      />
       <TrainingCameraView
         takePhotos={takePhotos}
         handleImageCapture={handleImageCapture}

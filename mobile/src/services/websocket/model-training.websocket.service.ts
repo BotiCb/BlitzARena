@@ -1,7 +1,7 @@
 import RNFS from 'react-native-fs';
 
 import { AbstractCustomWebSocketService } from './custom-websocket.abstract-service';
-import { TrainingImage, WebSocketMessageType } from './websocket-types';
+import { TrainingImage, WebSocketMessageType, WebSocketMsg } from './websocket-types';
 import { MODEL_TRAINING_ENDPOINTS } from '../restApi/Endpoints';
 import { apiClient } from '../restApi/RestApiService';
 
@@ -9,16 +9,28 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
   private isSendingPhotos: boolean = false;
   private photoQueue: TrainingImage[] = [];
   private isTakingPhotosHandlerFunction: (takePhotos: boolean) => void = () => {};
+  private progressHandlerFunction: (progress: number) => void = () => {};
   setWebSocketEventListeners(): void {
     this.websocketService.onMessageType(
       'training_ready_for_player',
       this.trainingReadyForPlayerEventListener
     );
+    this.websocketService.onMessageType('training_progress', this.onProgressUpdate);
   }
 
   setTakingPhotosHandlerFunction(handler: (takePhotos: boolean) => void) {
     this.isTakingPhotosHandlerFunction = handler;
   }
+
+  onProgressUpdate = (message: WebSocketMsg) => {
+    const { progress } = message.data;
+    this.progressHandlerFunction(progress);
+  }
+
+  setProgressHandlerFunction(handler: (progress: number) => void) {
+    this.progressHandlerFunction = handler;
+  }
+
   trainingReadyForPlayerEventListener = () => {
     this.isTakingPhotosHandlerFunction(false);
     this.photoQueue = [];
@@ -56,12 +68,6 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
   }
 
   private async sendTrainingPhoto(trainingImage: TrainingImage) {
-    this.websocketService.sendMessage({
-      type: WebSocketMessageType.TRAINING_PHOTO_SENT,
-      data: {
-        detectedPlayer: trainingImage.detectedPlayer,
-      },
-    });
     const formData = new FormData();
     formData.append('file', {
       uri: trainingImage.photoUri,
@@ -76,6 +82,12 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     const response = await apiClient.post(MODEL_TRAINING_ENDPOINTS.UPLOAD_PHOTO, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+      },
+    });
+    this.websocketService.sendMessage({
+      type: WebSocketMessageType.TRAINING_PHOTO_SENT,
+      data: {
+        detectedPlayer: trainingImage.detectedPlayer,
       },
     });
     console.log(response.status);

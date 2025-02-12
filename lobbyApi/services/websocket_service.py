@@ -49,6 +49,16 @@ class WebSocketService:
                 except Exception as e:
                     print(f"Failed to send message to {pid}: {e}")
 
+    async def send_to_group(self, player_ids: list[str], message: Message):
+        message_dict = convert_dict_to_camel_case(message.to_dict())
+        for player_id in player_ids:
+            websocket = self.connections.get(player_id)
+            if websocket:
+                try:
+                    await websocket.send_json(message_dict)
+                except Exception as e:
+                    print(f"Failed to send message to player {player_id}: {e}")
+
     def register_handler(self, message_type: str, handler: Callable[[str, dict], Coroutine[Any, Any, None]]):
         print(f"Registered handler for message type '{message_type}'")
         """Register a handler for a specific message type."""
