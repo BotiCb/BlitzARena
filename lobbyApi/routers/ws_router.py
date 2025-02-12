@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Depends
 
 from dependency_injection import get_game_service
@@ -26,7 +28,7 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str, player_id: str,
             try:
                 data = await websocket.receive_json()
                 message = Message(data)
-                await game_service.handle_websocket_message(game_id, websocket, message)
+                asyncio.create_task(game_service.handle_websocket_message(game_id, websocket, message))
             except ValueError as e:
                 await websocket.send_json({"error": "Invalid message format"})
 

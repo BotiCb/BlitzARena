@@ -32,19 +32,19 @@ class ModelTrainingPhaseService(PhaseService):
             detected_player = message.get("detected_player")
             group_id = self.get_players_group_id(detected_player)
             if detected_player in self.training_data_collected:
-                await self.context.websockets.send_to_group(self.groups[group_id],
+                asyncio.create_task( self.context.websockets.send_to_group(self.groups[group_id],
                     Message({"type": "training_ready_for_player", "data": {
                         "player_ready": detected_player,
-                    }}))
+                    }})))
                 next_player = self.get_player_from_group_with_not_finished_training(group_id)
                 if next_player:
-                    await self.context.websockets.send_to_group(self.groups[group_id],
+                    asyncio.create_task( self.context.websockets.send_to_group(self.groups[group_id],
                         Message({"type": "next_training_player", "data": {
                         "next_player": next_player
-                    }}))
+                    }})))
                 else:
-                    await self.context.websockets.send_to_all(
-                        Message({"type": "training_finished_for_group", "data": {}}))
+                    asyncio.create_task( self.context.websockets.send_to_all(
+                        Message({"type": "training_finished_for_group", "data": {}})))
                 return
 
             player_photo_count = self.context.get_player(detected_player).increment_training_photo_count()
@@ -53,23 +53,23 @@ class ModelTrainingPhaseService(PhaseService):
             self.photo_count += 1
 
             training_progress = round(self.photo_count / (self.max_photos_per_player * len(self.context.players)) * 100)
-            await self.context.websockets.send_to_all(
+            asyncio.create_task( self.context.websockets.send_to_all(
                 Message({"type": "training_progress", "data": {"progress": training_progress}})
-            )
+            ))
 
             if player_photo_count >= self.max_photos_per_player:
-                await self.context.websockets.send_to_all(
-                    Message({"type": "training_ready_for_player", "data": detected_player}))
+                asyncio.create_task( self.context.websockets.send_to_all(
+                    Message({"type": "training_ready_for_player", "data": detected_player})))
                 self.training_data_collected.append(detected_player)
                 print(
                     f"Training data collected for player {detected_player}, {len(self.training_data_collected)}/{len(self.context.players)} players collected")
 
         except KeyError as e:
-            await self.context.websockets.send_error(player_id, f"Missing required key: {e}")
+            asyncio.create_task( self.context.websockets.send_error(player_id, f"Missing required key: {e}"))
 
     async def start_training(self):
-        await self.context.websockets.send_to_all(
-            Message({"type": "training_started", "data": {}}))
+        asyncio.create_task( self.context.websockets.send_to_all(
+            Message({"type": "training_started", "data": {}})))
 
 
     def group_players(self) -> None:
@@ -101,7 +101,7 @@ class ModelTrainingPhaseService(PhaseService):
     async def send_groups(self):
         for group_id, player_ids in self.groups.items():
             if player_ids:
-                await self.context.websockets.send_to_group(
+                asyncio.create_task( self.context.websockets.send_to_group(
                     player_ids,
                     Message({
                         "type": "group_assigned",
@@ -110,7 +110,7 @@ class ModelTrainingPhaseService(PhaseService):
                             "first_player": player_ids[0]
                         }
                     })
-                )
+                ))
 
 
     def get_players_group_id(self, player_id: str):

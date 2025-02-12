@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import WebSocket
 from typing import Dict, Callable, Optional, Coroutine, Any
 
@@ -96,4 +98,4 @@ class WebSocketService:
     async def pong(self, player_id: str, message: dict):
         timestamp = message.get("timestamp")
         if timestamp is not None:
-            await self.send_to_player(player_id, Message({"type": "pong", "data": {"timestamp": timestamp}}))
+            asyncio.create_task( self.send_to_player(player_id, Message({"type": "pong", "data": {"timestamp": timestamp}})))
