@@ -5,8 +5,7 @@ from game.game_context import GameContext
 from game_phase_services.phase_service import PhaseService
 
 from models.message import Message
-from models.player import Player
-
+import asyncio
 
 class ModelTrainingPhaseService(PhaseService):
 
@@ -17,10 +16,11 @@ class ModelTrainingPhaseService(PhaseService):
         self.training_data_collected = []
         self.groups: Dict[int, List[str]] = {}
 
-        self.group_players()
 
     def on_enter(self):
         self.context.websockets.register_handler("training_photo_sent", self.on_training_photo_sent)
+        self.group_players()
+        asyncio.create_task(self.send_groups())
 
 
 
@@ -74,8 +74,8 @@ class ModelTrainingPhaseService(PhaseService):
 
     def group_players(self) -> None:
         total_players = len(self.context.players)
-        if total_players < 2:
-            raise ValueError("At least 2 players are required to form groups.")
+        # if total_players < 2:
+        #     raise ValueError("At least 2 players are required to form groups.")
 
         remainder = total_players % 3
 
@@ -100,16 +100,17 @@ class ModelTrainingPhaseService(PhaseService):
 
     async def send_groups(self):
         for group_id, player_ids in self.groups.items():
-            await self.context.websockets.send_to_group(
-                player_ids,
-                Message({
-                    "type": "group_assigned",
-                    "data": {
-                        "group_members": player_ids,
-                        "first_player": player_ids[0]
-                    }
-                })
-            )
+            if player_ids:
+                await self.context.websockets.send_to_group(
+                    player_ids,
+                    Message({
+                        "type": "group_assigned",
+                        "data": {
+                            "group_members": player_ids,
+                            "first_player": player_ids[0]
+                        }
+                    })
+                )
 
 
     def get_players_group_id(self, player_id: str):
