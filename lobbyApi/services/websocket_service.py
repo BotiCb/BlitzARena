@@ -1,8 +1,7 @@
 import asyncio
+from typing import Dict, Callable, Optional, Coroutine, Any, List
 
 from fastapi import WebSocket
-from typing import Dict, Callable, Optional, Coroutine, Any
-
 from models.message import Message
 from utils.dto_convention_converter import convert_dict_to_camel_case
 
@@ -11,7 +10,9 @@ class WebSocketService:
     def __init__(self):
         self.connections: Dict[str, WebSocket] = {}  # Stores connections by player ID
         self.message_handlers: Dict[str, Callable[[str, dict], Coroutine[Any, Any, None]]] = {}
+        self.message_queue: asyncio.Queue[Message] = asyncio.Queue()  # Queue for outgoing messages
         self.register_handler('ping', self.pong)
+        asyncio.create_task(self.process_message_queue())  # Start processing the message queue
 
     async def add_connection(self, player_id: str, websocket: WebSocket):
         """Add a player's WebSocket connection."""
@@ -24,42 +25,38 @@ class WebSocketService:
 
     async def send_to_player(self, player_id: str, message: Message):
         """Send a Message instance to a specific player."""
-        websocket = self.connections.get(player_id)
-        if websocket:
-            try:
-                message_dict = convert_dict_to_camel_case(message.to_dict())
-                await websocket.send_json(message_dict)
-            except Exception as e:
-                print(f"Failed to send message to player {player_id}: {e}")
+        self.message_queue.put_nowait((player_id, message))  # Add message to the queue
 
     async def send_to_all(self, message: Message):
         """Send a Message instance to all connected players."""
-        message_dict = convert_dict_to_camel_case(message.to_dict())
-        for websocket in self.connections.values():
-            try:
-                await websocket.send_json(message_dict)
-            except Exception as e:
-                print(f"Failed to send message to all: {e}")
+        for player_id in self.connections.keys():
+            self.message_queue.put_nowait((player_id, message))  # Add message to the queue for each player
 
     async def send_to_all_except(self, player_id: str, message: Message):
         """Send a Message instance to all except specified player."""
-        message_dict = convert_dict_to_camel_case(message.to_dict())
-        for pid, websocket in self.connections.items():
+        for pid in self.connections.keys():
             if pid != player_id:
-                try:
-                    await websocket.send_json(message_dict)
-                except Exception as e:
-                    print(f"Failed to send message to {pid}: {e}")
+                self.message_queue.put_nowait((pid, message))  # Add message to the queue for each player
 
-    async def send_to_group(self, player_ids: list[str], message: Message):
-        message_dict = convert_dict_to_camel_case(message.to_dict())
+    async def send_to_group(self, player_ids: List[str], message: Message):
+        """Send a Message instance to a group of players."""
         for player_id in player_ids:
+            self.message_queue.put_nowait((player_id, message))  # Add message to the queue for each player
+
+    async def process_message_queue(self):
+        """Process the message queue asynchronously."""
+        while True:
+            player_id, message = await self.message_queue.get()
             websocket = self.connections.get(player_id)
             if websocket:
                 try:
+                    message_dict = convert_dict_to_camel_case(message.to_dict())
                     await websocket.send_json(message_dict)
+                    if message.type != "pong":
+                        print(f"Sent message to {player_id}: {message.type}")
                 except Exception as e:
                     print(f"Failed to send message to player {player_id}: {e}")
+            self.message_queue.task_done()
 
     def register_handler(self, message_type: str, handler: Callable[[str, dict], Coroutine[Any, Any, None]]):
         print(f"Registered handler for message type '{message_type}'")
@@ -85,8 +82,6 @@ class WebSocketService:
             print(f"No handler found for message type '{message.type}': {e}")
             await self.send_error(player_id, f"No handler found for message type '{message.type}'.")
 
-        # Pass only the data part to the handler
-
         except Exception as e:
             print(f"Error handling message from player {player_id}: {e}")
             await self.send_error(player_id, error_message=str(e))
@@ -98,4 +93,4 @@ class WebSocketService:
     async def pong(self, player_id: str, message: dict):
         timestamp = message.get("timestamp")
         if timestamp is not None:
-            asyncio.create_task( self.send_to_player(player_id, Message({"type": "pong", "data": {"timestamp": timestamp}})))
+            await self.send_to_player(player_id, Message({"type": "pong", "data": {"timestamp": timestamp}}))

@@ -1,5 +1,4 @@
 # game_instance.py
-import asyncio
 from typing import List, Dict
 from fastapi import WebSocket, HTTPException
 
@@ -59,9 +58,9 @@ class GameInstance:
         if self.current_phase_service:
             self.current_phase_service.on_enter()
 
-        asyncio.create_task( self.websockets.send_to_all(
+        await self.websockets.send_to_all(
             Message({"type": "game_phase", "data": phase})
-        ))
+        )
 
     async def add_player(self, player_id: str):
         """Add a player to the game."""
@@ -76,9 +75,9 @@ class GameInstance:
         new_player = Player(player_id, is_host=is_host)
         self.players.append(new_player)
 
-        asyncio.create_task( self.websockets.send_to_all(
+        await self.websockets.send_to_all(
             Message({"type": "player_joined", "data": PlayerInfoDto(new_player)})
-        ))
+        )
 
     async def remove_player(self, player_id: str, message: dict):
         """Remove a player from the game."""
@@ -86,20 +85,20 @@ class GameInstance:
             player_to_remove_id = message.get("player_id")
             player_to_remove = self.get_player(player_to_remove_id)
             if player_to_remove:
-                asyncio.create_task( self.websockets.send_to_player(
+                await self.websockets.send_to_player(
                     player_to_remove_id,
                     Message({"type": "you_were_removed", "data": player_to_remove_id})
-                ))
+                )
                 await self.remove_websocket_connection(player_to_remove_id)
                 self.players.remove(player_to_remove)
-                asyncio.create_task( self.websockets.send_to_all(
+                await self.websockets.send_to_all(
                     Message({"type": "player_removed", "data": player_to_remove_id})
-                ))
+                )
         else:
-            asyncio.create_task( self.websockets.send_to_player(
+            await self.websockets.send_to_player(
                 player_id,
                 Message({"type": "not_host", "data": "Only the host can remove players"})
-            ))
+            )
 
     async def new_host(self, player_id: str, message: dict):
         """Set a new host for the game."""
@@ -109,18 +108,18 @@ class GameInstance:
             if new_host:
                 new_host.is_host = True
                 self.get_player(player_id).is_host = False
-                asyncio.create_task( self.websockets.send_to_all(
+                await self.websockets.send_to_all(
                     Message({"type": "new_host", "data": new_host_id})
-                ))
+                )
 
     async def exit_from_game(self, player_id: str, message: dict):
         """Handle a player exiting the game."""
         player_to_remove = self.get_player(player_id)
         if player_to_remove:
             await self.remove_websocket_connection(player_id)
-            asyncio.create_task( self.websockets.send_to_all(
+            await self.websockets.send_to_all(
                 Message({"type": "player_exited", "data": player_id})
-            ))
+            )
             self.players.remove(player_to_remove)
 
     def is_player_in_game(self, player_id: str) -> bool:
@@ -148,14 +147,14 @@ class GameInstance:
         await self.websockets.add_connection(player_id, websocket)
         self.get_player(player_id).is_connected = True
 
-        asyncio.create_task( self.websockets.send_to_player(
+        await self.websockets.send_to_player(
             player_id,
             Message({"type": "game_info", "data": self.get_game_info()})
-        ))
-        asyncio.create_task( self.websockets.send_to_all_except(
+        )
+        await self.websockets.send_to_all_except(
             player_id,
             Message({"type": "player_connected", "data": player_id})
-        ))
+        )
 
     async def remove_websocket_connection(self, player_id: str):
         """Remove a WebSocket connection for a player."""
@@ -164,11 +163,11 @@ class GameInstance:
         player.is_connected = False
 
         if self.is_host(player_id):
-             asyncio.create_task(self.set_new_host())
+            await self.set_new_host()
 
-        asyncio.create_task( self.websockets.send_to_all(
+        await self.websockets.send_to_all(
             Message({"type": "player_disconnected", "data": player_id})
-        ))
+        )
 
     async def set_new_host(self):
         """Set a new host when the current host leaves."""
@@ -176,9 +175,9 @@ class GameInstance:
         if connected_players:
             new_host = min(connected_players, key=lambda p: p.added_at)
             new_host.is_host = True
-            asyncio.create_task( self.websockets.send_to_all(
+            await self.websockets.send_to_all(
                 Message({"type": "new_host", "data": new_host.id})
-            ))
+            )
 
     def get_game_info(self) -> dict:
         """Get the current game state."""

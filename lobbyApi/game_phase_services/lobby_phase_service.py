@@ -1,6 +1,4 @@
 # lobby_service.py
-import asyncio
-
 from game.game_context import GameContext
 from game_phase_services.phase_service import PhaseService
 from models.message import Message
@@ -29,21 +27,21 @@ class LobbyService(PhaseService):
         player = self.context.get_player(player_id)
         is_ready = message.get("is_ready", False)
         player.set_ready(is_ready)
-        asyncio.create_task( self.context.websockets.send_to_all(
+        await self.context.websockets.send_to_all(
             Message({"type": "player_status", "data": {"is_ready": is_ready, "player_id": player_id}})
-        ))
+        )
 
     async def start_next_phase(self, player_id: str, message: dict):
         if self.context.is_host(player_id) and self.context.current_phase == "lobby":
             if all(player.is_ready for player in self.context.players):
-                asyncio.create_task( self.context.transition_to_phase("training"))
+                await self.context.transition_to_phase("training")
             else:
-                asyncio.create_task( self.context.websockets.send_to_player(
+                await self.context.websockets.send_to_player(
                     player_id,
                     Message({"type": "all_players_status", "data": {"is_ready": False}})
-                ))
+                )
         else:
-            asyncio.create_task( self.context.websockets.send_to_player(
+            await self.context.websockets.send_to_player(
                 player_id,
                 Message({"type": "not_host", "data": "Only the host can start the next phase"})
-            ))
+            )
