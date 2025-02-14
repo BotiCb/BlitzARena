@@ -1,0 +1,83 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start NestJS (api)",
+      "type": "shell",
+      "command": "cd api ; yarn start:dev",
+      "problemMatcher": [],
+      "options": {
+        "shell": {
+          "executable": "powershell.exe",
+          "args": ["-NoExit", "-Command"]
+        }
+      },
+      "presentation": {
+        "panel": "new",
+        "group": "NestJS"
+      }
+    },
+    {
+      "label": "Start Mobile (Expo)",
+      "type": "shell",
+      "command": "cd mobile ; npx expo run:android",
+      "problemMatcher": [],
+      "options": {
+        "shell": {
+          "executable": "powershell.exe",
+          "args": ["-NoExit", "-Command"]
+        }
+      },
+      "presentation": {
+        "panel": "new",
+        "group": "Mobile"
+      }
+    },
+    {
+      "label": "Start Model Trainer API",
+      "type": "shell",
+      "command": "cd modelTrainerApi ; .\\venv\\Scripts\\Activate ; uvicorn main:app --port 7000 --reload",
+      "problemMatcher": [],
+      "options": {
+        "shell": {
+          "executable": "powershell.exe",
+          "args": ["-NoExit", "-Command"]
+        }
+      },
+      "presentation": {
+        "panel": "new",
+        "group": "ModelTrainerApi"
+      }
+    },
+    {
+      "label": "Start Lobby API",
+      "type": "shell",
+      "command": "cd lobbyApi ; .\\venv\\Scripts\\Activate ; uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
+      "problemMatcher": [],
+      "options": {
+        "shell": {
+          "executable": "powershell.exe",
+          "args": ["-NoExit", "-Command"]
+        }
+      },
+      "presentation": {
+        "panel": "new",
+        "group": "LobbyApi"
+      }
+    },
+    {
+      "label": "Start All Projects",
+      "dependsOn": [
+        "Start NestJS (api)",
+        "Start Mobile (Expo)",
+        "Start Model Trainer API",
+        "Start Lobby API"
+      ],
+      "dependsOrder": "parallel",
+      "presentation": {
+        "panel": "new"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
