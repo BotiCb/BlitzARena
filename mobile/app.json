@@ -15,7 +15,8 @@
         {
           "enableCodeScanner": true
         }
-      ]
+      ],
+      "react-native-fast-tflite"
     ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -43,6 +44,11 @@
         "android.permission.CAMERA"
       ],
       "package": "com.boti13.mobile"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "369bca42-61a1-4dfd-8c8a-a69d306f131a"
+      }
     }
   }
 }
