@@ -4,6 +4,7 @@ from typing import List, Dict
 from game.game_context import GameContext
 from game_phase_services.phase_service import PhaseService
 
+from lobbyApi.dependency_injection import get_httpx_service
 from models.message import Message
 import asyncio
 
@@ -15,6 +16,7 @@ class ModelTrainingPhaseService(PhaseService):
         self.photo_count = 0
         self.training_data_collected = []
         self.groups: Dict[int, List[str]] = {}
+        self.httpx_service =get_httpx_service()
 
 
     def on_enter(self):
@@ -31,7 +33,7 @@ class ModelTrainingPhaseService(PhaseService):
     async def player_ready_for_training_phase(self, player_id: str, message: dict):
         self.context.get_player(player_id).set_ready(True)
         if self.context.is_all_players_ready():
-            await self.start_training()
+            await self.start_collecting_training_data()
 
     async def on_training_photo_sent(self, player_id: str, message: dict):
         try:
@@ -45,7 +47,7 @@ class ModelTrainingPhaseService(PhaseService):
             print(f"Player {detected_player} has {player_photo_count} training photos")
             self.photo_count += 1
 
-            training_progress = round(self.photo_count / (self.max_photos_per_player * len(self.context.players)) * 100)
+            training_progress = round(self.photo_count / (self.max_photos_per_player * len(self.groups.get(group_id))) * 100)
             await self.context.websockets.send_to_all(
                 Message({"type": "training_progress", "data": {"progress": training_progress}})
             )
@@ -56,8 +58,13 @@ class ModelTrainingPhaseService(PhaseService):
         except KeyError as e:
             await self.context.websockets.send_error(player_id, f"Missing required key: {e}")
 
-    async def start_training(self):
+    async def start_collecting_training_data(self):
         await self.send_groups()
+
+    async def start_training(self):
+        await self.httpx_service.get_model_training_client().post(f"/training/{self.context.game_id}")
+        print("Model training started")
+
 
 
     def group_players(self) -> None:
@@ -132,3 +139,5 @@ class ModelTrainingPhaseService(PhaseService):
             print("All players finished training frpm group")
             await self.context.websockets.send_to_all(
                 Message({"type": "training_finished_for_group", "data": {}}))
+        if len(self.context.players) == len(self.training_data_collected):
+            await self.start_training()

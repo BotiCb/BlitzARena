@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, UploadFile, File
-
 from dependecies.dependency_injection import get_data_collecting_service
 from services.data_collecting_service import DataCollectingService
 from utils.jwt_handler import verify_jwt
