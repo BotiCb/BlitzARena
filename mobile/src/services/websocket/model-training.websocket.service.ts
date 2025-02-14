@@ -10,22 +10,35 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
   private photoQueue: TrainingImage[] = [];
   private isTakingPhotosHandlerFunction: (takePhotos: boolean) => void = () => {};
   private progressHandlerFunction: (progress: number) => void = () => {};
+  private currentTrainingPlayerHandlerFunction: (playerId: string) => void = () => {};
+  private trainingGroupHandlerFunction: (playerIds: string[] | null) => void = () => {};
+
   setWebSocketEventListeners(): void {
     this.websocketService.onMessageType(
       'training_ready_for_player',
       this.trainingReadyForPlayerEventListener
     );
     this.websocketService.onMessageType('training_progress', this.onProgressUpdate);
+    this.websocketService.onMessageType('next_training_player', this.onNextTrainingPlayer);
+    this.websocketService.onMessageType('group_assigned', this.onTrainingGroupAssigned);
   }
 
-  setTakingPhotosHandlerFunction(handler: (takePhotos: boolean) => void) {
+  setTakingPhotosHandlerFunction = (handler: (takePhotos: boolean) => void) => {
     this.isTakingPhotosHandlerFunction = handler;
+  }
+
+  setCurrentTrainingPlayerHandlerFunction = (handler: (playerId: string) => void) => {
+    this.currentTrainingPlayerHandlerFunction = handler;
+  }
+
+  setTrainingGroupHandlerFunction = (handler: (playerIds: string[] | null) => void) => {
+    this.trainingGroupHandlerFunction = handler;
   }
 
   onProgressUpdate = (message: WebSocketMsg) => {
     const { progress } = message.data;
     this.progressHandlerFunction(progress);
-  }
+  };
 
   setProgressHandlerFunction(handler: (progress: number) => void) {
     this.progressHandlerFunction = handler;
@@ -92,6 +105,24 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     });
     console.log(response.status);
     RNFS.unlink(trainingImage.photoUri);
+  }
+
+  onNextTrainingPlayer = (message: WebSocketMsg)  => {
+    const { nextPlayer } = message.data;
+    this.currentTrainingPlayerHandlerFunction(nextPlayer);
+  }
+
+  onTrainingGroupAssigned = (message: WebSocketMsg)  => {
+    const { groupMembers, firstPlayer } = message.data;
+    console.log(groupMembers);
+    this.trainingGroupHandlerFunction(groupMembers);
+    this.currentTrainingPlayerHandlerFunction(firstPlayer);
+  }
+
+  readyForTraining() {
+    this.websocketService.sendMessage({
+      type: WebSocketMessageType.READY_FOR_TRAINING_PHASE,
+    });
   }
   close(): void {
     this.websocketService.offMessageType('training_ready_for_player');

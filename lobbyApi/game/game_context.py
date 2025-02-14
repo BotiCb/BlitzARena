@@ -34,3 +34,6 @@ class GameContext:
 
     async def transition_to_phase(self, phase: str):
         await self._transition_to_phase(phase)
+
+    def is_all_players_ready(self) -> bool:
+        return all(player.is_ready for player in self.players)

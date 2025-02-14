@@ -81,12 +81,12 @@ export function trainingFrameProcessor(
   lastUpdateTime: ISharedValue<number>,
   detections: ISharedValue<ObjectDetection | null>,
   paint: SkPaint
-): DrawableFrameProcessor {
+): ReadonlyFrameProcessor {
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useSkiaFrameProcessor(
+  return useFrameProcessor(
     (frame) => {
       'worklet';
-      frame.render();
+      //frame.render();
       if (plugin.state === 'loaded') {
         runAtTargetFps(TRAINING_CAMERA_CONSTANTS.FPS, () => {
           'worklet';
@@ -123,7 +123,7 @@ export function trainingFrameProcessor(
         detections.value = null;
       }
       if (detections.value) {
-        drawDetections(frame, detections.value, paint);
+        //drawDetections(frame, detections.value, paint);
       }
     },
     [plugin, detections]

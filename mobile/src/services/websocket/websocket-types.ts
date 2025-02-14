@@ -7,6 +7,7 @@ export enum WebSocketMessageType {
   PING = 'ping',
   PONG = 'pong',
   TRAINING_START = 'training_start',
+  READY_FOR_TRAINING_PHASE = 'ready_for_training_phase',
   TRAINING_PHOTO_SENDING = 'training_photo_sending',
   TRAINING_PHOTO_SENT = 'training_photo_sent',
   TRAINING_END = 'training_end',

@@ -33,7 +33,7 @@ class LobbyService(PhaseService):
 
     async def start_next_phase(self, player_id: str, message: dict):
         if self.context.is_host(player_id) and self.context.current_phase == "lobby":
-            if all(player.is_ready for player in self.context.players):
+            if self.context.is_all_players_ready():
                 await self.context.transition_to_phase("training")
             else:
                 await self.context.websockets.send_to_player(

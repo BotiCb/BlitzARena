@@ -11,7 +11,7 @@ class ModelTrainingPhaseService(PhaseService):
 
     def __init__(self, context: GameContext):
         super().__init__(context)
-        self.max_photos_per_player = 30
+        self.max_photos_per_player = 5 
         self.photo_count = 0
         self.training_data_collected = []
         self.groups: Dict[int, List[str]] = {}
@@ -19,35 +19,27 @@ class ModelTrainingPhaseService(PhaseService):
 
     def on_enter(self):
         self.context.websockets.register_handler("training_photo_sent", self.on_training_photo_sent)
+        self.context.websockets.register_handler("ready_for_training_phase", self.player_ready_for_training_phase)
         self.group_players()
-        print(f"Groups: {self.groups}")
-        asyncio.create_task(self.send_groups())
 
 
 
     def on_exit(self):
         self._unregister_handlers()
 
+
+    async def player_ready_for_training_phase(self, player_id: str, message: dict):
+        self.context.get_player(player_id).set_ready(True)
+        if self.context.is_all_players_ready():
+            await self.start_training()
+
     async def on_training_photo_sent(self, player_id: str, message: dict):
         try:
             detected_player = message.get("detected_player")
-            group_id = self.get_players_group_id(detected_player)
             if detected_player in self.training_data_collected:
-                await self.context.websockets.send_to_group(self.groups[group_id],
-                    Message({"type": "training_ready_for_player", "data": {
-                        "player_ready": detected_player,
-                    }}))
-                next_player = self.get_player_from_group_with_not_finished_training(group_id)
-                if next_player:
-                    await self.context.websockets.send_to_group(self.groups[group_id],
-                        Message({"type": "next_training_player", "data": {
-                        "next_player": next_player
-                    }}))
-                else:
-                    await self.context.websockets.send_to_all(
-                        Message({"type": "training_finished_for_group", "data": {}}))
                 return
-
+            
+            group_id = self.get_players_group_id(detected_player)
             player_photo_count = self.context.get_player(detected_player).increment_training_photo_count()
 
             print(f"Player {detected_player} has {player_photo_count} training photos")
@@ -59,18 +51,13 @@ class ModelTrainingPhaseService(PhaseService):
             )
 
             if player_photo_count >= self.max_photos_per_player:
-                await self.context.websockets.send_to_all(
-                    Message({"type": "training_ready_for_player", "data": detected_player}))
-                self.training_data_collected.append(detected_player)
-                print(
-                    f"Training data collected for player {detected_player}, {len(self.training_data_collected)}/{len(self.context.players)} players collected")
-
+                await self.assign_next_player_for_training(group_id, detected_player)
+                
         except KeyError as e:
             await self.context.websockets.send_error(player_id, f"Missing required key: {e}")
 
     async def start_training(self):
-        await self.context.websockets.send_to_all(
-            Message({"type": "training_started", "data": {}}))
+        await self.send_groups()
 
 
     def group_players(self) -> None:
@@ -125,3 +112,23 @@ class ModelTrainingPhaseService(PhaseService):
             if player_id not in self.training_data_collected:
                 return player_id
         return None
+    
+    async def assign_next_player_for_training(self, group_id: int, detected_player: str):
+        self.training_data_collected.append(detected_player)
+        print(f"Training data collected for player {detected_player}, {len(self.training_data_collected)}/{len(self.context.players)} players collected")
+
+        await self.context.websockets.send_to_group(self.groups[group_id],
+                    Message({"type": "training_ready_for_player", "data": {
+                        "player_ready": detected_player,
+                    }}))
+        next_player = self.get_player_from_group_with_not_finished_training(group_id)
+        print(f"Next player: {next_player}")
+        if next_player:
+            await self.context.websockets.send_to_group(self.groups[group_id],
+                Message({"type": "next_training_player", "data": {
+                "next_player": next_player
+            }}))
+        else:
+            print("All players finished training frpm group")
+            await self.context.websockets.send_to_all(
+                Message({"type": "training_finished_for_group", "data": {}}))

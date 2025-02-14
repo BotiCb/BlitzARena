@@ -56,6 +56,7 @@ class GameInstance:
         self.current_phase_service = self.phase_services.get(phase)
 
         if self.current_phase_service:
+            self.set_all_players_unready()
             self.current_phase_service.on_enter()
 
         await self.websockets.send_to_all(
@@ -191,3 +192,7 @@ class GameInstance:
     async def handle_websocket_message(self, player_id: str, message: Message):
         """Delegate WebSocket message handling to the WebSocketService."""
         await self.websockets.handle_message(player_id, message)
+
+    def set_all_players_unready(self):
+        for player in self.players:
+            player.set_ready(False)
