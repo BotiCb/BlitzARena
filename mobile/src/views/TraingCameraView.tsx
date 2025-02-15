@@ -48,14 +48,14 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
     }
   }, [hasPermission, requestPermission]);
 
-  const format = useCameraFormat(device, [
-    {
-      videoResolution: {
-        width: TRAINING_CAMERA_CONSTANTS.WIDTH,
-        height: TRAINING_CAMERA_CONSTANTS.HEIGHT,
-      },
-    },
-  ]);
+  // const format = useCameraFormat(device, [
+  //   {
+  //     videoResolution: {
+  //       width: TRAINING_CAMERA_CONSTANTS.WIDTH,
+  //       height: TRAINING_CAMERA_CONSTANTS.HEIGHT,
+  //     },
+  //   },
+  // ]);
   const lastUpdateTime = useSharedValue<number>(Date.now());
 
   useEffect(() => {
@@ -120,7 +120,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
         outputOrientation="preview"
         photo
         ref={camera}
-        format={format}
+        // format={format}
         frameProcessor={trainingFrameProcessor(plugin, lastUpdateTime, detections, paint)}
       />
     </View>

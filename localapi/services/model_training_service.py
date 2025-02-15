@@ -117,7 +117,7 @@ class ModelTrainingService:
         model = YOLO("yolo11n-cls.pt")
 
         model.train(data="./dataset",
-                    imgsz=self.photo_size, rect=True, epochs=10, batch=110, patience=3, workers=0, device=0, amp=True, half=True)
+                    imgsz=self.photo_size, rect=True, epochs=10, batch=510, patience=3, workers=0, device=0, amp=True, half=True)
 
         model.export(format="tflite", batch=1, imgsz=self.photo_size, rect=True, device=0, workers=0, half=True)
 

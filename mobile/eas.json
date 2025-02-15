@@ -6,7 +6,10 @@
   "build": {
     "development": {
       "developmentClient": false,
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "artifact": "apk"
+      }
     },
     "preview": {
       "distribution": "internal"

@@ -23,6 +23,9 @@ export class GameModel extends Document {
 
   @Prop({ required: true, type: [PlayerSessionSchema] })
   players: PlayerSession[];
+
+  @Prop({ required: true, default: false })
+  isTraining: boolean;
 }
 
 export const GameSchema = SchemaFactory.createForClass(GameModel);

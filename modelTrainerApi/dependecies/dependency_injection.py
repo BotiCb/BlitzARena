@@ -1,6 +1,6 @@
 
 
-from modelTrainerApi.services.model_training_service import ModelTrainingService
+from services.model_training_service import ModelTrainingService
 from services.data_collecting_service import DataCollectingService
 
 # Create a singleton instance of GameService

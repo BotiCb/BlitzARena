@@ -1,5 +1,5 @@
 from fastapi import Depends
-from lobbyApi.services.httpx_service import HTTPXService
+from services.httpx_service import HTTPXService
 from services.game_service import GameService
 
 # Create a singleton instance of GameService

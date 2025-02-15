@@ -1,22 +1,26 @@
 import os
 from typing import List, Dict
 
+
 from game.game_context import GameContext
 from game_phase_services.phase_service import PhaseService
 
-from lobbyApi.dependency_injection import get_httpx_service
+
 from models.message import Message
 import asyncio
+
+from services.httpx_service import HTTPXService
+
 
 class ModelTrainingPhaseService(PhaseService):
 
     def __init__(self, context: GameContext):
         super().__init__(context)
-        self.max_photos_per_player = 5 
+        self.max_photos_per_player = 5
         self.photo_count = 0
         self.training_data_collected = []
         self.groups: Dict[int, List[str]] = {}
-        self.httpx_service =get_httpx_service()
+        self.httpx_service: HTTPXService = HTTPXService()
 
 
     def on_enter(self):
@@ -62,9 +66,12 @@ class ModelTrainingPhaseService(PhaseService):
         await self.send_groups()
 
     async def start_training(self):
-        await self.httpx_service.get_model_training_client().post(f"/training/{self.context.game_id}")
-        print("Model training started")
-
+        try:
+            response =await self.httpx_service.get_api_client().post(f"/model-training/start-training/{self.context.get_game_id()}")
+            print("Model training started")
+            print(response) 
+        except Exception as e:
+            print(f"Error starting model training: {e}")
 
 
     def group_players(self) -> None:

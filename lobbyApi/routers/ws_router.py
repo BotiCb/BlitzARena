@@ -1,6 +1,6 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Depends
 
-from dependency_injection import get_game_service
+from dependencies.dependency_injection import get_game_service
 from models.message import Message
 from services.game_service import GameService
 

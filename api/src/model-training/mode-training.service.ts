@@ -20,13 +20,24 @@ export class ModelTrainingService {
       throw new HttpException('Player is not in the game', 400);
     }
 
+    if (game.isTraining) {
+      console.log('Training is already in progress, photo not sent');
+      throw new HttpException('Training is already in progress', 422);
+    }
+
     const fileExtension = file.originalname.split('.').pop();
     const uniqueFilename = `${uuidv4()}.${fileExtension}`;
+    const image = sharp(file.buffer);
 
-    const resizedImageBuffer = await sharp(file.buffer)
-      .resize(photoSize, photoSize, { fit: 'fill' })
-      .rotate(90)
-      .toBuffer();
+    const metadata = await image.metadata();
+    const shouldRotate = metadata.width > metadata.height;
+
+    let resizedImageBuffer;
+    if (shouldRotate) {
+      resizedImageBuffer = await image.resize(photoSize, photoSize, { fit: 'fill' }).rotate(90).toBuffer();
+    } else {
+      resizedImageBuffer = await image.resize(photoSize, photoSize, { fit: 'fill' }).toBuffer();
+    }
 
     const formData = new FormData();
     formData.append('file', resizedImageBuffer, {
@@ -34,7 +45,7 @@ export class ModelTrainingService {
       contentType: file.mimetype,
     });
 
-    const response = await this.axiosService.modelTrainingApiClient.post(
+    await this.axiosService.modelTrainingApiClient.post(
       `/collect-data/${gameId}/${playerId}/upload-training-photo`,
       formData,
       {
@@ -44,6 +55,20 @@ export class ModelTrainingService {
       }
     );
 
-    console.log(response.data);
+  }
+
+  async sendStartTrainingSignal(gameId: string) {
+    const game = await this.gameModel.findOne({ gameId }).exec();
+    if (!game) {
+      throw new HttpException('Game not found', 404);
+    }
+    if (game.isTraining) {
+      throw new HttpException('Training is already in progress', 400);
+    }
+    game.isTraining = true;
+    await game.save();
+    
+     this.axiosService.modelTrainingApiClient.post(`/training/${gameId}/start-training`);
+
   }
 }

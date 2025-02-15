@@ -6,7 +6,7 @@ from routers import data_collecting_router
 app = FastAPI()
 
 app.include_router(data_collecting_router.router, prefix="/model-trainer-api/collect-data", tags=["Data Collection"])
-app.include_router(model_training_router.router, prefix="/model-trainer-api/model-training", tags=["Model Training"])
+app.include_router(model_training_router.router, prefix="/model-trainer-api/training", tags=["Model Training"])
 
 
 @app.get("/model-trainer-api")
