@@ -196,3 +196,9 @@ class GameInstance:
     def set_all_players_unready(self):
         for player in self.players:
             player.set_ready(False)
+            
+            
+    async def handle_training_ready(self):
+        await self.websockets.send_to_all(
+            Message({"type": "training_ready", "data": {}})
+        )

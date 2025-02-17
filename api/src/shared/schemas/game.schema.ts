@@ -1,9 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { UserModel } from './user.schema';
+import { TrainingSessionModel } from './training-session.schema';
 
-@Schema({id: false})
-export class PlayerSession {
+@Schema({ id: false })
+export class PlayerSessionModel {
   @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'UserModel' })
   userId: UserModel;
 
@@ -11,7 +12,7 @@ export class PlayerSession {
   sessionId: string;
 }
 
-const PlayerSessionSchema = SchemaFactory.createForClass(PlayerSession);
+const PlayerSessionSchema = SchemaFactory.createForClass(PlayerSessionModel);
 
 @Schema({ timestamps: true })
 export class GameModel extends Document {
@@ -22,10 +23,10 @@ export class GameModel extends Document {
   creatorUser: UserModel;
 
   @Prop({ required: true, type: [PlayerSessionSchema] })
-  players: PlayerSession[];
+  players: PlayerSessionModel[];
 
-  @Prop({ required: true, default: false })
-  isTraining: boolean;
+  @Prop({ default: null, type: MongooseSchema.Types.ObjectId, ref: 'TrainingSessionModel' })
+  trainingSession: TrainingSessionModel;
 }
 
 export const GameSchema = SchemaFactory.createForClass(GameModel);

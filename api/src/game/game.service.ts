@@ -1,12 +1,12 @@
-import { Injectable, Logger, HttpException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { AxiosService } from "src/shared/modules/axios/axios.service";
-import { GameModel, PlayerSession } from "src/shared/schemas/game.schema";
-import { UserModel } from "src/shared/schemas/user.schema";
-import { CreateGameDto } from "./dto/input/create-game.dto";
-import { GameInfoDto } from "./dto/input/game-info.dto";
-import { CreateGameResponseDto, JoinGameResponseDto } from "./dto/output/game-info.dto";
+import { Injectable, Logger, HttpException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { AxiosService } from 'src/shared/modules/axios/axios.service';
+import { GameModel, PlayerSessionModel } from 'src/shared/schemas/game.schema';
+import { UserModel } from 'src/shared/schemas/user.schema';
+import { CreateGameDto } from './dto/input/create-game.dto';
+import { GameInfoDto } from './dto/input/game-info.dto';
+import { CreateGameResponseDto, JoinGameResponseDto } from './dto/output/game-info.dto';
 
 @Injectable()
 export class GameService {
@@ -21,7 +21,7 @@ export class GameService {
       const response = await this.axiosService.apiClient.post('/game/create-game', createGameDto);
       await this.axiosService.modelTrainingApiClient.get('');
       const gameInfo: GameInfoDto = response.data;
-      
+
       const sessionId = this.generateSessionIdforUser();
 
       await this.axiosService.apiClient.post(`/game/${gameInfo.gameId}/add-player/${sessionId}`);
@@ -61,7 +61,7 @@ export class GameService {
       }
 
       // Check if the user is already in the game
-      const isAlreadyInGame = game.players.some(p => p.userId.toString() === user._id.toString());
+      const isAlreadyInGame = game.players.some((p) => p.userId.toString() === user._id.toString());
       if (isAlreadyInGame) {
         throw new HttpException('Player is already in the game', 400);
       }
@@ -70,7 +70,7 @@ export class GameService {
       user.recentSessionId = sessionId;
       await user.save();
 
-      game.players.push({ userId: user._id, sessionId } as PlayerSession);
+      game.players.push({ userId: user._id, sessionId } as PlayerSessionModel);
       await game.save();
 
       return { sessionId };
@@ -95,7 +95,7 @@ export class GameService {
         throw new HttpException('Game not found', 404);
       }
 
-      game.players = game.players.filter(p => p.userId.toString() !== user._id.toString());
+      game.players = game.players.filter((p) => p.userId.toString() !== user._id.toString());
       await game.save();
 
       user.recentGameId = null;

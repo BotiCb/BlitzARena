@@ -6,6 +6,7 @@ from game.game_context import GameContext
 from game_phase_services.phase_service import PhaseService
 
 
+from utils.dto_convention_converter import convert_dict_to_camel_case
 from models.message import Message
 import asyncio
 
@@ -16,7 +17,7 @@ class ModelTrainingPhaseService(PhaseService):
 
     def __init__(self, context: GameContext):
         super().__init__(context)
-        self.max_photos_per_player = 5
+        self.max_photos_per_player = 1
         self.photo_count = 0
         self.training_data_collected = []
         self.groups: Dict[int, List[str]] = {}
@@ -67,9 +68,16 @@ class ModelTrainingPhaseService(PhaseService):
 
     async def start_training(self):
         try:
-            response =await self.httpx_service.get_api_client().post(f"/model-training/start-training/{self.context.get_game_id()}")
+            body = convert_dict_to_camel_case({
+                "num_classes": len(self.context.players),
+                "num_images_per_class": self.max_photos_per_player,
+            })
+            print(body)
+            response = await self.httpx_service.get_api_client().post(f"/model-training/start-training/{self.context.get_game_id()}", json=body  )
             print("Model training started")
-            print(response) 
+            await self.context.websockets.send_to_all(
+                Message({"type": "training_started", "data": {}})
+            )
         except Exception as e:
             print(f"Error starting model training: {e}")
 

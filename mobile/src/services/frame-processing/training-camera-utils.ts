@@ -22,46 +22,49 @@ export async function takeCroppedTrainingImage(
       return null;
     }
   }
+  try {
+    const photoPromise = camera.takePhoto();
+    const photo = await photoPromise;
+    if (photo && detections.value) {
+      let cropOptions: ImageCropData;
+      if (photo.height > photo.width) {
+        cropOptions = {
+          offset: {
+            x: (1 - detections.value.boundingBox.y1) * photo.width,
+            y: detections.value.boundingBox.x1 * photo.height,
+          },
+          size: {
+            width: detections.value.boundingBox.w * photo.width,
+            height: detections.value.boundingBox.h * photo.height,
+          },
+          quality: 1.0,
+        };
+      } else {
+        cropOptions = {
+          offset: {
+            x: (1 - detections.value.boundingBox.y1) * photo.height,
+            y: detections.value.boundingBox.x1 * photo.width,
+          },
+          size: {
+            width: detections.value.boundingBox.w * photo.height,
+            height: detections.value.boundingBox.h * photo.width,
+          },
+          quality: 1.0,
+        };
+      }
+      const croppedPhoto = await ImageEditor.cropImage('file://' + photo.path, cropOptions);
 
-  const photoPromise = camera.takePhoto();
-  const photo = await photoPromise;
-  if (photo && detections.value) {
-    let cropOptions: ImageCropData;
-    if (photo.height > photo.width) {
-      cropOptions = {
-        offset: {
-          x: (1 - detections.value.boundingBox.y1) * photo.width,
-          y: detections.value.boundingBox.x1 * photo.height,
-        },
-        size: {
-          width: detections.value.boundingBox.w * photo.width,
-          height: detections.value.boundingBox.h * photo.height,
-        },
-        quality: 1.0,
+      const trainingImage: TrainingImage = {
+        photoUri: croppedPhoto.uri,
+        detectedPlayer: playerId,
+        photoSize: imageSize,
       };
-    } else {
-      cropOptions = {
-        offset: {
-          x: (1 - detections.value.boundingBox.y1) * photo.height,
-          y: detections.value.boundingBox.x1 * photo.width,
-        },
-        size: {
-          width: detections.value.boundingBox.w * photo.height,
-          height: detections.value.boundingBox.h * photo.width,
-        },
-        quality: 1.0,
-      };
+      console.log(trainingImage.photoUri);
+      return trainingImage;
     }
-    const croppedPhoto = await ImageEditor.cropImage('file://' + photo.path, cropOptions);
 
-    const trainingImage: TrainingImage = {
-      photoUri: croppedPhoto.uri,
-      detectedPlayer: playerId,
-      photoSize: imageSize,
-    };
-    console.log(trainingImage.photoUri);
-    return trainingImage;
+    return null;
+  } catch (error) {
+    console.error('Error taking training-photo:', error);
   }
-
-  return null;
 }

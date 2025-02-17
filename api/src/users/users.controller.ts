@@ -11,7 +11,7 @@ import { isObjectId } from 'src/shared/utils/mapper';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DetailedUserProfileDto, InGameUserInfoDto } from './dto/output/detailed-user-profile';
 import { EmailService } from 'src/shared/modules/email/email.service';
-import { UserRole } from 'src/shared/decorators/user-roles.decorator';
+import { UserRole } from 'src/shared/decorators/roles.decorator';
 @ApiTags('users')
 @ApiBearerAuth()
 @Controller('users')
@@ -66,13 +66,16 @@ export class UsersController {
 
   @UserRole()
   @Get('ingameinfo/:gameId')
-  async getInGameUserInfos(@CurrentUser() user: UserModel, @Param('gameId') gameId: string): Promise<InGameUserInfoDto[]> {
+  async getInGameUserInfos(
+    @CurrentUser() user: UserModel,
+    @Param('gameId') gameId: string
+  ): Promise<InGameUserInfoDto[]> {
     return (await this.usersService.findByGameId(gameId)).map(this.userMapper.fromUserModelToInGameUserInfoDto);
   }
 
   @UserRole()
   @Get('ingameinfo/session-id/:sessionId')
-  async getInGameUserInfo( @Param('sessionId') sessionId: string): Promise<InGameUserInfoDto> {
+  async getInGameUserInfo(@Param('sessionId') sessionId: string): Promise<InGameUserInfoDto> {
     const user = await this.usersService.findBySessionId(sessionId);
     if (!user) {
       throw new HttpException('User not found', 404);

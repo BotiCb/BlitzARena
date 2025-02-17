@@ -45,3 +45,14 @@ async def delete_game(
         raise HTTPException(status_code=404, detail="Game not found")
     game_service.delete_game(game_id)
     return {"message": f"Game {game_id} deleted successfully"}
+
+
+@router.post("/{game_id}/training-finished")
+async def traning_finished(
+    game_id: str,
+    payload: dict = Depends(verify_jwt),
+    game_service: GameService = Depends(get_game_service)
+):
+    if not game_service.is_game_exists(game_id):
+        raise HTTPException(status_code=404, detail="Game not found")
+    return await game_service.handle_training_finished(game_id)

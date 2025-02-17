@@ -45,7 +45,7 @@ class GameService:
 
     def get_game(self, game_id: str) -> GameInstance:
         if not self.is_game_exists(game_id):
-            raise HTTPException(status_code=404, detail="Lobby not found")
+            raise HTTPException(status_code=404, detail="Game not found")
         return self.games[game_id]
 
     def remove_player(self, game_id: str, player_id: str):
@@ -55,21 +55,16 @@ class GameService:
 
     async def add_websocket_connection(self, game_id: str, player_id: str, websocket: WebSocket):
         """Add a WebSocket connection for a player."""
-        if not self.is_game_exists(game_id):
-            raise HTTPException(status_code=404, detail="Lobby not found")
-        await self.games[game_id].add_websocket_connection(player_id, websocket)
+        await self.get_game(game_id).add_websocket_connection(player_id, websocket)
 
     async def remove_websocket_connection(self, game_id: str, player_id: str):
         """Remove a WebSocket connection for a player."""
-        if not self.is_game_exists(game_id):
-            raise HTTPException(status_code=404, detail="Lobby not found")
-        await self.games[game_id].remove_websocket_connection(player_id)
+        await self.get_game(game_id).remove_websocket_connection(player_id)
 
     async def handle_websocket_message(self, game_id: str, websocket: WebSocket, message: Message):
         """Handle WebSocket messages from a player."""
-        if not self.is_game_exists(game_id):
-            raise HTTPException(status_code=404, detail="Lobby not found")
-        game = self.games[game_id]
+    
+        game = self.get_game(game_id)
 
         # Identify the player ID from the WebSocket connection
         player_id = None
@@ -82,4 +77,8 @@ class GameService:
             raise HTTPException(status_code=400, detail="Player not found for this WebSocket")
 
         await game.handle_websocket_message(player_id, message)
+        
+    async def handle_training_finished(self, game_id: str):
+        game= self.get_game(game_id)
+        await game.handle_training_ready()
 

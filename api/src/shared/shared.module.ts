@@ -5,6 +5,7 @@ import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { AxiosModule } from './modules/axios/axios.module';
 @Module({
   imports: [CustomMongooseModule, FileUploadModule, EmailModule, AxiosModule],
+  providers: [],
   exports: [CustomMongooseModule, FileUploadModule, EmailModule, AxiosModule],
 })
 export class SharedModule {}

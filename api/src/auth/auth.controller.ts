@@ -4,7 +4,7 @@ import { LoginRequestDto } from './dto/input/login-request.dto';
 import { CreateUserDto } from './dto/input/create-user.dto';
 import { AccessTokenDto } from './dto/output/access-token.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { UserRole } from 'src/shared/decorators/user-roles.decorator';
+import { UserRole } from 'src/shared/decorators/roles.decorator';
 import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { UserModel } from 'src/shared/schemas/user.schema';
 import { CurrentToken } from 'src/shared/decorators/current-token.decorator';
