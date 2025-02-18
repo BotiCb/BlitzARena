@@ -15,6 +15,7 @@ import { GamePhase } from '~/utils/types';
 export class GameWebSocketService extends AbstractCustomWebSocketService {
   private areYouHostHandlerFunction: (areYouHost: boolean) => void = () => {};
   private gamePhaseHandlerFunction: (gamePhase: GamePhase) => void = () => {};
+  private modelReadyHandlerFunction: (modelReady: boolean) => void = () => {};
 
   private navigator: StackNavigationProp<GameStackParamList> | null = null;
   private pinghandlerFunction: (ping: number) => void = () => {};
@@ -33,6 +34,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     this.websocketService.onMessageType('you_were_removed', this.handleYouWereRemovedEvent);
     this.websocketService.onMessageType('pong', this.handlePongEvent);
     this.websocketService.onMessageType('game_phase', this.handleGamePhaseChangedEvent);
+    this.websocketService.onMessageType('model_ready', this.handleModelreadyEvent);
 
     this.startPingInterval();
   }
@@ -69,6 +71,10 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   };
   setGamePhaseHandlerFunction = (handler: (gamePhase: GamePhase) => void) => {
     this.gamePhaseHandlerFunction = handler;
+  };
+
+  setModelReadyHandlerFunction = (handler: (modelReady: boolean) => void) => {
+    this.modelReadyHandlerFunction = handler;
   };
 
   handleGameInfoEvent = async (message: WebSocketMsg) => {
@@ -229,5 +235,9 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     this.websocketService.offMessageType('player_removed');
     this.websocketService.offMessageType('new_host');
     this.websocketService.offMessageType('you_were_removed');
+  };
+
+  handleModelreadyEvent = async (message: WebSocketMsg) => {
+    this.modelReadyHandlerFunction(true);
   };
 }

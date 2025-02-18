@@ -8,6 +8,7 @@ import { GameProvider, useGame } from '~/contexts/GameContext';
 import { LobbyScreen } from '~/screens/LobbyScreen';
 import ModelTrainingScreen from '~/screens/ModelTrainingScreen';
 import SplashScreen from '~/screens/SplashScreen';
+import { GamerRoomScreen } from '~/screens/GameRoomScreen';
 
 const GameStack = () => {
   const route = useRoute<RouteProp<AppStackParamList, 'GameStack'>>();
@@ -31,6 +32,8 @@ const GameContent = () => {
             return <LobbyScreen />;
           case 'training':
             return <ModelTrainingScreen />;
+          case 'game-room':
+            return <GamerRoomScreen />;
           default:
             return <SplashScreen />;
         }

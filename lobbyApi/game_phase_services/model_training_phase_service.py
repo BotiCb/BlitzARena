@@ -27,6 +27,7 @@ class ModelTrainingPhaseService(PhaseService):
     def on_enter(self):
         self.context.websockets.register_handler("training_photo_sent", self.on_training_photo_sent)
         self.context.websockets.register_handler("ready_for_training_phase", self.player_ready_for_training_phase)
+        self._registered_handlers.extend(["training_photo_sent", "ready_for_training_phase"])
         self.group_players()
 
 
@@ -78,6 +79,7 @@ class ModelTrainingPhaseService(PhaseService):
             await self.context.websockets.send_to_all(
                 Message({"type": "training_started", "data": {}})
             )
+            await self.context.transition_to_phase("game-room")
         except Exception as e:
             print(f"Error starting model training: {e}")
 

@@ -56,3 +56,14 @@ async def traning_finished(
     if not game_service.is_game_exists(game_id):
         raise HTTPException(status_code=404, detail="Game not found")
     return await game_service.handle_training_finished(game_id)
+
+
+@router.post("/{game_id}/training-error")
+async def traning_error(
+    game_id: str,
+    payload: dict = Depends(verify_jwt),
+    game_service: GameService = Depends(get_game_service)
+):
+    if not game_service.is_game_exists(game_id):
+        raise HTTPException(status_code=404, detail="Game not found")
+    return await game_service.handle_training_error(game_id)

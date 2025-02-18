@@ -40,6 +40,10 @@ export const useTraining = () => {
     modelTrainingWebsocketService.setWebSocketEventListeners();
     modelTrainingWebsocketService.setPhaseHandlerFunction(setPhase);
     modelTrainingWebsocketService.readyForTraining();
+
+    return () => {
+      modelTrainingWebsocketService.close();
+    };
   }, []);
 
   return {

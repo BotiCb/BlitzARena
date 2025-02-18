@@ -69,7 +69,7 @@ export type Point = {
   y: number;
 };
 
-export type GamePhase = 'lobby' | 'training';
+export type GamePhase = 'lobby' | 'training' | 'game-room';
 
 export type TrainingPhase =
   | 'initializing'

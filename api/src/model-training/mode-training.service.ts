@@ -115,6 +115,6 @@ export class ModelTrainingService {
     game.trainingSession.endedAt = new Date();
     game.trainingSession.errorMessage = errorMessage;
     await game.trainingSession.save();
-    await this.axiosService.modelTrainingApiClient.post(`game/${gameId}/training-finished`);
+    await this.axiosService.apiClient.post(`game/${gameId}/training-error`);
   }
 }

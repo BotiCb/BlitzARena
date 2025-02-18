@@ -8,6 +8,7 @@ from game_phase_services.lobby_phase_service import LobbyService
 from game_phase_services.model_training_phase_service import ModelTrainingPhaseService
 from game_phase_services.phase_service import PhaseService
 
+from game_phase_services.game_room_phase_service import GameRoomService
 from models.message import Message
 from models.player import Player
 from services.websocket_service import WebSocketService
@@ -20,6 +21,7 @@ class GameInstance:
         self.current_phase = "lobby"
         self.websockets = WebSocketService()
         self.game_id = game_id
+        self.is_model_trained = False
 
         # Initialize context and phase services
         self.context = GameContext(
@@ -28,10 +30,13 @@ class GameInstance:
             transition_to_phase_callback=self.transition_to_phase,
             get_current_phase=lambda: self.current_phase,
             get_game_id=lambda: self.game_id,
+            is_model_trained=lambda: self.is_model_trained
+            
         )
         self.phase_services: Dict[str, PhaseService] = {
             "lobby": LobbyService(self.context),
             "training": ModelTrainingPhaseService(self.context),
+            "game-room": GameRoomService(self.context),
             # Add other phases here (e.g., "training": TrainingService(self.context))
         }
         self.current_phase_service = self.phase_services.get(self.current_phase)
@@ -61,6 +66,9 @@ class GameInstance:
 
         await self.websockets.send_to_all(
             Message({"type": "game_phase", "data": phase})
+        )
+        await self.websockets.send_to_all(
+            Message({"type": "game_info", "data": self.get_game_info()})
         )
 
     async def add_player(self, player_id: str):
@@ -199,6 +207,13 @@ class GameInstance:
             
             
     async def handle_training_ready(self):
+        self.is_model_trained = True
         await self.websockets.send_to_all(
-            Message({"type": "training_ready", "data": {}})
+            Message({"type": "model_ready", "data": {}})
         )
+        
+    async def handle_training_error(self):
+        await self.websockets.send_to_all(
+            Message({"type": "training_error", "data": {}})
+        )
+        await self.transition_to_phase("training")

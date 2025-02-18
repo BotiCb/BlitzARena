@@ -9,7 +9,7 @@ import { Player } from '~/utils/models';
 import { GamePhase } from '~/utils/types';
 
 type GameContextType = {
-  gamePhase: string;
+  gamePhase: GamePhase;
   gameId: string;
   userSessionId: string;
   players: Player[];
@@ -20,6 +20,7 @@ type GameContextType = {
   setPlayerAsHost: (playerId: string) => void;
   onRemovePlayer: (playerId: string) => void;
   onStartNextGamePhase: () => void;
+  modelReady: boolean;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -36,6 +37,7 @@ export const GameProvider: React.FC<{
   const [areYouHost, setAreYouHost] = useState<boolean>(false);
   const [ping, setPing] = useState<number>(0);
   const navigation = useNavigation<StackNavigationProp<GameStackParamList>>();
+  const [modelReady, setModelReady] = useState<boolean>(false);
 
   const setPlayerAsHost = (playerId: string) => {
     if (!areYouHost) {
@@ -68,6 +70,7 @@ export const GameProvider: React.FC<{
     gameWebsocketService.setSessionId(userSessionId);
     gameWebsocketService.setAreYouHostHandlerFunction(setAreYouHost);
     gameWebsocketService.setNavigationHandler(navigation);
+    gameWebsocketService.setModelReadyHandlerFunction(setModelReady);
     gameWebsocketService.setWebSocketEventListeners();
     websocketService.connect(gameId, userSessionId);
 
@@ -89,6 +92,7 @@ export const GameProvider: React.FC<{
         playerHandlerFunction: setPlayers,
         ping,
         onStartNextGamePhase,
+        modelReady,
       }}>
       {children}
     </GameContext.Provider>

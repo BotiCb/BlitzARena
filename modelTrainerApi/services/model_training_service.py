@@ -34,11 +34,11 @@ class ModelTrainingService:
         except Exception as e:
             print(f"Error during training for game {game_id}: {e}")
             response = await self.httpx_service.get_api_client().post(f"/model-training/training-error/{game_id}", json={"errorMessage": str(e)})
-            print (f"Error response: {response}")
+            print (f"Error response: {str(response)}")
 
     def _train_model(self, model, game_id: str):
         model.train(
             data=f"{self.dataset_dir}/{game_id}",
             imgsz=320, rect=True, epochs=20, batch=200, workers=0, device=0, amp=True, half=True
         )
-        model.export(format="tflite", batch=1, imgsz=320, rect=True)
+        # model.export(format="tflite", batch=1, imgsz=320, rect=True)

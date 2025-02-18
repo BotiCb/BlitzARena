@@ -10,7 +10,6 @@ router = APIRouter()
 @router.post("/{game_id}/start-training")
 async def upload_training_photo(
     game_id: str,
-    payload: dict = Depends(verify_jwt),
     model_training_service: ModelTrainingService = Depends(get_model_training_service),
 ):
     print('Starting training...')
