@@ -134,19 +134,16 @@ export function decodeYoloClassifyOutput(array: any): Classification {
   }
 
   let maxIndex = 0;
-  let secondMaxIndex = -1;
   let maxValue = array[0];
   let secondMaxValue = -Infinity;
 
   for (let i = 1; i < array.length; i++) {
     if (array[i] > maxValue) {
       secondMaxValue = maxValue;
-      secondMaxIndex = maxIndex;
       maxValue = array[i];
       maxIndex = i;
     } else if (array[i] > secondMaxValue) {
       secondMaxValue = array[i];
-      secondMaxIndex = i;
     }
   }
 

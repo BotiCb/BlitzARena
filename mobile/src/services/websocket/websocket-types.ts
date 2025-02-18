@@ -1,3 +1,5 @@
+import { GamePhase } from '~/utils/types';
+
 export type WebSocketMsg = {
   type: WebSocketMessageType;
   data?: any;
@@ -34,6 +36,6 @@ export type PlayerWSInfo = {
 export type GameWSInfo = {
   gameId: string;
   players: PlayerWSInfo[];
-  currentPhase: string;
+  currentPhase: GamePhase;
   max_players: number;
 };

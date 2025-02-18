@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Button, Text } from 'react-native';
+import { View, Button } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
 import { PlayerListComponent } from '~/components/PlayerListComponent';

@@ -2,14 +2,9 @@ import { useAppState } from '@react-native-community/hooks';
 import { useIsFocused } from '@react-navigation/native';
 import { Skia } from '@shopify/react-native-skia';
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Button } from 'react-native';
 import { TensorflowModel, TensorflowPlugin } from 'react-native-fast-tflite';
-import {
-  Camera,
-  useCameraDevices,
-  useCameraPermission,
-  useCameraFormat,
-} from 'react-native-vision-camera';
+import { Camera, useCameraDevices, useCameraPermission } from 'react-native-vision-camera';
 import { useSharedValue } from 'react-native-worklets-core';
 
 import { trainingFrameProcessor } from '~/services/frame-processing/frame-processors';
@@ -23,6 +18,7 @@ interface TrainingCameraViewProps {
   handleImageCapture: (trainingImage: TrainingImage) => Promise<void>;
   playerId: string;
   plugin: TensorflowPlugin;
+  handleTakePhotos: (takePhotos: boolean) => void;
 }
 function tensorToString(tensor: TensorflowModel['inputs'][number]): string {
   return `${tensor.dataType} [${tensor.shape}]`;
@@ -33,6 +29,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   handleImageCapture,
   playerId,
   plugin,
+  handleTakePhotos,
 }) => {
   const isFocused = useIsFocused();
   const appState = useAppState();
@@ -141,6 +138,11 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
         // format={format}
         frameProcessor={trainingFrameProcessor(plugin, lastUpdateTime, detections, paint)}
       />
+      {!takePhotos ? (
+        <Button title="Take Photos" onPress={() => handleTakePhotos(true)} />
+      ) : (
+        <Button title="Stop taking photos" onPress={() => handleTakePhotos(false)} />
+      )}
     </View>
   );
 };

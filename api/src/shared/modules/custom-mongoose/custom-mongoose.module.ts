@@ -10,16 +10,17 @@ import { TrainingSessionModel, TrainingSessionSchema } from 'src/shared/schemas/
     MongooseModule.forRoot(config.get('db.url')),
     MongooseModule.forFeature([{ name: UserModel.name, schema: UserSchema, collection: 'User' }]),
     MongooseModule.forFeature([{ name: GameModel.name, schema: GameSchema, collection: 'Game' }]),
-    MongooseModule.forFeature([{ name: TrainingSessionModel.name, schema: TrainingSessionSchema, collection: 'TrainingSession' }]),
-
-
-
+    MongooseModule.forFeature([
+      { name: TrainingSessionModel.name, schema: TrainingSessionSchema, collection: 'TrainingSession' },
+    ]),
   ],
   exports: [
     MongooseModule.forRoot(config.get('db.url')),
     MongooseModule.forFeature([{ name: UserModel.name, schema: UserSchema, collection: 'User' }]),
     MongooseModule.forFeature([{ name: GameModel.name, schema: GameSchema, collection: 'Game' }]),
-    MongooseModule.forFeature([{ name: TrainingSessionModel.name, schema: TrainingSessionSchema, collection: 'TrainingSession' }]),
+    MongooseModule.forFeature([
+      { name: TrainingSessionModel.name, schema: TrainingSessionSchema, collection: 'TrainingSession' },
+    ]),
   ],
 })
 export class CustomMongooseModule {}

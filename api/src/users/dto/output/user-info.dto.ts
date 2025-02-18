@@ -16,7 +16,6 @@ export class UserInfoDto {
   }
 }
 
-
 export class UserInfoToGameDto {
   firstName: string;
   lastName: string;

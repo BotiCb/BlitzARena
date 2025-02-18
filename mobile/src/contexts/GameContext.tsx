@@ -6,6 +6,7 @@ import { GameStackParamList } from '~/navigation/types';
 import { GameWebSocketService } from '~/services/websocket/game.websocket.service';
 import { WebSocketService } from '~/services/websocket/websocket.service';
 import { Player } from '~/utils/models';
+import { GamePhase } from '~/utils/types';
 
 type GameContextType = {
   gamePhase: string;
@@ -30,7 +31,7 @@ export const GameProvider: React.FC<{
 }> = ({ gameId, userSessionId, children }) => {
   const websocketService = WebSocketService.getInstance();
   const gameWebsocketService = GameWebSocketService.getInstance();
-  const [gamePhase, setGamePhase] = useState<string>('');
+  const [gamePhase, setGamePhase] = useState<GamePhase>('lobby');
   const [players, setPlayers] = useState<Player[]>([]);
   const [areYouHost, setAreYouHost] = useState<boolean>(false);
   const [ping, setPing] = useState<number>(0);

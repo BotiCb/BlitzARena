@@ -50,7 +50,6 @@ export class UsersService {
     return user;
   }
 
-
   findByGameId(gameId: string): Promise<UserModel[]> {
     return this.userModel.find({ recentGameId: gameId }).exec();
   }

@@ -1,8 +1,8 @@
-export class CreateGameResponseDto{
-    gameId: string
-    sessionId: string
+export class CreateGameResponseDto {
+  gameId: string;
+  sessionId: string;
 }
 
-export class JoinGameResponseDto{
-    sessionId: string
+export class JoinGameResponseDto {
+  sessionId: string;
 }

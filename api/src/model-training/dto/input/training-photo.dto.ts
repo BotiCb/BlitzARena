@@ -1,12 +1,12 @@
-import { IsPositive, IsString } from "class-validator";
+import { IsPositive, IsString } from 'class-validator';
 
 export class TrainingPhotoDto {
-    @IsString()
-    playerId: string;
+  @IsString()
+  playerId: string;
 
-    @IsString()
-    gameId: string;
+  @IsString()
+  gameId: string;
 
-    @IsString()
-    photoSize: string;
+  @IsString()
+  photoSize: string;
 }

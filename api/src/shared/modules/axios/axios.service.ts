@@ -14,7 +14,6 @@ export class AxiosService {
     },
   });
 
-
   modelTrainingApiClient = axios.create({
     baseURL: MODEL_TRAINING_API_BASE_URL,
     headers: {
@@ -38,7 +37,7 @@ export class AxiosService {
         config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
-    })
+    });
   }
 
   private async createToken(): Promise<string> {

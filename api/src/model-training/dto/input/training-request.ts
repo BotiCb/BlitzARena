@@ -1,9 +1,9 @@
-import { IsNumber } from "class-validator";
+import { IsNumber } from 'class-validator';
 
-export class TrainingRequestDto{
-    @IsNumber()
-    numClasses: number
+export class TrainingRequestDto {
+  @IsNumber()
+  numClasses: number;
 
-    @IsNumber()
-    numImagesPerClass: number
+  @IsNumber()
+  numImagesPerClass: number;
 }

@@ -1,3 +1,3 @@
 export class TrainingErrorDto {
-    errorMessage: string;
+  errorMessage: string;
 }

@@ -4,8 +4,8 @@ import { ModelTrainingController } from './model-training.controller';
 import { ModelTrainingService } from './mode-training.service';
 
 @Module({
-    imports: [SharedModule],
-    controllers: [ModelTrainingController],
-    providers: [ModelTrainingService],
+  imports: [SharedModule],
+  controllers: [ModelTrainingController],
+  providers: [ModelTrainingService],
 })
 export class ModelTrainingModule {}

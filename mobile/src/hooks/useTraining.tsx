@@ -1,0 +1,56 @@
+import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
+import { useTensorflowModel } from 'react-native-fast-tflite';
+
+import { useGame } from '~/contexts/GameContext';
+import { ModelTrainingWebSocketService } from '~/services/websocket/model-training.websocket.service';
+import { Player } from '~/utils/models';
+import { TrainingPhase } from '~/utils/types';
+
+export const useTraining = () => {
+  const { players, userSessionId } = useGame();
+  const [takePhotos, setTakePhotos] = useState(false);
+  const [trainingPlayer, setTrainingPlayer] = useState<Player | null>(null);
+  const [trainingGroup, setTrainingGroup] = useState<Player[] | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState<TrainingPhase>('initializing');
+  const modelTrainingWebsocketService = ModelTrainingWebSocketService.getInstance();
+  const handleTrainingPlayer = (playerId: string) => {
+    setTrainingPlayer(players.find((player) => player.sessionID === playerId) || null);
+  };
+
+  const handleTrainingGroup = (playerIds: string[] | null) => {
+    setTrainingGroup(
+      playerIds ? players.filter((player) => playerIds.includes(player.sessionID)) : null
+    );
+  };
+
+  const delegate = Platform.OS === 'ios' ? 'core-ml' : undefined;
+
+  const plugin = useTensorflowModel(
+    require('../../assets/models/yolo11n-pose_integer_quant.tflite'),
+    delegate
+  );
+
+  useEffect(() => {
+    modelTrainingWebsocketService.setTakingPhotosHandlerFunction(setTakePhotos);
+    modelTrainingWebsocketService.setProgressHandlerFunction(setProgress);
+    modelTrainingWebsocketService.setCurrentTrainingPlayerHandlerFunction(handleTrainingPlayer);
+    modelTrainingWebsocketService.setTrainingGroupHandlerFunction(handleTrainingGroup);
+    modelTrainingWebsocketService.setWebSocketEventListeners();
+    modelTrainingWebsocketService.setPhaseHandlerFunction(setPhase);
+    modelTrainingWebsocketService.readyForTraining();
+  }, []);
+
+  return {
+    takePhotos,
+    phase,
+    trainingPlayer,
+    trainingGroup,
+    progress,
+    plugin,
+    userSessionId,
+    handleTakePhotos: setTakePhotos,
+    handleImageCapture: modelTrainingWebsocketService.takePhoto,
+  };
+};

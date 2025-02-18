@@ -1,11 +1,4 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-  Type,
-  mixin,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, Type, mixin } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { config } from '../config/config';
 import { Request } from 'express';
@@ -19,11 +12,11 @@ export function ServiceApiGuard(serviceName: ServiceApiName): Type<CanActivate> 
     async canActivate(context: ExecutionContext): Promise<boolean> {
       const request = context.switchToHttp().getRequest<Request>();
       const token = this.extractTokenFromHeader(request);
-      
+
       if (!token) {
         throw new UnauthorizedException('No token provided');
       }
-      
+
       try {
         const payload = await this.jwtService.verifyAsync(token, {
           secret: config.get('auth.servicejwtSecret'),
@@ -34,7 +27,7 @@ export function ServiceApiGuard(serviceName: ServiceApiName): Type<CanActivate> 
       } catch (error) {
         throw new UnauthorizedException('Token validation failed');
       }
-      
+
       return true;
     }
 

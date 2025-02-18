@@ -1,6 +1,5 @@
 import { Player } from './models';
 
-import { GameStackParamList } from '~/navigation/types';
 import { PlayerInfoResponseDto } from '~/services/restApi/dto/response.dto';
 import { PlayerWSInfo } from '~/services/websocket/websocket-types';
 

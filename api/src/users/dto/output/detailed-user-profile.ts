@@ -19,7 +19,6 @@ export class DetailedUserProfileDto {
   }
 }
 
-
 export class InGameUserInfoDto {
   firstName: string;
   lastName: string;

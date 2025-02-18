@@ -9,11 +9,12 @@ import { PlayerInfoResponseDto } from '../restApi/dto/response.dto';
 import { GameStackParamList } from '~/navigation/types';
 import { mergePlayerArray, mergePlayer } from '~/utils/mappers';
 import { Player } from '~/utils/models';
+import { GamePhase } from '~/utils/types';
 
 // game.websocket.service.ts
 export class GameWebSocketService extends AbstractCustomWebSocketService {
   private areYouHostHandlerFunction: (areYouHost: boolean) => void = () => {};
-  private gamePhaseHandlerFunction: (gamePhase: string) => void = () => {};
+  private gamePhaseHandlerFunction: (gamePhase: GamePhase) => void = () => {};
 
   private navigator: StackNavigationProp<GameStackParamList> | null = null;
   private pinghandlerFunction: (ping: number) => void = () => {};
@@ -66,7 +67,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   setPingHandlerFunction = (handler: (ping: number) => void) => {
     this.pinghandlerFunction = handler;
   };
-  setGamePhaseHandlerFunction = (handler: (gamePhase: string) => void) => {
+  setGamePhaseHandlerFunction = (handler: (gamePhase: GamePhase) => void) => {
     this.gamePhaseHandlerFunction = handler;
   };
 

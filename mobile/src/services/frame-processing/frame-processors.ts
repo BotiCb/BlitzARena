@@ -2,11 +2,9 @@ import { SkPaint } from '@shopify/react-native-skia';
 import { TensorflowPlugin } from 'react-native-fast-tflite';
 import {
   DrawableFrame,
-  DrawableFrameProcessor,
   ReadonlyFrameProcessor,
   runAtTargetFps,
   useFrameProcessor,
-  useSkiaFrameProcessor,
 } from 'react-native-vision-camera';
 import { ISharedValue } from 'react-native-worklets-core';
 import * as useResizePlugin from 'vision-camera-resize-plugin';

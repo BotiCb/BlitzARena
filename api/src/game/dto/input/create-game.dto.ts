@@ -1,7 +1,7 @@
-import { IsNumber, IsPositive } from "class-validator"
+import { IsNumber, IsPositive } from 'class-validator';
 
 export class CreateGameDto {
-    @IsPositive()
-    @IsNumber()
-    maxPlayers: number
+  @IsPositive()
+  @IsNumber()
+  maxPlayers: number;
 }

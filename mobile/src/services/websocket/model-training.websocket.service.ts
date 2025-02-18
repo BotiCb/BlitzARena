@@ -5,12 +5,15 @@ import { TrainingImage, WebSocketMessageType, WebSocketMsg } from './websocket-t
 import { MODEL_TRAINING_ENDPOINTS } from '../restApi/Endpoints';
 import { apiClient } from '../restApi/RestApiService';
 
+import { TrainingPhase } from '~/utils/types';
+
 export class ModelTrainingWebSocketService extends AbstractCustomWebSocketService {
   private remainingPhotoToSendCount: number = 0;
   private isTakingPhotosHandlerFunction: (takePhotos: boolean) => void = () => {};
   private progressHandlerFunction: (progress: number) => void = () => {};
   private currentTrainingPlayerHandlerFunction: (playerId: string) => void = () => {};
   private trainingGroupHandlerFunction: (playerIds: string[] | null) => void = () => {};
+  private phaseHandlerFunction: (phase: TrainingPhase) => void = () => {};
 
   setWebSocketEventListeners(): void {
     this.websocketService.onMessageType(
@@ -20,7 +23,15 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     this.websocketService.onMessageType('training_progress', this.onProgressUpdate);
     this.websocketService.onMessageType('next_training_player', this.onNextTrainingPlayer);
     this.websocketService.onMessageType('group_assigned', this.onTrainingGroupAssigned);
+    this.websocketService.onMessageType(
+      'training_finished_for_group',
+      this.onTrainingFinishedForGroup
+    );
   }
+
+  setPhaseHandlerFunction = (handler: (phase: TrainingPhase) => void) => {
+    this.phaseHandlerFunction = handler;
+  };
 
   setTakingPhotosHandlerFunction = (handler: (takePhotos: boolean) => void) => {
     this.isTakingPhotosHandlerFunction = handler;
@@ -96,6 +107,11 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     const { nextPlayer, photosToCollect } = message.data;
     this.remainingPhotoToSendCount = photosToCollect;
     this.currentTrainingPlayerHandlerFunction(nextPlayer);
+    if (ModelTrainingWebSocketService.sessionId === nextPlayer) {
+      this.phaseHandlerFunction('photos-from-you');
+    } else {
+      this.phaseHandlerFunction('take-photos');
+    }
   };
 
   onTrainingGroupAssigned = (message: WebSocketMsg) => {
@@ -104,6 +120,11 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     this.remainingPhotoToSendCount = photosToCollect;
     this.trainingGroupHandlerFunction(groupMembers);
     this.currentTrainingPlayerHandlerFunction(firstPlayer);
+    if (ModelTrainingWebSocketService.sessionId === firstPlayer) {
+      this.phaseHandlerFunction('photos-from-you');
+    } else {
+      this.phaseHandlerFunction('take-photos');
+    }
   };
 
   readyForTraining() {
@@ -111,6 +132,10 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
       type: WebSocketMessageType.READY_FOR_TRAINING_PHASE,
     });
   }
+
+  onTrainingFinishedForGroup = (message: WebSocketMsg) => {
+    this.phaseHandlerFunction('training-ready-for-group');
+  };
   close(): void {
     this.websocketService.offMessageType('training_ready_for_player');
   }

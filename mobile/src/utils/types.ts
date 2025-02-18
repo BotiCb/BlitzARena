@@ -68,3 +68,11 @@ export type Point = {
   x: number;
   y: number;
 };
+
+export type GamePhase = 'lobby' | 'training';
+
+export type TrainingPhase =
+  | 'initializing'
+  | 'take-photos'
+  | 'photos-from-you'
+  | 'training-ready-for-group';

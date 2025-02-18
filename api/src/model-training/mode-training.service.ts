@@ -67,34 +67,33 @@ export class ModelTrainingService {
   }
 
   async sendStartTrainingSignal(gameId: string, numClasses: number, numImagesPerClass: number) {
-    try{
-    const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
-    if (!game) {
-      throw new HttpException('Game not found', 404);
-    }
-    if (!game.trainingSession) {
-      throw new HttpException('Training session not initialized. Send training photos first.', 400);
-    }
-    if (game.trainingSession.startedAt) {
-      throw new HttpException('Training is already in progress', 400);
-    }
-    console.log(game);
-    // Update training session properties
-    game.trainingSession.inProgress = true;
-    game.trainingSession.numClasses = numClasses;
-    game.trainingSession.numImagesPerClass = numImagesPerClass;
-    game.trainingSession.startedAt = new Date();
+    try {
+      const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
+      if (!game) {
+        throw new HttpException('Game not found', 404);
+      }
+      if (!game.trainingSession) {
+        throw new HttpException('Training session not initialized. Send training photos first.', 400);
+      }
+      if (game.trainingSession.startedAt) {
+        throw new HttpException('Training is already in progress', 400);
+      }
+      console.log(game);
+      // Update training session properties
+      game.trainingSession.inProgress = true;
+      game.trainingSession.numClasses = numClasses;
+      game.trainingSession.numImagesPerClass = numImagesPerClass;
+      game.trainingSession.startedAt = new Date();
 
-    // Save the updated training session document
-    await game.trainingSession.save();
+      // Save the updated training session document
+      await game.trainingSession.save();
 
-    this.axiosService.modelTrainingApiClient.post(`/training/${gameId}/start-training`);
+      this.axiosService.modelTrainingApiClient.post(`/training/${gameId}/start-training`);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('Error starting training', 503);
+    }
   }
-  catch (error) {
-    console.log(error);
-    throw new HttpException('Error starting training', 503);
-  }
-}
 
   async trainingReady(gameId: string) {
     const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
@@ -107,7 +106,6 @@ export class ModelTrainingService {
     await this.axiosService.apiClient.post(`game/${gameId}/training-finished`);
   }
 
-
   async trainingError(gameId: string, errorMessage: string) {
     const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
     if (!game) {
@@ -119,5 +117,4 @@ export class ModelTrainingService {
     await game.trainingSession.save();
     await this.axiosService.modelTrainingApiClient.post(`game/${gameId}/training-finished`);
   }
-
 }
