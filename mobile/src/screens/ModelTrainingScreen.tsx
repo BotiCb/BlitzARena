@@ -17,10 +17,6 @@ const ModelTrainingScreen = () => {
   const [progress, setProgress] = useState(0);
   const modelTrainingWebsocketService = ModelTrainingWebSocketService.getInstance();
 
-  const handleImageCapture = (trainingImage: TrainingImage) => {
-    modelTrainingWebsocketService.sendPhoto(trainingImage);
-  };
-
   const handleTrainingPlayer = (playerId: string) => {
     setTrainingPlayer(players.find((player) => player.sessionID === playerId) || null);
   };
@@ -63,7 +59,7 @@ const ModelTrainingScreen = () => {
       {!isMe(trainingPlayer, userSessionId) ? (
         <TrainingCameraView
           takePhotos={takePhotos}
-          handleImageCapture={handleImageCapture}
+          handleImageCapture={modelTrainingWebsocketService.takePhoto}
           playerId={trainingPlayer?.sessionID || ''}
           plugin={plugin}
         />

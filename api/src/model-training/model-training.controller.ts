@@ -27,7 +27,7 @@ export class ModelTrainingController {
       throw new HttpException('No file uploaded', 400);
     }
     console.log(dto);
-    return await this.modelTrainingService.sendTrainingPhoto(file, dto.gameId, dto.playerId, parseInt(dto.photoSize));
+    return this.modelTrainingService.sendTrainingPhoto(file, dto.gameId, dto.playerId, parseInt(dto.photoSize));
   }
 
   @ServiceApiRole('lobbyApi')

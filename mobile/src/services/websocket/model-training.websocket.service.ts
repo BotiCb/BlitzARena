@@ -6,8 +6,7 @@ import { MODEL_TRAINING_ENDPOINTS } from '../restApi/Endpoints';
 import { apiClient } from '../restApi/RestApiService';
 
 export class ModelTrainingWebSocketService extends AbstractCustomWebSocketService {
-  private isSendingPhotos: boolean = false;
-  private photoQueue: TrainingImage[] = [];
+  private remainingPhotoToSendCount: number = 0;
   private isTakingPhotosHandlerFunction: (takePhotos: boolean) => void = () => {};
   private progressHandlerFunction: (progress: number) => void = () => {};
   private currentTrainingPlayerHandlerFunction: (playerId: string) => void = () => {};
@@ -25,15 +24,15 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
 
   setTakingPhotosHandlerFunction = (handler: (takePhotos: boolean) => void) => {
     this.isTakingPhotosHandlerFunction = handler;
-  }
+  };
 
   setCurrentTrainingPlayerHandlerFunction = (handler: (playerId: string) => void) => {
     this.currentTrainingPlayerHandlerFunction = handler;
-  }
+  };
 
   setTrainingGroupHandlerFunction = (handler: (playerIds: string[] | null) => void) => {
     this.trainingGroupHandlerFunction = handler;
-  }
+  };
 
   onProgressUpdate = (message: WebSocketMsg) => {
     const { progress } = message.data;
@@ -46,39 +45,30 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
 
   trainingReadyForPlayerEventListener = () => {
     this.isTakingPhotosHandlerFunction(false);
-    this.photoQueue = [];
   };
 
-  addPhotoToQueue(trainingImage: TrainingImage) {
-    this.photoQueue.push(trainingImage);
-  }
-
-  async sendPhoto(trainingImage: TrainingImage) {
-    this.addPhotoToQueue(trainingImage);
-
-    if (this.isSendingPhotos) {
+  takePhoto = async (trainingImage: TrainingImage): Promise<void> => {
+    if (this.remainingPhotoToSendCount <= 0) {
+      this.isTakingPhotosHandlerFunction(false);
       return;
     }
 
-    this.isSendingPhotos = true;
+    try {
+      await this.sendTrainingPhoto(trainingImage);
+      this.remainingPhotoToSendCount--;
 
-    while (this.photoQueue.length > 0) {
-      const photo: TrainingImage | undefined = this.photoQueue.shift();
-
-      if (photo) {
-        try {
-          const startTime = Date.now();
-          await this.sendTrainingPhoto(photo);
-          console.log(`Photo sent in ${Date.now() - startTime} ms`);
-        } catch {
-          this.photoQueue.unshift(photo);
-          break;
-        }
+      if (this.remainingPhotoToSendCount <= 0) {
+        this.isTakingPhotosHandlerFunction(false);
       }
-    }
 
-    this.isSendingPhotos = false;
-  }
+      this.websocketService.sendMessage({
+        type: WebSocketMessageType.TRAINING_PHOTO_SENT,
+        data: { detectedPlayer: trainingImage.detectedPlayer },
+      });
+    } catch (error) {
+      console.error('Error processing photo:', error);
+    }
+  };
 
   private async sendTrainingPhoto(trainingImage: TrainingImage) {
     const formData = new FormData();
@@ -91,33 +81,30 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     formData.append('playerId', trainingImage.detectedPlayer);
     formData.append('gameId', ModelTrainingWebSocketService.gameId);
     formData.append('photoSize', trainingImage.photoSize.toString());
+
     const response = await apiClient.post(MODEL_TRAINING_ENDPOINTS.UPLOAD_PHOTO, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-    console.log(response.status);
-    this.websocketService.sendMessage({
-      type: WebSocketMessageType.TRAINING_PHOTO_SENT,
-      data: {
-        detectedPlayer: trainingImage.detectedPlayer,
-      },
-    });
-    console.log(response.status);
-    RNFS.unlink(trainingImage.photoUri);
+
+    console.log(response.data);
+    RNFS.unlink(trainingImage.photoUri); // Clean up the file after sending
   }
 
-  onNextTrainingPlayer = (message: WebSocketMsg)  => {
-    const { nextPlayer } = message.data;
+  onNextTrainingPlayer = (message: WebSocketMsg) => {
+    const { nextPlayer, photosToCollect } = message.data;
+    this.remainingPhotoToSendCount = photosToCollect;
     this.currentTrainingPlayerHandlerFunction(nextPlayer);
-  }
+  };
 
-  onTrainingGroupAssigned = (message: WebSocketMsg)  => {
-    const { groupMembers, firstPlayer } = message.data;
-    console.log(groupMembers);
+  onTrainingGroupAssigned = (message: WebSocketMsg) => {
+    const { groupMembers, firstPlayer, photosToCollect } = message.data;
+    console.log(groupMembers, photosToCollect);
+    this.remainingPhotoToSendCount = photosToCollect;
     this.trainingGroupHandlerFunction(groupMembers);
     this.currentTrainingPlayerHandlerFunction(firstPlayer);
-  }
+  };
 
   readyForTraining() {
     this.websocketService.sendMessage({

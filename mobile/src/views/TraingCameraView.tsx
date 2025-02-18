@@ -20,7 +20,7 @@ import { ObjectDetection } from '~/utils/types';
 
 interface TrainingCameraViewProps {
   takePhotos: boolean;
-  handleImageCapture: (trainingImage: TrainingImage) => void;
+  handleImageCapture: (trainingImage: TrainingImage) => Promise<void>;
   playerId: string;
   plugin: TensorflowPlugin;
 }
@@ -36,17 +36,23 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
 }) => {
   const isFocused = useIsFocused();
   const appState = useAppState();
-
+  const takePhotosRef = useRef(takePhotos);
   const isActive = isFocused && appState === 'active';
+  const lastUpdateTime = useSharedValue<number>(Date.now());
 
   const camera = useRef<Camera>(null);
   const device = useCameraDevices()[0];
   const { hasPermission, requestPermission } = useCameraPermission();
+
   useEffect(() => {
     if (!hasPermission) {
       requestPermission();
     }
   }, [hasPermission, requestPermission]);
+
+  useEffect(() => {
+    takePhotosRef.current = takePhotos;
+  }, [takePhotos]);
 
   // const format = useCameraFormat(device, [
   //   {
@@ -56,35 +62,47 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   //     },
   //   },
   // ]);
-  const lastUpdateTime = useSharedValue<number>(Date.now());
-
   useEffect(() => {
-    if (!takePhotos || !hasPermission) {
-      return;
-    }
+    if (!hasPermission || !plugin.model || !takePhotos) return;
 
-    const interval = setInterval(async () => {
-      if (camera.current && detections.value && plugin.model) {
+    const capturePhotos = async () => {
+      while (takePhotosRef.current && camera.current) {
+        const captureStart = Date.now();
         try {
           const trainingImage = await takeCroppedTrainingImage(
             camera.current,
             detections,
             lastUpdateTime,
             playerId,
-            takePhotos,
+            takePhotosRef,
             plugin.model.inputs[0].shape[1]
           );
           if (trainingImage) {
             handleImageCapture(trainingImage);
           }
+          const captureDuration = Date.now() - captureStart;
+          const remainingTime = Math.max(
+            TRAINING_CAMERA_CONSTANTS.TAKE_PHOTO_INTERVAL - captureDuration,
+            0
+          );
+
+          console.log('Time between captures:', captureDuration);
+          console.log('Waiting for next photo capture...', remainingTime);
+
+          await new Promise((resolve) => setTimeout(resolve, remainingTime));
         } catch (error) {
-          console.error('Error cropping image:', error);
+          console.error('Photo capture error:', error);
+          break;
         }
       }
-    }, TRAINING_CAMERA_CONSTANTS.TAKE_PHOTO_INTERVAL);
+    };
 
-    return () => clearInterval(interval);
-  }, [takePhotos, handleImageCapture, hasPermission]);
+    capturePhotos();
+
+    return () => {
+      takePhotosRef.current = false; // Cleanup on unmount
+    };
+  }, [takePhotos, hasPermission, plugin.model]);
 
   const paint = Skia.Paint();
   paint.setColor(Skia.Color(TRAINING_CAMERA_CONSTANTS.PAINT_COLOR));

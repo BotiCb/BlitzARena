@@ -17,7 +17,7 @@ class ModelTrainingPhaseService(PhaseService):
 
     def __init__(self, context: GameContext):
         super().__init__(context)
-        self.max_photos_per_player = 1
+        self.max_photos_per_player = 10
         self.photo_count = 0
         self.training_data_collected = []
         self.groups: Dict[int, List[str]] = {}
@@ -117,7 +117,8 @@ class ModelTrainingPhaseService(PhaseService):
                         "type": "group_assigned",
                         "data": {
                             "group_members": player_ids,
-                            "first_player": player_ids[0]
+                            "first_player": player_ids[0],
+                            "photos_to_collect": self.max_photos_per_player/(len(player_ids)-1)
                         }
                     })
                 )
@@ -148,7 +149,8 @@ class ModelTrainingPhaseService(PhaseService):
         if next_player:
             await self.context.websockets.send_to_group(self.groups[group_id],
                 Message({"type": "next_training_player", "data": {
-                "next_player": next_player
+                "next_player": next_player,
+                "photos_to_collect": self.max_photos_per_player/(len(self.groups[group_id])-1)
             }}))
         else:
             print("All players finished training frpm group")

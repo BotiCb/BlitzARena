@@ -4,7 +4,7 @@ import { UserModel } from './user.schema';
 import { TrainingSessionModel } from './training-session.schema';
 
 @Schema({ id: false })
-export class PlayerSessionModel {
+export class PlayerSessionModel extends Document {
   @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'UserModel' })
   userId: UserModel;
 
