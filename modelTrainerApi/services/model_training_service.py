@@ -1,4 +1,5 @@
 # model_training_service.py
+from services.firebase_file_storage_service import FirebaseStorageService
 from services.httpx_service import HTTPXService
 from ultralytics import YOLO
 import torch
@@ -10,6 +11,7 @@ class ModelTrainingService:
         self.dataset_dir = "dataset"
         self.executor = ThreadPoolExecutor(max_workers=4)
         self.httpx_service: HTTPXService = HTTPXService()
+        self.firebase_file_storage_service: FirebaseStorageService = FirebaseStorageService()
 
 
     async def train(self, game_id: str):
@@ -41,4 +43,9 @@ class ModelTrainingService:
             data=f"{self.dataset_dir}/{game_id}",
             imgsz=320, rect=True, epochs=20, batch=200, workers=0, device=0, amp=True, half=True
         )
-        # model.export(format="tflite", batch=1, imgsz=320, rect=True)
+        model.export(format="tflite", batch=1, imgsz=320, rect=True)
+        self.firebase_file_storage_service.upload_file(
+            file_path="main.py",
+            destination_path=f"models/{game_id}/best.tflite",
+            make_public=True
+        )
