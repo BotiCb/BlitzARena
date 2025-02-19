@@ -53,9 +53,9 @@ class ModelTrainingPhaseService(PhaseService):
             print(f"Player {detected_player} has {player_photo_count} training photos")
             self.photo_count += 1
 
-            training_progress = round(self.photo_count / (self.max_photos_per_player * len(self.groups.get(group_id))) * 100)
+            photo_collecting_progresss = round(self.photo_count / (self.max_photos_per_player * len(self.context.players)) * 100)
             await self.context.websockets.send_to_all(
-                Message({"type": "training_progress", "data": {"progress": training_progress}})
+                Message({"type": "photo_collecting_progress", "data": {"progress": photo_collecting_progresss}})
             )
 
             if player_photo_count >= self.max_photos_per_player:

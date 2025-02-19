@@ -20,6 +20,7 @@ type GameContextType = {
   setPlayerAsHost: (playerId: string) => void;
   onRemovePlayer: (playerId: string) => void;
   onStartNextGamePhase: () => void;
+  trainingProgress: number | null;
   modelReady: boolean;
 };
 
@@ -38,6 +39,7 @@ export const GameProvider: React.FC<{
   const [ping, setPing] = useState<number>(0);
   const navigation = useNavigation<StackNavigationProp<GameStackParamList>>();
   const [modelReady, setModelReady] = useState<boolean>(false);
+  const [trainingProgress, setTrainingProgress] = useState<number | null>(null);
 
   const setPlayerAsHost = (playerId: string) => {
     if (!areYouHost) {
@@ -71,6 +73,7 @@ export const GameProvider: React.FC<{
     gameWebsocketService.setAreYouHostHandlerFunction(setAreYouHost);
     gameWebsocketService.setNavigationHandler(navigation);
     gameWebsocketService.setModelReadyHandlerFunction(setModelReady);
+    gameWebsocketService.setTrainingProgressHandlerFunction(setTrainingProgress);
     gameWebsocketService.setWebSocketEventListeners();
     websocketService.connect(gameId, userSessionId);
 
@@ -93,6 +96,7 @@ export const GameProvider: React.FC<{
         ping,
         onStartNextGamePhase,
         modelReady,
+        trainingProgress,
       }}>
       {children}
     </GameContext.Provider>

@@ -117,4 +117,14 @@ export class ModelTrainingService {
     await game.trainingSession.save();
     await this.axiosService.apiClient.post(`game/${gameId}/training-error`);
   }
+
+
+  async trainingProgress(gameId: string, progress: number) {
+    const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
+    if (!game) {
+      throw new HttpException('Game not found', 404);
+    }
+    await this.axiosService.apiClient.post(`game/${gameId}/training-progress/${progress}`);
+    
+  }
 }

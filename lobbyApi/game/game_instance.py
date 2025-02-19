@@ -217,3 +217,11 @@ class GameInstance:
             Message({"type": "training_error", "data": {}})
         )
         await self.transition_to_phase("training")
+        
+        
+    async def handle_training_progress(self, progress):
+        await self.websockets.send_to_all(
+            Message({"type": "training_progress", "data": {
+                "progress": progress
+            }})
+        )

@@ -86,4 +86,8 @@ class GameService:
     async def handle_training_error(self, game_id: str):
         game= self.get_game(game_id)
         await game.handle_training_error()
+        
+    async def handle_training_progress(self, game_id: str, progress: float):
+        game= self.get_game(game_id)
+        await game.handle_training_progress(progress)
 

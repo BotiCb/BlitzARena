@@ -11,7 +11,7 @@ export class FirebaseService {
 
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      storageBucket: 'blitz-arena-3fcca.appspot.com', // Your Firebase Storage bucket name
+      storageBucket: 'blitz-arena-3fcca.firebasestorage.app',
     });
 
     this.storage = admin.storage();

@@ -16,6 +16,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   private areYouHostHandlerFunction: (areYouHost: boolean) => void = () => {};
   private gamePhaseHandlerFunction: (gamePhase: GamePhase) => void = () => {};
   private modelReadyHandlerFunction: (modelReady: boolean) => void = () => {};
+  private trainingProgressHandlerFunction: (progress: number) => void = () => {};
 
   private navigator: StackNavigationProp<GameStackParamList> | null = null;
   private pinghandlerFunction: (ping: number) => void = () => {};
@@ -35,6 +36,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     this.websocketService.onMessageType('pong', this.handlePongEvent);
     this.websocketService.onMessageType('game_phase', this.handleGamePhaseChangedEvent);
     this.websocketService.onMessageType('model_ready', this.handleModelreadyEvent);
+    this.websocketService.onMessageType('training_progress', this.handleTrainingProgressEvent);
 
     this.startPingInterval();
   }
@@ -60,6 +62,10 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
 
   setAreYouHostHandlerFunction = (handler: (areYouHost: boolean) => void) => {
     this.areYouHostHandlerFunction = handler;
+  };
+
+  setTrainingProgressHandlerFunction = (handler: (progress: number) => void) => {
+    this.trainingProgressHandlerFunction = handler;
   };
 
   setNavigationHandler = (navigator: StackNavigationProp<GameStackParamList>) => {
@@ -239,5 +245,10 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
 
   handleModelreadyEvent = async (message: WebSocketMsg) => {
     this.modelReadyHandlerFunction(true);
+  };
+
+  handleTrainingProgressEvent = async (message: WebSocketMsg) => {
+    const { progress } = message.data;
+    this.trainingProgressHandlerFunction(progress);
   };
 }

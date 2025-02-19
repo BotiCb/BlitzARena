@@ -14,7 +14,7 @@ class FirebaseStorageService:
         if not firebase_admin._apps:
             cred = credentials.Certificate('firebase-service-account.json')
             firebase_admin.initialize_app(cred, {
-                'storageBucket': "blitz-arena-3fcca.appspot.com"
+                'storageBucket': "blitz-arena-3fcca.firebasestorage.app"
             })
 
     def upload_file(self, file_path: str, destination_path: str, make_public: bool = True) -> str:
@@ -33,3 +33,6 @@ class FirebaseStorageService:
             blob.make_public()
 
         return blob.public_url
+    
+    def upload_model(self, file_path: str) -> str:
+        return self.upload_file(file_path, "models", make_public=False)

@@ -9,3 +9,4 @@ venv
 .env
 dataset/*
 firebase-service-account.json
+models/*

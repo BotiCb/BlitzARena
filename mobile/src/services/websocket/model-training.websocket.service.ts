@@ -10,7 +10,7 @@ import { TrainingPhase } from '~/utils/types';
 export class ModelTrainingWebSocketService extends AbstractCustomWebSocketService {
   private remainingPhotoToSendCount: number = 0;
   private isTakingPhotosHandlerFunction: (takePhotos: boolean) => void = () => {};
-  private progressHandlerFunction: (progress: number) => void = () => {};
+  private photoCollectingProgressHandlerFunction: (progress: number) => void = () => {};
   private currentTrainingPlayerHandlerFunction: (playerId: string) => void = () => {};
   private trainingGroupHandlerFunction: (playerIds: string[] | null) => void = () => {};
   private phaseHandlerFunction: (phase: TrainingPhase) => void = () => {};
@@ -20,7 +20,10 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
       'training_ready_for_player',
       this.trainingReadyForPlayerEventListener
     );
-    this.websocketService.onMessageType('training_progress', this.onProgressUpdate);
+    this.websocketService.onMessageType(
+      'photo_collecting_progress',
+      this.onPhotoCollectingProgressUpdate
+    );
     this.websocketService.onMessageType('next_training_player', this.onNextTrainingPlayer);
     this.websocketService.onMessageType('group_assigned', this.onTrainingGroupAssigned);
     this.websocketService.onMessageType(
@@ -45,13 +48,13 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     this.trainingGroupHandlerFunction = handler;
   };
 
-  onProgressUpdate = (message: WebSocketMsg) => {
+  onPhotoCollectingProgressUpdate = (message: WebSocketMsg) => {
     const { progress } = message.data;
-    this.progressHandlerFunction(progress);
+    this.photoCollectingProgressHandlerFunction(progress);
   };
 
   setProgressHandlerFunction(handler: (progress: number) => void) {
-    this.progressHandlerFunction = handler;
+    this.photoCollectingProgressHandlerFunction = handler;
   }
 
   trainingReadyForPlayerEventListener = () => {

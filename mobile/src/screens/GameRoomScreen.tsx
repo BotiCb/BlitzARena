@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Button } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
+import { View, Button, Text } from 'react-native';
 
 import { PlayerListComponent } from '~/components/PlayerListComponent';
 import { useGame } from '~/contexts/GameContext';
@@ -16,6 +15,7 @@ export const GamerRoomScreen = () => {
     playerHandlerFunction,
     onStartNextGamePhase,
     modelReady,
+    trainingProgress,
   } = useGame();
 
   const [ready, setReady] = useState(false);
@@ -46,6 +46,7 @@ export const GamerRoomScreen = () => {
   }, []);
   return (
     <View>
+      {trainingProgress !== null && <Text>Training Progress: {trainingProgress}</Text>}
       <PlayerListComponent
         players={players}
         areYouHost={areYouHost}
