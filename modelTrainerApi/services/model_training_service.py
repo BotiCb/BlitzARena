@@ -3,10 +3,14 @@ import os
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
+from utils.dto_convention_converter import convert_dict_to_camel_case
+from utils.csv_file_converter import read_training_csv
+from utils.mappers import map_training_data
 from ultralytics import YOLO
 import torch
 from services.firebase_file_storage_service import FirebaseStorageService
 from services.httpx_service import HTTPXService
+from ultralytics.utils.metrics import ConfusionMatrix
 
 class ModelTrainingService:
     def __init__(self):
@@ -82,31 +86,44 @@ class ModelTrainingService:
             ).result()
 
             # Main training
-            model.train(
+            results =model.train(
                 data=f"{self.dataset_dir}/{game_id}",
                 imgsz=320,
                 rect=True,
-                epochs=20,
+                epochs=5,
                 batch=200,
                 workers=0,
                 device=0,
                 amp=True,
                 half=True,
-                project=f"models/{game_id}"
+                project=f"models/{game_id}",
+                plots=True
             )
-
+            print(model.names)
+            csv_dir = str(results.save_dir) + "\\results.csv"
+            confusion_matrix: ConfusionMatrix = results.confusion_matrix
+            print(confusion_matrix.matrix.tolist())
+            print(map_training_data(results, read_training_csv(csv_dir), model))
+            asyncio.run_coroutine_threadsafe(
+            self.httpx_service.get_api_client().post(
+                f"/model-training/{game_id}/statistics",
+                json=convert_dict_to_camel_case(map_training_data(results, read_training_csv(csv_dir), model))
+            ),
+            self._loop
+        ).result()
+            
             asyncio.run_coroutine_threadsafe(
                 self.send_training_progress(90, game_id),
                 self._loop
             ).result()
 
-            model.export(
-                format="tflite",
-                batch=1,
-                imgsz=320,
-                rect=True,
-                project=f"models/{game_id}"
-            )
+            # model.export(
+            #     format="tflite",
+            #     batch=1,
+            #     imgsz=320,
+            #     rect=True,
+            #     project=f"models/{game_id}"
+            # )
 
         except Exception as e:
             asyncio.run_coroutine_threadsafe(

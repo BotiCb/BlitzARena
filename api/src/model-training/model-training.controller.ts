@@ -57,4 +57,12 @@ export class ModelTrainingController {
     console.log(progress);
     return await this.modelTrainingService.trainingProgress(gameId, progress);
   }
+
+
+  @ServiceApiRole('modelTrainerApi')
+  @Post(':gameId/statistics')
+  async trainingStatistics(@Param('gameId') gameId: string, @Body() body: any) {
+    console.log(body);
+    
+  }
 }
