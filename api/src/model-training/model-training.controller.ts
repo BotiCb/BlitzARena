@@ -9,6 +9,7 @@ import { ModelTrainingService } from './mode-training.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TrainingRequestDto } from './dto/input/training-request';
 import { TrainingErrorDto } from './dto/input/training-error.dto';
+import { TrainingResultsDto } from './dto/input/training-information.dto';
 
 @Controller('model-training')
 export class ModelTrainingController {
@@ -59,10 +60,10 @@ export class ModelTrainingController {
   }
 
 
-  @ServiceApiRole('modelTrainerApi')
+  //@ServiceApiRole('modelTrainerApi')
   @Post(':gameId/statistics')
-  async trainingStatistics(@Param('gameId') gameId: string, @Body() body: any) {
-    console.log(body);
+  async trainingStatistics(@Param('gameId') gameId: string, @Body() body: TrainingResultsDto) {
+    console.log(JSON.stringify(body, null, 2));
     
   }
 }

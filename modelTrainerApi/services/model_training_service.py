@@ -103,7 +103,7 @@ class ModelTrainingService:
             csv_dir = str(results.save_dir) + "\\results.csv"
             confusion_matrix: ConfusionMatrix = results.confusion_matrix
             print(confusion_matrix.matrix.tolist())
-            print(map_training_data(results, read_training_csv(csv_dir), model))
+            print(convert_dict_to_camel_case(map_training_data(results, read_training_csv(csv_dir), model)))
             asyncio.run_coroutine_threadsafe(
             self.httpx_service.get_api_client().post(
                 f"/model-training/{game_id}/statistics",
