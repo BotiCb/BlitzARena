@@ -1,8 +1,9 @@
 import { StackNavigationProp } from '@react-navigation/stack';
+import RNFS from 'react-native-fs';
 
 import { AbstractCustomWebSocketService } from './custom-websocket.abstract-service';
 import { GameWSInfo, PlayerWSInfo, WebSocketMessageType, WebSocketMsg } from './websocket-types';
-import { USER_ENDPOINTS } from '../restApi/Endpoints';
+import { GAME_ENDPOINTS, USER_ENDPOINTS } from '../restApi/Endpoints';
 import { apiClient } from '../restApi/RestApiService';
 import { PlayerInfoResponseDto } from '../restApi/dto/response.dto';
 
@@ -244,7 +245,19 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   };
 
   handleModelreadyEvent = async (message: WebSocketMsg) => {
-    this.modelReadyHandlerFunction(true);
+    try {
+      const response = await apiClient.get(
+        GAME_ENDPOINTS.GET_TF_LITE_MODEL(GameWebSocketService.gameId)
+      );
+      const modelPath = `${RNFS.DocumentDirectoryPath}/model.tflite`;
+
+      await RNFS.writeFile(modelPath, response.data, 'base64');
+
+      console.log('Model downloaded and saved at:', modelPath);
+      this.modelReadyHandlerFunction(true);
+    } catch (e) {
+      console.error(`Error downloading model: ${e}`);
+    }
   };
 
   handleTrainingProgressEvent = async (message: WebSocketMsg) => {

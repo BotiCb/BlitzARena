@@ -1,11 +1,13 @@
-import { Body, Controller, HttpException, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Param, Post } from '@nestjs/common';
 import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
-import { UserRole } from 'src/shared/decorators/roles.decorator';
+import { PlayerInGameRole, UserRole } from 'src/shared/decorators/roles.decorator';
 import { UserModel } from 'src/shared/schemas/collections/user.schema';
 import { CreateGameDto } from './dto/input/create-game.dto';
 import { create } from 'domain';
 import { GameService } from './game.service';
 import { CreateGameResponseDto, JoinGameResponseDto } from './dto/output/game-info.dto';
+import { CurrentGame } from 'src/shared/decorators/current-game.decorator';
+import { GameModel } from 'src/shared/schemas/collections/game.schema';
 
 @Controller('game')
 export class GameController {
@@ -22,5 +24,11 @@ export class GameController {
   @UserRole()
   joinGame(@CurrentUser() user: UserModel, @Param('gameId') gameId: string): Promise<JoinGameResponseDto> {
     return this.gameService.joinGame(gameId, user);
+  }
+
+  @Get('/:gameId/tflite-model')
+  @PlayerInGameRole()
+  async getTfLiteModel(@CurrentGame() game: GameModel) : Promise<string> {
+    return this.gameService.getTfLiteModel(game);
   }
 }

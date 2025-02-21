@@ -9,13 +9,16 @@ import { CreateGameResponseDto, JoinGameResponseDto } from './dto/output/game-in
 import { GameModel } from 'src/shared/schemas/collections/game.schema';
 import { UserModel } from 'src/shared/schemas/collections/user.schema';
 import { PlayerSessionModel } from 'src/shared/schemas/helpers/player-session.schema';
+import { FileUploadService } from 'src/shared/modules/file-upload/file-upload.service';
+import { Readable } from 'stream';
 
 @Injectable()
 export class GameService {
   constructor(
     @InjectModel(GameModel.name) private readonly gameModel: Model<GameModel>,
     private readonly logger: Logger,
-    private readonly axiosService: AxiosService
+    private readonly axiosService: AxiosService,
+    private readonly fileUploadService: FileUploadService
   ) {}
 
   async createGame(user: UserModel, createGameDto: CreateGameDto): Promise<CreateGameResponseDto> {
@@ -115,5 +118,13 @@ export class GameService {
 
   private async getGameById(gameId: string): Promise<GameModel | null> {
     return this.gameModel.findOne({ gameId }).exec();
+  }
+
+  async getTfLiteModel(game: GameModel) : Promise<string> {
+      if(!game.trainingSession.tfLiteModelUrl) {
+        throw new HttpException('Model not ready', 404);
+      }
+      const buffer = await this.fileUploadService.downloadTfLiteModel(game.trainingSession.tfLiteModelUrl);
+      return buffer.toString('base64');
   }
 }

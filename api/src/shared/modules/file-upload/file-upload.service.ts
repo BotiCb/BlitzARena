@@ -35,7 +35,7 @@ export class FileUploadService {
 
   async deleteFile(fileUrl: string) {
     try {
-      const relativePath = fileUrl.replace('https://storage.googleapis.com/allamviz.appspot.com/', '');
+      const relativePath = fileUrl.replace(`https://storage.googleapis.com/${this.firebaseService.getStorageInstance().bucket().name}/`, '');
       const storage = this.firebaseService.getStorageInstance();
       const bucket = storage.bucket();
       bucket.deleteFiles({
@@ -61,5 +61,14 @@ export class FileUploadService {
     }
     const url = this.uploadFile(file, 'tf-lite-models', true);
     return url;
+  }
+
+  async downloadTfLiteModel(url: string): Promise<Buffer> {
+    const relativePath = url.replace(`https://storage.googleapis.com/${this.firebaseService.getStorageInstance().bucket().name}/`, '');
+    const storage = this.firebaseService.getStorageInstance();
+    const bucket = storage.bucket();
+    const file = bucket.file(relativePath);
+    const [data] = await file.download();
+    return data;
   }
 }

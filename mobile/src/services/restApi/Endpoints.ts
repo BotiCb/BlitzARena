@@ -21,6 +21,7 @@ export const USER_ENDPOINTS = {
 export const GAME_ENDPOINTS = {
   CREATE: `${ROUTES.GAME}/create`,
   JOIN: (gameId: string) => `${ROUTES.GAME}/${gameId}/join`,
+  GET_TF_LITE_MODEL: (gameId: string) => `${ROUTES.GAME}/${gameId}/tflite-model`,
 };
 
 export const MODEL_TRAINING_ENDPOINTS = {
