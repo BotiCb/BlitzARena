@@ -18,8 +18,7 @@ class ModelTrainingPhaseService(PhaseService):
     def __init__(self, context: GameContext):
         super().__init__(context)
         self.max_photos_per_player = 10
-        self.photo_count = 0
-        self.training_data_collected = []
+        
         self.groups: Dict[int, List[str]] = {}
         self.httpx_service: HTTPXService = HTTPXService()
 
@@ -29,6 +28,10 @@ class ModelTrainingPhaseService(PhaseService):
         self.context.websockets.register_handler("ready_for_training_phase", self.player_ready_for_training_phase)
         self._registered_handlers.extend(["training_photo_sent", "ready_for_training_phase"])
         self.group_players()
+        self.photo_count = 0
+        self.training_data_collected = []
+        for player in self.context.players:
+            player.reset_training_photo_count()
 
 
 

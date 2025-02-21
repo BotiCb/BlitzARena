@@ -29,7 +29,7 @@ export class TrainingSessionModel extends Document {
   trainingResults?: TrainingResults;
 
   @Prop({ default: null })
-  tfLiteModelUrl?: string;
+  tfLiteModelUrl: string;
 
 }
 

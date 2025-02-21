@@ -117,7 +117,7 @@ class ModelTrainingService:
                 plots=True
             )
             print(model.names)
-            csv_dir = str(results.save_dir) + "\\results.csv"
+            csv_dir = str(results.save_dir) + "\\resuts.csv"
 
             concurrent_count = ModelTrainingService._active_trainings - 1
             print(convert_dict_to_camel_case(map_training_data(results, read_training_csv(csv_dir), model, concurrent_trainings=concurrent_count)))

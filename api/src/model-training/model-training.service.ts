@@ -20,6 +20,7 @@ export class ModelTrainingService {
   ) {}
 
   async sendTrainingPhoto(file: Express.Multer.File, gameId: string, playerId: string, photoSize: number) {
+    try {
     const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
     if (!game.players.find((p) => p.sessionId === playerId)) {
       throw new HttpException('Player is not in the game', 400);
@@ -66,7 +67,11 @@ export class ModelTrainingService {
           ...formData.getHeaders(),
         },
       }
-    );
+    );}
+    catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   async sendStartTrainingSignal(gameId: string, numClasses: number, numImagesPerClass: number) {
@@ -113,10 +118,16 @@ export class ModelTrainingService {
     if (!game) {
       throw new HttpException('Game not found', 404);
     }
+    if(!game.trainingSession) {
+      throw new HttpException('Training session not initialized. Send training photos first.', 400);
+    }
     game.trainingSession.inProgress = false;
     game.trainingSession.endedAt = new Date();
     game.trainingSession.errorMessage = errorMessage;
     await game.trainingSession.save();
+    game.unsuccessfulTrainingSessions.push(game.trainingSession);
+    game.trainingSession = null;
+    await game.save();
     await this.axiosService.apiClient.post(`game/${gameId}/training-error`);
   }
 
