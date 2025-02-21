@@ -2,7 +2,6 @@ const ROUTES = {
   AUTH: '/auth',
   USERS: '/users',
   GAME: '/game',
-  MODEL_TRAINING: '/model-training',
 };
 
 export const AUTH_ENDPOINTS = {
@@ -25,5 +24,5 @@ export const GAME_ENDPOINTS = {
 };
 
 export const MODEL_TRAINING_ENDPOINTS = {
-  UPLOAD_PHOTO: `${ROUTES.MODEL_TRAINING}/upload-photo`,
+  UPLOAD_PHOTO: (gameId: string) => `${ROUTES.GAME}/${gameId}/model-training/upload-photo`,
 };

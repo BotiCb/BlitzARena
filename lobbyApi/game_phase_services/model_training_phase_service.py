@@ -77,7 +77,7 @@ class ModelTrainingPhaseService(PhaseService):
                 "num_images_per_class": self.max_photos_per_player,
             })
             print(body)
-            response = await self.httpx_service.get_api_client().post(f"/model-training/start-training/{self.context.get_game_id()}", json=body  )
+            response = await self.httpx_service.get_api_client().post(f"game/{self.context.get_game_id()}/model-training/start-training", json=body  )
             print("Model training started")
             await self.context.websockets.send_to_all(
                 Message({"type": "training_started", "data": {}})

@@ -19,9 +19,8 @@ export class ModelTrainingService {
     private readonly fileUploadService: FileUploadService
   ) {}
 
-  async sendTrainingPhoto(file: Express.Multer.File, gameId: string, playerId: string, photoSize: number) {
+  async sendTrainingPhoto(file: Express.Multer.File, game: GameModel, playerId: string, photoSize: number) {
     try {
-    const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
     if (!game.players.find((p) => p.sessionId === playerId)) {
       throw new HttpException('Player is not in the game', 400);
     }
@@ -60,7 +59,7 @@ export class ModelTrainingService {
     });
     console.log('Sending photo to server');
     const response = await this.axiosService.modelTrainingApiClient.post(
-      `/collect-data/${gameId}/${playerId}/upload-training-photo`,
+      `/collect-data/${game.gameId}/${playerId}/upload-training-photo`,
       formData,
       {
         headers: {

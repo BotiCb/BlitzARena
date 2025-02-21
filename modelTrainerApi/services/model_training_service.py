@@ -24,7 +24,7 @@ class ModelTrainingService:
         try:
             print(f"Training progress: {progress}")
             await self.httpx_service.get_api_client().post(
-                f"/model-training/{game_id}/training-progress/{progress}"
+                f"game/{game_id}/model-training/training-progress/{progress}"
             )
         except Exception as e:
             print(f"Error sending progress: {e}")
@@ -70,22 +70,22 @@ class ModelTrainingService:
                     print(f"File exists: {os.path.exists(model_path)}")
                     print(f"File size: {os.path.getsize(model_path)} bytes")
                     response = await self.httpx_service.get_api_client().post(
-                        f"/model-training/{game_id}/upload-tflite-model",
+                        f"game/{game_id}/model-training/upload-tflite-model",
                         files=files,
                     )
                     if response.status_code != 201:
                         raise Exception(f"Error uploading model: {response.text}")
-            print(f"Training completed for game: {game_id}")
-            await self.httpx_service.get_api_client().post(
-                f"/model-training/training-ended/{game_id}"
-            )
             await self.send_training_progress(100, game_id)
+            await self.httpx_service.get_api_client().post(
+                f"game/{game_id}/model-training/training-ended"
+            )
+            print(f"Training completed for game: {game_id}")
 
 
         except Exception as e:
             print(f"Error during training for game {game_id}: {e}")
             await self.httpx_service.get_api_client().post(
-                f"/model-training/training-error/{game_id}",
+                f"game/{game_id}/model-training/training-error",
                 json={"errorMessage": str(e)}
             )
 
@@ -117,13 +117,13 @@ class ModelTrainingService:
                 plots=True
             )
             print(model.names)
-            csv_dir = str(results.save_dir) + "\\resuts.csv"
+            csv_dir = str(results.save_dir) + "\\results.csv"
 
             concurrent_count = ModelTrainingService._active_trainings - 1
             print(convert_dict_to_camel_case(map_training_data(results, read_training_csv(csv_dir), model, concurrent_trainings=concurrent_count)))
             asyncio.run_coroutine_threadsafe(
             self.httpx_service.get_api_client().post(
-                f"/model-training/{game_id}/statistics",
+                f"game/{game_id}/model-training/statistics",
                 json=convert_dict_to_camel_case(map_training_data(results, read_training_csv(csv_dir), model, concurrent_trainings=concurrent_count))
             ),
             self._loop

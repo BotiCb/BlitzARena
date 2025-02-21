@@ -5,8 +5,5 @@ export class TrainingPhotoDto {
   playerId: string;
 
   @IsString()
-  gameId: string;
-
-  @IsString()
   photoSize: string;
 }

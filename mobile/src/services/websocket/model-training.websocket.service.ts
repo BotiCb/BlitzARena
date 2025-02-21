@@ -93,14 +93,17 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     } as any);
 
     formData.append('playerId', trainingImage.detectedPlayer);
-    formData.append('gameId', ModelTrainingWebSocketService.gameId);
     formData.append('photoSize', trainingImage.photoSize.toString());
 
-    const response = await apiClient.post(MODEL_TRAINING_ENDPOINTS.UPLOAD_PHOTO, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await apiClient.post(
+      MODEL_TRAINING_ENDPOINTS.UPLOAD_PHOTO(ModelTrainingWebSocketService.gameId),
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
 
     console.log(response.data);
     RNFS.unlink(trainingImage.photoUri); // Clean up the file after sending
