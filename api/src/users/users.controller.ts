@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { UserMapper } from './users.mapper';
 import { UpdateUserDto } from './dto/input/update-user.dto';
 import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
-import { UserModel } from 'src/shared/schemas/user.schema';
+import { UserModel } from 'src/shared/schemas/collections/user.schema';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserProfileDto } from './dto/output/user-profile.dto';
 import { UserInfoDto } from './dto/output/user-info.dto';

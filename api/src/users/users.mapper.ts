@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserProfileDto } from './dto/output/user-profile.dto';
-import { UserModel } from '../shared/schemas/user.schema';
+import { UserModel } from 'src/shared/schemas/collections/user.schema';
 
 import { UserInfoDto } from './dto/output/user-info.dto';
 

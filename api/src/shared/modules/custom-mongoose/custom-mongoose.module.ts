@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserModel, UserSchema } from 'src/shared/schemas/user.schema';
 import { config } from 'src/shared/config/config';
-import { GameModel, GameSchema } from 'src/shared/schemas/game.schema';
-import { TrainingSessionModel, TrainingSessionSchema } from 'src/shared/schemas/training-session.schema';
+import { GameModel, GameSchema } from 'src/shared/schemas/collections/game.schema';
+import { TrainingSessionModel, TrainingSessionSchema } from 'src/shared/schemas/collections/training-session.schema';
+import { UserModel, UserSchema } from 'src/shared/schemas/collections/user.schema';
+
 
 @Module({
   imports: [

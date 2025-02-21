@@ -1,15 +1,15 @@
 import { Body, Controller, HttpException, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
-import { UserModel } from 'src/shared/schemas/user.schema';
 import { TrainingPhotoDto } from './dto/input/training-photo.dto';
 import { ServiceApiRole, UserRole } from 'src/shared/decorators/roles.decorator';
 import { CurrentGame } from 'src/shared/decorators/current-game.decorator';
-import { GameModel } from 'src/shared/schemas/game.schema';
-import { ModelTrainingService } from './mode-training.service';
+import { ModelTrainingService } from './model-training.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TrainingRequestDto } from './dto/input/training-request';
 import { TrainingErrorDto } from './dto/input/training-error.dto';
 import { TrainingResultsDto } from './dto/input/training-information.dto';
+import { GameModel } from 'src/shared/schemas/collections/game.schema';
+import { UserModel } from 'src/shared/schemas/collections/user.schema';
 
 @Controller('model-training')
 export class ModelTrainingController {
@@ -51,7 +51,6 @@ export class ModelTrainingController {
     return await this.modelTrainingService.trainingError(gameId, body.errorMessage);
   }
 
-
   @ServiceApiRole('modelTrainerApi')
   @Post(':gameId/training-progress/:progress')
   async trainingProgress(@Param('gameId') gameId: string, @Param('progress') progress: number) {
@@ -59,11 +58,9 @@ export class ModelTrainingController {
     return await this.modelTrainingService.trainingProgress(gameId, progress);
   }
 
-
   //@ServiceApiRole('modelTrainerApi')
   @Post(':gameId/statistics')
   async trainingStatistics(@Param('gameId') gameId: string, @Body() body: TrainingResultsDto) {
     console.log(JSON.stringify(body, null, 2));
-    
   }
 }

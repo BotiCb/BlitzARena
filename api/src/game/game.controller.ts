@@ -1,7 +1,7 @@
 import { Body, Controller, HttpException, Param, Post } from '@nestjs/common';
 import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { UserRole } from 'src/shared/decorators/roles.decorator';
-import { UserModel } from 'src/shared/schemas/user.schema';
+import { UserModel } from 'src/shared/schemas/collections/user.schema';
 import { CreateGameDto } from './dto/input/create-game.dto';
 import { create } from 'domain';
 import { GameService } from './game.service';

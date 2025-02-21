@@ -2,7 +2,7 @@ import { ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { config } from '../config/config';
 import { Request } from 'express';
-import { UserModel } from '../schemas/user.schema';
+import { UserModel } from '../schemas/collections/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 

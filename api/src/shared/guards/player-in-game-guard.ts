@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, ForbiddenException, HttpExce
 import { Reflector } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { GameModel } from '../schemas/game.schema';
+import { GameModel } from '../schemas/collections/game.schema';
 
 @Injectable()
 export class PlayerInGameGuard implements CanActivate {

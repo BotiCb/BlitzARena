@@ -2,11 +2,13 @@ import { Injectable, Logger, HttpException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AxiosService } from 'src/shared/modules/axios/axios.service';
-import { GameModel, PlayerSessionModel } from 'src/shared/schemas/game.schema';
-import { UserModel } from 'src/shared/schemas/user.schema';
+
 import { CreateGameDto } from './dto/input/create-game.dto';
 import { GameInfoDto } from './dto/input/game-info.dto';
 import { CreateGameResponseDto, JoinGameResponseDto } from './dto/output/game-info.dto';
+import { GameModel } from 'src/shared/schemas/collections/game.schema';
+import { UserModel } from 'src/shared/schemas/collections/user.schema';
+import { PlayerSessionModel } from 'src/shared/schemas/helpers/player-session.schema';
 
 @Injectable()
 export class GameService {

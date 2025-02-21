@@ -2,11 +2,12 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AxiosService } from 'src/shared/modules/axios/axios.service';
-import { GameModel } from 'src/shared/schemas/game.schema';
 import * as FormData from 'form-data';
 import { v4 as uuidv4 } from 'uuid';
 import * as sharp from 'sharp';
-import { TrainingSessionModel } from 'src/shared/schemas/training-session.schema';
+import { GameModel } from 'src/shared/schemas/collections/game.schema';
+import { TrainingSessionModel } from 'src/shared/schemas/collections/training-session.schema';
+import { TrainingResultsDto } from './dto/input/training-information.dto';
 
 @Injectable()
 export class ModelTrainingService {
@@ -126,5 +127,14 @@ export class ModelTrainingService {
     }
     await this.axiosService.apiClient.post(`game/${gameId}/training-progress/${progress}`);
     
+  }
+
+  async saveStatistics(gameId: string, trainingResults: TrainingResultsDto) {
+    const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
+    if (!game) {
+      throw new HttpException('Game not found', 404);
+    }
+    game.trainingSession.trainingResults = trainingResults;
+    await game.trainingSession.save();
   }
 }

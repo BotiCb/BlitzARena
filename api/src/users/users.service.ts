@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserModel } from '../shared/schemas/user.schema';
+import { UserModel } from '../shared/schemas//collections/user.schema';
 import * as bcrypt from 'bcrypt';
 import { FileUploadService } from 'src/shared/modules/file-upload/file-upload.service';
 import { EmailService } from 'src/shared/modules/email/email.service';

@@ -1,4 +1,4 @@
-import { UserModel } from 'src/shared/schemas/user.schema';
+import { UserModel } from "src/shared/schemas/collections/user.schema";
 
 export class UserInfoDto {
   firstName: string;

@@ -6,7 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AccessTokenDto } from './dto/output/access-token.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserModel } from 'src/shared/schemas/user.schema';
+import { UserModel } from 'src/shared/schemas/collections/user.schema';
 import { UsersService } from 'src/users/users.service';
 import { EmailService } from 'src/shared/modules/email/email.service';
 import { config } from 'src/shared/config/config';

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
 import { config } from 'src/shared/config/config';
-import { UserModel } from 'src/shared/schemas/user.schema';
+import { UserModel } from 'src/shared/schemas/collections/user.schema';
 
 @Injectable()
 export class EmailService {
