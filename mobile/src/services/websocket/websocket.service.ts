@@ -47,11 +47,11 @@ export class WebSocketService {
       console.log('WebSocket connection closed:', event.reason);
       this.ws = null;
 
-      if (!event.wasClean && this.reconnectAttempts < this.maxReconnectAttempts) {
-        this.reconnect();
-      } else {
-        console.warn('Max reconnect attempts reached or connection closed cleanly');
-      }
+      // if (!event.wasClean && this.reconnectAttempts < this.maxReconnectAttempts) {
+      //   this.reconnect();
+      // } else {
+      //   console.warn('Max reconnect attempts reached or connection closed cleanly');
+      // }
     };
 
     return this.ws;

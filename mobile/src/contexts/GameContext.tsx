@@ -1,3 +1,4 @@
+import { AsyncStore } from '~/services/storage/AsyncStorage';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -65,6 +66,7 @@ export const GameProvider: React.FC<{
     gameWebsocketService.setNavigationHandler(navigation);
   }, [navigation]);
   useEffect(() => {
+    AsyncStore.setItemAsync('lastGameId', gameId);
     gameWebsocketService.setPlayersHandlerFunction(setPlayers);
     gameWebsocketService.setPingHandlerFunction(setPing);
     gameWebsocketService.setGamePhaseHandlerFunction(setGamePhase);

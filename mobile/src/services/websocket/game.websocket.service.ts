@@ -95,6 +95,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
           USER_ENDPOINTS.GET_PLAYERS_IN_GAME(AbstractCustomWebSocketService.gameId)
         )
       ).data;
+      console.log('Players in game', playerDetails);
 
       const playersInGame: PlayerWSInfo[] = gameInfo.players;
       if (

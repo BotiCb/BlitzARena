@@ -23,6 +23,9 @@ export class GameModel extends Document {
 
   @Prop({ default: [], type: [MongooseSchema.Types.ObjectId], ref: 'TrainingSessionModel' })
   unsuccessfulTrainingSessions: TrainingSessionModel[];
+
+  @Prop({ default: null })
+  endedAt: Date;
 }
 
 export const GameSchema = SchemaFactory.createForClass(GameModel);

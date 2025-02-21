@@ -26,7 +26,7 @@ export class FileUploadService {
       });
       stream.on('finish', () => {
         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileUpload.name}`;
-        resolve(publicUrl);
+        resolve(privateRead ? fileUpload.name : publicUrl);
       });
 
       stream.end(file.buffer);
@@ -64,10 +64,9 @@ export class FileUploadService {
   }
 
   async downloadTfLiteModel(url: string): Promise<Buffer> {
-    const relativePath = url.replace(`https://storage.googleapis.com/${this.firebaseService.getStorageInstance().bucket().name}/`, '');
     const storage = this.firebaseService.getStorageInstance();
     const bucket = storage.bucket();
-    const file = bucket.file(relativePath);
+    const file = bucket.file(url);
     const [data] = await file.download();
     return data;
   }

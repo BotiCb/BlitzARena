@@ -3,12 +3,14 @@ from typing import Dict
 from fastapi import WebSocket, HTTPException
 
 from game.game_instance import GameInstance
+from services.httpx_service import HTTPXService
 from models.message import Message
 
 
 class GameService:
     def __init__(self):
-        self.games: Dict[str, GameInstance] = {}  # {game_id: Lobby}
+        self.games: Dict[str, GameInstance] = {}
+        self.httpx_service = HTTPXService()
 
     def generate_game_id(self) -> str:
 
@@ -58,8 +60,17 @@ class GameService:
         await self.get_game(game_id).add_websocket_connection(player_id, websocket)
 
     async def remove_websocket_connection(self, game_id: str, player_id: str):
-        """Remove a WebSocket connection for a player."""
-        await self.get_game(game_id).remove_websocket_connection(player_id)
+        game = self.get_game(game_id)
+        if not game.is_player_in_game(player_id):
+            raise HTTPException(status_code=400, detail="Player not in game")
+
+
+        await game.remove_websocket_connection(player_id)
+
+
+        if not game.has_connected_players():
+            print("No connected players, closing game")
+            await self.close_game(game)
 
     async def handle_websocket_message(self, game_id: str, websocket: WebSocket, message: Message):
         """Handle WebSocket messages from a player."""
@@ -90,4 +101,11 @@ class GameService:
     async def handle_training_progress(self, game_id: str, progress: float):
         game= self.get_game(game_id)
         await game.handle_training_progress(progress)
+        
+        
+    async def close_game(self, game: GameInstance):
+        result = await self.httpx_service.get_api_client().post(f"game/{game.game_id}/close")
+        self.games.pop(game.game_id)
+        print(f"Game {game.game_id} closed")
+            
 

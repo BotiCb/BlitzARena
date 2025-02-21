@@ -11,6 +11,7 @@ import { UserModel } from 'src/shared/schemas/collections/user.schema';
 import { PlayerSessionModel } from 'src/shared/schemas/helpers/player-session.schema';
 import { FileUploadService } from 'src/shared/modules/file-upload/file-upload.service';
 import { Readable } from 'stream';
+import { PlayerConnectionState } from 'src/shared/utils/types';
 
 @Injectable()
 export class GameService {
@@ -34,7 +35,7 @@ export class GameService {
       const newGame = new this.gameModel({
         gameId: gameInfo.gameId,
         creatorUser: user,
-        players: [{ userId: user._id, sessionId }],
+        players: [{ userId: user._id, sessionId, connectionState: PlayerConnectionState.PENDING }],
       });
 
       await newGame.save();
@@ -51,34 +52,32 @@ export class GameService {
   }
 
   async joinGame(gameId: string, user: UserModel): Promise<JoinGameResponseDto> {
-    if (user.recentGameId === gameId) {
-      throw new HttpException('You are already in this game', 400);
+    const game = await this.getGameById(gameId);
+
+
+    if (game.endedAt){
+      throw new HttpException('Game already ended', 400);
     }
+    const playerSession = game.players.find((p) => p.userId.toString() === user._id.toString())
+    if (playerSession && playerSession.connectionState === PlayerConnectionState.DISCONNECTED) {
+      playerSession.connectionState = PlayerConnectionState.PENDING;
+      return { sessionId: playerSession.sessionId };
+    }
+   
 
     try {
       const sessionId = this.generateSessionIdforUser();
       await this.axiosService.apiClient.post(`/game/${gameId}/add-player/${sessionId}`);
 
-      const game = await this.getGameById(gameId);
-
-      if (!game) {
-        throw new HttpException('Game not found', 404);
-      }
-
-      // Check if the user is already in the game
-      const isAlreadyInGame = game.players.some((p) => p.userId.toString() === user._id.toString());
-      if (isAlreadyInGame) {
-        throw new HttpException('Player is already in the game', 400);
-      }
-
       user.recentGameId = gameId;
       user.recentSessionId = sessionId;
       await user.save();
 
-      game.players.push({ userId: user._id, sessionId } as PlayerSessionModel);
+      game.players.push({ userId: user._id, sessionId, connectionState: PlayerConnectionState.PENDING } as PlayerSessionModel);
       await game.save();
 
       return { sessionId };
+
     } catch (error) {
       if (error.response?.status === 403) {
         throw new HttpException('The game is full', 403);
@@ -96,10 +95,6 @@ export class GameService {
   async exitFromGame(user: UserModel): Promise<void> {
     try {
       const game = await this.getGameById(user.recentGameId);
-      if (!game) {
-        throw new HttpException('Game not found', 404);
-      }
-
       game.players = game.players.filter((p) => p.userId.toString() !== user._id.toString());
       await game.save();
 
@@ -116,8 +111,12 @@ export class GameService {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   }
 
-  private async getGameById(gameId: string): Promise<GameModel | null> {
-    return this.gameModel.findOne({ gameId }).exec();
+  private async getGameById(gameId: string): Promise<GameModel> {
+    const game = await this.gameModel.findOne({ gameId }).exec();
+    if (!game) {
+      throw new HttpException('Game not found', 404);
+    }
+    return game;
   }
 
   async getTfLiteModel(game: GameModel) : Promise<string> {
@@ -126,5 +125,31 @@ export class GameService {
       }
       const buffer = await this.fileUploadService.downloadTfLiteModel(game.trainingSession.tfLiteModelUrl);
       return buffer.toString('base64');
+  }
+
+
+  async closeGame(gameId: string) {
+    const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
+    if (!game) {
+      throw new HttpException('Game not found', 404);
+    }
+    game.endedAt = new Date();
+    await game.save();
+
+    if(game.trainingSession && game.trainingSession.tfLiteModelUrl){
+      this.fileUploadService.deleteFile(game.trainingSession.tfLiteModelUrl);
+    }
+  }
+
+  async updatePlayerConnectionStatus(gameId: string, userSessionId: string, connection: PlayerConnectionState) {
+    const game = await this.getGameById(gameId);
+    const playerSession = game.players.find(p => p.sessionId === userSessionId);
+
+    if (!playerSession) {
+      throw new HttpException('Player not found', 404);
+    }
+    playerSession.connectionState = connection;
+    await game.save();
+
   }
 }

@@ -9,6 +9,7 @@ from game_phase_services.model_training_phase_service import ModelTrainingPhaseS
 from game_phase_services.phase_service import PhaseService
 
 from game_phase_services.game_room_phase_service import GameRoomService
+from services.httpx_service import HTTPXService
 from models.message import Message
 from models.player import Player
 from services.websocket_service import WebSocketService
@@ -22,6 +23,7 @@ class GameInstance:
         self.websockets = WebSocketService()
         self.game_id = game_id
         self.is_model_trained = False
+        self.httpx_service = HTTPXService()
 
         # Initialize context and phase services
         self.context = GameContext(
@@ -129,6 +131,7 @@ class GameInstance:
             await self.websockets.send_to_all(
                 Message({"type": "player_exited", "data": player_id})
             )
+            self.update_player_connection_state(player_to_remove, "exited")
             self.players.remove(player_to_remove)
 
     def is_player_in_game(self, player_id: str) -> bool:
@@ -148,13 +151,12 @@ class GameInstance:
 
     async def add_websocket_connection(self, player_id: str, websocket: WebSocket):
         """Add a WebSocket connection for a player."""
-        if not self.is_player_in_game(player_id):
-            raise HTTPException(status_code=400, detail="Player not in game")
-        if player_id in self.websockets.connections:
+        player = self.get_player(player_id)
+        if player.is_connected:
             raise HTTPException(status_code=400, detail="Player already connected")
 
         await self.websockets.add_connection(player_id, websocket)
-        self.get_player(player_id).is_connected = True
+        player.is_connected = True
 
         await self.websockets.send_to_player(
             player_id,
@@ -164,19 +166,22 @@ class GameInstance:
             player_id,
             Message({"type": "player_connected", "data": player_id})
         )
-
+        await self.update_player_connection_state(player, "connected")
+        
     async def remove_websocket_connection(self, player_id: str):
         """Remove a WebSocket connection for a player."""
         await self.websockets.remove_connection(player_id)
         player = self.get_player(player_id)
         player.is_connected = False
 
-        if self.is_host(player_id):
+        if player.is_host:
+            player.set_host(False)
             await self.set_new_host()
 
         await self.websockets.send_to_all(
             Message({"type": "player_disconnected", "data": player_id})
         )
+        await self.update_player_connection_state(player, "disconnected")
 
     async def set_new_host(self):
         """Set a new host when the current host leaves."""
@@ -225,3 +230,10 @@ class GameInstance:
                 "progress": progress
             }})
         )
+        
+    def has_connected_players(self) -> bool:
+        return any(player.is_connected for player in self.players)
+    
+    async def update_player_connection_state(self, player, status):
+        res =await self.httpx_service.get_api_client().post(f"game/{self.game_id}/player/{player.id}/connection-status/{status}")
+        print( f"Player {player.id} connection status updated to {status}")
