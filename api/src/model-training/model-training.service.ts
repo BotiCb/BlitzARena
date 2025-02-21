@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as sharp from 'sharp';
 import { GameModel } from 'src/shared/schemas/collections/game.schema';
 import { TrainingSessionModel } from 'src/shared/schemas/collections/training-session.schema';
-import { TrainingResultsDto } from './dto/input/training-information.dto';
+import { TrainingResultsDto } from './dto/input/training-result.dto';
 
 @Injectable()
 export class ModelTrainingService {
@@ -119,14 +119,12 @@ export class ModelTrainingService {
     await this.axiosService.apiClient.post(`game/${gameId}/training-error`);
   }
 
-
   async trainingProgress(gameId: string, progress: number) {
     const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
     if (!game) {
       throw new HttpException('Game not found', 404);
     }
     await this.axiosService.apiClient.post(`game/${gameId}/training-progress/${progress}`);
-    
   }
 
   async saveStatistics(gameId: string, trainingResults: TrainingResultsDto) {
@@ -136,5 +134,12 @@ export class ModelTrainingService {
     }
     game.trainingSession.trainingResults = trainingResults;
     await game.trainingSession.save();
+  }
+
+  async uploadTfLiteModel(gameId: string, file: Express.Multer.File) {
+    const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
+    if (!game) {
+      throw new HttpException('Game not found', 404);
+    }
   }
 }

@@ -7,7 +7,7 @@ import { ModelTrainingService } from './model-training.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TrainingRequestDto } from './dto/input/training-request';
 import { TrainingErrorDto } from './dto/input/training-error.dto';
-import { TrainingResultsDto } from './dto/input/training-information.dto';
+import { TrainingResultsDto } from './dto/input/training-result.dto';
 import { GameModel } from 'src/shared/schemas/collections/game.schema';
 import { UserModel } from 'src/shared/schemas/collections/user.schema';
 

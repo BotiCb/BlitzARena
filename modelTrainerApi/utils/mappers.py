@@ -2,7 +2,7 @@ from pathlib import Path
 import numpy as np
 from typing import Dict, Any
 
-def map_training_data(results, csv_data: list, model) -> dict:
+def map_training_data(results, csv_data: list, model, concurrent_trainings: int) -> dict:
     """Combine YOLO results, CSV data, and model info into API-ready format."""
     
     # Get class names from model
@@ -20,7 +20,7 @@ def map_training_data(results, csv_data: list, model) -> dict:
         "metadata": {
             "task": getattr(results, "task", "classify"),
             "total_epochs": len(csv_data),
-            "class_names": class_names  # Now properly populated
+            "class_names": class_names
         },
         "metrics": {
             "summary": {
@@ -61,7 +61,8 @@ def map_training_data(results, csv_data: list, model) -> dict:
             "preprocess_ms": results.speed.get("preprocess", 0) * 1000,
             "inference_ms": results.speed.get("inference", 0) * 1000,
             "postprocess_ms": results.speed.get("postprocess", 0) * 1000,
-            "loss_calculation_ms": results.speed.get("loss", 0) * 1000
+            "loss_calculation_ms": results.speed.get("loss", 0) * 1000,
+            "concurrent_trainings": concurrent_trainings
         }
 
     return mapped

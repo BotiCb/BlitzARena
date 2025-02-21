@@ -121,6 +121,9 @@ class SystemDto {
 
   @IsNumber()
   lossCalculationMs: number;
+
+  @IsNumber()
+  concurentTrainings: number;
 }
 
 class MetricsDto {

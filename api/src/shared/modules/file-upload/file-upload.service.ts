@@ -53,4 +53,12 @@ export class FileUploadService {
     const url = await this.uploadFile(file, 'profile-pictures');
     return url;
   }
+
+  async uploadTfLiteModel(file: Express.Multer.File): Promise<string> {
+    //throw an error if it is not a .tflite file
+
+    
+     const url = await this.uploadFile(file, 'tf-lite-models', true);
+    return url;
+  }
 }

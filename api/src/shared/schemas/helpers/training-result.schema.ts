@@ -117,6 +117,9 @@ class System {
 
   @Prop({ required: true })
   lossCalculationMs: number;
+
+  @Prop({ required: true })
+  concurentTrainings: number;
 }
 
 @Schema({ _id: false })

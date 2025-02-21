@@ -13,6 +13,8 @@ from services.httpx_service import HTTPXService
 from ultralytics.utils.metrics import ConfusionMatrix
 
 class ModelTrainingService:
+    _active_trainings = 0
+    _lock = threading.Lock()
     def __init__(self):
         self.dataset_dir = "dataset"
         self.executor = ThreadPoolExecutor(max_workers=4)
@@ -31,6 +33,8 @@ class ModelTrainingService:
 
     async def train(self, game_id: str):
         try:
+            with self._lock:
+                ModelTrainingService._active_trainings += 1
             self._loop = asyncio.get_running_loop()
             await self.send_training_progress(0, game_id)
             
@@ -76,6 +80,10 @@ class ModelTrainingService:
                 json={"errorMessage": str(e)}
             )
 
+        finally:
+            with self._lock:
+                ModelTrainingService._active_trainings -= 1
+
     def _train_model_sync(self, model, game_id: str):
         os.makedirs(f"models/{game_id}", exist_ok=True)
         try:
@@ -101,9 +109,9 @@ class ModelTrainingService:
             )
             print(model.names)
             csv_dir = str(results.save_dir) + "\\results.csv"
-            confusion_matrix: ConfusionMatrix = results.confusion_matrix
-            print(confusion_matrix.matrix.tolist())
-            print(convert_dict_to_camel_case(map_training_data(results, read_training_csv(csv_dir), model)))
+
+            concurrent_count = ModelTrainingService._active_trainings - 1
+            print(convert_dict_to_camel_case(map_training_data(results, read_training_csv(csv_dir), model, concurrent_trainings=concurrent_count)))
             asyncio.run_coroutine_threadsafe(
             self.httpx_service.get_api_client().post(
                 f"/model-training/{game_id}/statistics",
