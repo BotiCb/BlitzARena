@@ -28,6 +28,9 @@ export class TrainingSessionModel extends Document {
   @Prop({ default: null, type: TrainingResultsSchema })
   trainingResults?: TrainingResults;
 
+  @Prop({ default: null })
+  tfLiteModelUrl?: string;
+
 }
 
 export const TrainingSessionSchema = SchemaFactory.createForClass(TrainingSessionModel);

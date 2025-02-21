@@ -156,7 +156,7 @@ class ModelTrainingPhaseService(PhaseService):
             }}))
         else:
             print("All players finished training frpm group")
-            await self.context.websockets.send_to_all(
+            await self.context.websockets.send_to_group(self.groups[group_id],
                 Message({"type": "training_finished_for_group", "data": {}}))
         if len(self.context.players) == len(self.training_data_collected):
             await self.start_training()

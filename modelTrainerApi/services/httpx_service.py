@@ -22,7 +22,6 @@ class HTTPXService:
             base_url=API_BASE_URL,
             headers={
                 "Accept": "application/json",
-                "Content-Type": "application/json",
             }
         )
 

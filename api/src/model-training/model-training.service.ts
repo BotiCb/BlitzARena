@@ -8,13 +8,15 @@ import * as sharp from 'sharp';
 import { GameModel } from 'src/shared/schemas/collections/game.schema';
 import { TrainingSessionModel } from 'src/shared/schemas/collections/training-session.schema';
 import { TrainingResultsDto } from './dto/input/training-result.dto';
+import { FileUploadService } from 'src/shared/modules/file-upload/file-upload.service';
 
 @Injectable()
 export class ModelTrainingService {
   constructor(
     @InjectModel(GameModel.name) private readonly gameModel: Model<GameModel>,
     @InjectModel(TrainingSessionModel.name) private readonly trainingSessionModel: Model<TrainingSessionModel>,
-    private readonly axiosService: AxiosService
+    private readonly axiosService: AxiosService,
+    private readonly fileUploadService: FileUploadService
   ) {}
 
   async sendTrainingPhoto(file: Express.Multer.File, gameId: string, playerId: string, photoSize: number) {
@@ -79,7 +81,6 @@ export class ModelTrainingService {
       if (game.trainingSession.startedAt) {
         throw new HttpException('Training is already in progress', 400);
       }
-      console.log(game);
       // Update training session properties
       game.trainingSession.inProgress = true;
       game.trainingSession.numClasses = numClasses;
@@ -141,5 +142,10 @@ export class ModelTrainingService {
     if (!game) {
       throw new HttpException('Game not found', 404);
     }
+    if (!file){
+      throw new HttpException('No file uploaded', 400);
+    }
+    game.trainingSession.tfLiteModelUrl = await this.fileUploadService.uploadTfLiteModel(file);
+    await game.trainingSession.save();
   }
 }

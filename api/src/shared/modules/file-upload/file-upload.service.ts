@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { FirebaseService } from '../firebase/firebase.service';
 import { extname } from 'path';
 
@@ -55,10 +55,11 @@ export class FileUploadService {
   }
 
   async uploadTfLiteModel(file: Express.Multer.File): Promise<string> {
-    //throw an error if it is not a .tflite file
-
-    
-     const url = await this.uploadFile(file, 'tf-lite-models', true);
+    const extension = extname(file.originalname);
+    if (extension !== '.tflite') {
+      throw new HttpException('File must be a .tflite file', 400);
+    }
+    const url = this.uploadFile(file, 'tf-lite-models', true);
     return url;
   }
 }

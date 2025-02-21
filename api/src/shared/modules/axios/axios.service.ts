@@ -20,6 +20,7 @@ export class AxiosService {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
+    timeout: 5000,
   });
 
   constructor(private jwtService: JwtService) {

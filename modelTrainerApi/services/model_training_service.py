@@ -1,14 +1,13 @@
-# model_training_service.py
 import os
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+import threading
 from typing import Optional
 from utils.dto_convention_converter import convert_dict_to_camel_case
 from utils.csv_file_converter import read_training_csv
 from utils.mappers import map_training_data
 from ultralytics import YOLO
 import torch
-from services.firebase_file_storage_service import FirebaseStorageService
 from services.httpx_service import HTTPXService
 from ultralytics.utils.metrics import ConfusionMatrix
 
@@ -19,7 +18,6 @@ class ModelTrainingService:
         self.dataset_dir = "dataset"
         self.executor = ThreadPoolExecutor(max_workers=4)
         self.httpx_service: HTTPXService = HTTPXService()
-        self.firebase_file_storage_service: FirebaseStorageService = FirebaseStorageService()
         self._loop: Optional[asyncio.AbstractEventLoop] = None
 
     async def send_training_progress(self, progress: float, game_id: str):
@@ -58,14 +56,25 @@ class ModelTrainingService:
             print(f"Starting training for game: {game_id}")
             print(f"CUDA available: {torch.cuda.is_available()}")
 
-            await self._loop.run_in_executor(
+            model_path = await self._loop.run_in_executor(
                 self.executor,
                 self._train_model_sync,
                 model,
                 game_id
             )
-
             await self.send_training_progress(95, game_id)
+            print(model_path)
+            with open(model_path, "rb") as model_file:
+                    files = {"file": (os.path.basename(model_path), model_file)}
+                    print(f"Uploading file: {model_path}")
+                    print(f"File exists: {os.path.exists(model_path)}")
+                    print(f"File size: {os.path.getsize(model_path)} bytes")
+                    response = await self.httpx_service.get_api_client().post(
+                        f"/model-training/{game_id}/upload-tflite-model",
+                        files=files,
+                    )
+                    if response.status_code != 201:
+                        raise Exception(f"Error uploading model: {response.text}")
             print(f"Training completed for game: {game_id}")
             await self.httpx_service.get_api_client().post(
                 f"/model-training/training-ended/{game_id}"
@@ -84,7 +93,7 @@ class ModelTrainingService:
             with self._lock:
                 ModelTrainingService._active_trainings -= 1
 
-    def _train_model_sync(self, model, game_id: str):
+    def _train_model_sync(self, model, game_id: str) -> str:
         os.makedirs(f"models/{game_id}", exist_ok=True)
         try:
             # Initial sync progress update
@@ -115,7 +124,7 @@ class ModelTrainingService:
             asyncio.run_coroutine_threadsafe(
             self.httpx_service.get_api_client().post(
                 f"/model-training/{game_id}/statistics",
-                json=convert_dict_to_camel_case(map_training_data(results, read_training_csv(csv_dir), model))
+                json=convert_dict_to_camel_case(map_training_data(results, read_training_csv(csv_dir), model, concurrent_trainings=concurrent_count))
             ),
             self._loop
         ).result()
@@ -125,13 +134,15 @@ class ModelTrainingService:
                 self._loop
             ).result()
 
-            # model.export(
-            #     format="tflite",
-            #     batch=1,
-            #     imgsz=320,
-            #     rect=True,
-            #     project=f"models/{game_id}"
-            # )
+            model.export(
+                format="tflite",
+                batch=1,
+                imgsz=320,
+                rect=True,
+                project=f"models/{game_id}"
+            )
+            
+            return str(results.save_dir) +"\\weights\\best_saved_model\\best_float32.tflite"
 
         except Exception as e:
             asyncio.run_coroutine_threadsafe(

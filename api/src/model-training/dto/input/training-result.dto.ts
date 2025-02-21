@@ -123,7 +123,7 @@ class SystemDto {
   lossCalculationMs: number;
 
   @IsNumber()
-  concurentTrainings: number;
+  concurrentTrainings: number;
 }
 
 class MetricsDto {

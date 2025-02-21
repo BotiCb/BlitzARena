@@ -119,7 +119,7 @@ class System {
   lossCalculationMs: number;
 
   @Prop({ required: true })
-  concurentTrainings: number;
+  concurrentTrainings: number;
 }
 
 @Schema({ _id: false })

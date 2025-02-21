@@ -58,9 +58,16 @@ export class ModelTrainingController {
     return await this.modelTrainingService.trainingProgress(gameId, progress);
   }
 
-  //@ServiceApiRole('modelTrainerApi')
+  @ServiceApiRole('modelTrainerApi')
   @Post(':gameId/statistics')
   async trainingStatistics(@Param('gameId') gameId: string, @Body() body: TrainingResultsDto) {
-    console.log(JSON.stringify(body, null, 2));
+    return this.modelTrainingService.saveStatistics(gameId, body);
+  }
+
+  @ServiceApiRole('modelTrainerApi')
+  @Post(':gameId/upload-tflite-model')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadTfLiteModel(@Param('gameId') gameId: string, @UploadedFile() file: Express.Multer.File) {
+    return this.modelTrainingService.uploadTfLiteModel(gameId, file);
   }
 }
