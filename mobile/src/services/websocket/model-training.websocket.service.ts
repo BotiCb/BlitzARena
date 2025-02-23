@@ -25,7 +25,7 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
       this.onPhotoCollectingProgressUpdate
     );
     this.websocketService.onMessageType('next_training_player', this.onNextTrainingPlayer);
-    this.websocketService.onMessageType('group_assigned', this.onTrainingGroupAssigned);
+    this.websocketService.onMessageType('model_training_phase_info', this.onModelTrainingPhaseInfo);
     this.websocketService.onMessageType(
       'training_finished_for_group',
       this.onTrainingFinishedForGroup
@@ -120,24 +120,20 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     }
   };
 
-  onTrainingGroupAssigned = (message: WebSocketMsg) => {
-    const { groupMembers, firstPlayer, photosToCollect } = message.data;
-    console.log(groupMembers, photosToCollect);
+  onModelTrainingPhaseInfo = (message: WebSocketMsg) => {
+    const { groupMembers, currentPlayer, photosToCollect, photoCollectingProgress } = message.data;
     this.remainingPhotoToSendCount = photosToCollect;
     this.trainingGroupHandlerFunction(groupMembers);
-    this.currentTrainingPlayerHandlerFunction(firstPlayer);
-    if (ModelTrainingWebSocketService.sessionId === firstPlayer) {
+    this.currentTrainingPlayerHandlerFunction(currentPlayer);
+    if (ModelTrainingWebSocketService.sessionId === currentPlayer) {
       this.phaseHandlerFunction('photos-from-you');
     } else {
       this.phaseHandlerFunction('take-photos');
     }
-  };
+    this.photoCollectingProgressHandlerFunction(photoCollectingProgress);
 
-  readyForTraining() {
-    this.websocketService.sendMessage({
-      type: WebSocketMessageType.READY_FOR_TRAINING_PHASE,
-    });
-  }
+    AbstractCustomWebSocketService.isPhaseInfosNeededHandlerFunction(false);
+  };
 
   onTrainingFinishedForGroup = (message: WebSocketMsg) => {
     this.phaseHandlerFunction('training-ready-for-group');

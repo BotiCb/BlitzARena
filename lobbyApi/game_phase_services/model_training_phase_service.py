@@ -25,8 +25,7 @@ class ModelTrainingPhaseService(PhaseService):
 
     def on_enter(self):
         self.context.websockets.register_handler("training_photo_sent", self.on_training_photo_sent)
-        self.context.websockets.register_handler("ready_for_training_phase", self.player_ready_for_training_phase)
-        self._registered_handlers.extend(["training_photo_sent", "ready_for_training_phase"])
+        self._registered_handlers.extend(["training_photo_sent"])
         self.group_players()
         self.photo_count = 0
         self.training_data_collected = []
@@ -39,10 +38,8 @@ class ModelTrainingPhaseService(PhaseService):
         self._unregister_handlers()
 
 
-    async def player_ready_for_training_phase(self, player_id: str, message: dict):
-        self.context.get_player(player_id).set_ready(True)
-        if self.context.is_all_players_ready():
-            await self.start_collecting_training_data()
+    async def on_player_ready_to_phase(self, player_id: str):
+        await self.send_group_to_player(player_id)
 
     async def on_training_photo_sent(self, player_id: str, message: dict):
         try:
@@ -67,8 +64,6 @@ class ModelTrainingPhaseService(PhaseService):
         except KeyError as e:
             await self.context.websockets.send_error(player_id, f"Missing required key: {e}")
 
-    async def start_collecting_training_data(self):
-        await self.send_groups()
 
     async def start_training(self):
         try:
@@ -112,21 +107,22 @@ class ModelTrainingPhaseService(PhaseService):
             player_ids = [player.id for player in group_members]
             self.groups[group_id] = player_ids
             current_index += size
-
-    async def send_groups(self):
-        for group_id, player_ids in self.groups.items():
-            if player_ids:
-                await self.context.websockets.send_to_group(
-                    player_ids,
-                    Message({
-                        "type": "group_assigned",
-                        "data": {
-                            "group_members": player_ids,
-                            "first_player": player_ids[0],
-                            "photos_to_collect": self.max_photos_per_player/(len(player_ids)-1)
-                        }
-                    })
-                )
+                
+    async def send_group_to_player(self, player_id: str):
+        photo_collecting_progresss = round(self.photo_count / (self.max_photos_per_player * len(self.context.players)) * 100)
+        group_id = self.get_players_group_id(player_id)
+        await self.context.websockets.send_to_player(
+            player_id,
+            Message({
+                "type": "model_training_phase_info",
+                "data": {
+                    "group_members": self.groups[group_id],
+                    "current_player": self.get_player_from_group_with_not_finished_training(group_id),
+                    "photos_to_collect": self.max_photos_per_player/(len(self.groups[group_id])-1),
+                    "photo_collecting_progress": photo_collecting_progresss
+                }
+            })
+        )
 
 
     def get_players_group_id(self, player_id: str):
@@ -163,3 +159,4 @@ class ModelTrainingPhaseService(PhaseService):
                 Message({"type": "training_finished_for_group", "data": {}}))
         if len(self.context.players) == len(self.training_data_collected):
             await self.start_training()
+            

@@ -23,3 +23,7 @@ class PhaseService(ABC):
         for handler_type in self._registered_handlers:
             self.context.websockets.unregister_handler(handler_type)
         self._registered_handlers.clear()
+        
+    @abstractmethod
+    async def on_player_ready_to_phase(self, player_id):
+        pass

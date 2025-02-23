@@ -1,9 +1,9 @@
-import { AsyncStore } from '~/services/storage/AsyncStorage';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import { GameStackParamList } from '~/navigation/types';
+import { AsyncStore } from '~/services/storage/AsyncStorage';
 import { GameWebSocketService } from '~/services/websocket/game.websocket.service';
 import { WebSocketService } from '~/services/websocket/websocket.service';
 import { Player } from '~/utils/models';
@@ -23,6 +23,7 @@ type GameContextType = {
   onStartNextGamePhase: () => void;
   trainingProgress: number | null;
   modelReady: boolean;
+  isPhaseInfosNeeded: boolean;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -41,6 +42,7 @@ export const GameProvider: React.FC<{
   const navigation = useNavigation<StackNavigationProp<GameStackParamList>>();
   const [modelReady, setModelReady] = useState<boolean>(false);
   const [trainingProgress, setTrainingProgress] = useState<number | null>(null);
+  const [isPhaseInfosNeeded, setIsPhaseInfosNeeded] = useState<boolean>(true);
 
   const setPlayerAsHost = (playerId: string) => {
     if (!areYouHost) {
@@ -62,6 +64,7 @@ export const GameProvider: React.FC<{
     }
     gameWebsocketService.startNextGamePhase();
   };
+
   useEffect(() => {
     gameWebsocketService.setNavigationHandler(navigation);
   }, [navigation]);
@@ -76,6 +79,7 @@ export const GameProvider: React.FC<{
     gameWebsocketService.setNavigationHandler(navigation);
     gameWebsocketService.setModelReadyHandlerFunction(setModelReady);
     gameWebsocketService.setTrainingProgressHandlerFunction(setTrainingProgress);
+    gameWebsocketService.setIsPhaseInfosNeededHandlerFunction(setIsPhaseInfosNeeded);
     gameWebsocketService.setWebSocketEventListeners();
     websocketService.connect(gameId, userSessionId);
 
@@ -99,6 +103,7 @@ export const GameProvider: React.FC<{
         onStartNextGamePhase,
         modelReady,
         trainingProgress,
+        isPhaseInfosNeeded,
       }}>
       {children}
     </GameContext.Provider>

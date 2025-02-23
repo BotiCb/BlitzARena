@@ -3,24 +3,14 @@ import { Player } from './models';
 import { PlayerInfoResponseDto } from '~/services/restApi/dto/response.dto';
 import { PlayerWSInfo } from '~/services/websocket/websocket-types';
 
-export function mergePlayer(wsPlayer: PlayerWSInfo, playerInfo?: PlayerInfoResponseDto): Player {
-  return new Player(
-    wsPlayer.playerId.trim(),
-    playerInfo?.firstName || 'Unknown',
-    playerInfo?.lastName || 'Unknown',
-    playerInfo?.photoUrl || '',
-    wsPlayer.isConnected,
-    wsPlayer.isHost,
-    wsPlayer.isReady
-  );
+export function fromPlayerWSInfoToPlayerModel(playerInfo: PlayerWSInfo): Player {
+  return new Player(playerInfo.playerId, playerInfo.isConnected, playerInfo.isHost);
 }
 
-export function mergePlayerArray(
-  wsPlayers: PlayerWSInfo[],
-  playerInfoList: PlayerInfoResponseDto[]
-): Player[] {
-  return wsPlayers.map((wsPlayer) => {
-    const playerInfo = playerInfoList.find((info) => info.sessionId === wsPlayer.playerId);
-    return mergePlayer(wsPlayer, playerInfo);
-  });
+export function extendPlayer(player: Player, playerInfo: PlayerInfoResponseDto): Player {
+  player.firstName = playerInfo.firstName;
+  player.lastName = playerInfo.lastName;
+  player.photoUrl = playerInfo.photoUrl;
+
+  return player;
 }

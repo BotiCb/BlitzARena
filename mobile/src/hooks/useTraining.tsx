@@ -15,7 +15,7 @@ export const useTraining = () => {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<TrainingPhase>('initializing');
   const modelTrainingWebsocketService = ModelTrainingWebSocketService.getInstance();
-  const handleTrainingPlayer = (playerId: string) => {
+  const handleTrainingPlayer = (playerId: string | null) => {
     setTrainingPlayer(players.find((player) => player.sessionID === playerId) || null);
   };
 
@@ -39,7 +39,7 @@ export const useTraining = () => {
     modelTrainingWebsocketService.setTrainingGroupHandlerFunction(handleTrainingGroup);
     modelTrainingWebsocketService.setWebSocketEventListeners();
     modelTrainingWebsocketService.setPhaseHandlerFunction(setPhase);
-    modelTrainingWebsocketService.readyForTraining();
+    modelTrainingWebsocketService.readyForPhase();
 
     return () => {
       modelTrainingWebsocketService.close();

@@ -45,3 +45,11 @@ class LobbyService(PhaseService):
                 player_id,
                 Message({"type": "error", "data": "Only the host can start the next phase"})
             )
+
+    async def on_player_ready_to_phase(self, player_id: str) -> None:
+        players_ready = [{"player_id": player.id, "is_ready": player.is_ready} for player in self.context.players]
+        print (f"Players ready: {players_ready}")
+        await self.context.websockets.send_to_player(
+            player_id,
+            Message({"type": "lobby_phase_info", "data": players_ready})
+        )

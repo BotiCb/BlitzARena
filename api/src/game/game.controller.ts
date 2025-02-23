@@ -43,7 +43,6 @@ export class GameController {
   @Post('/:gameId/player/:playerId/connection-status/:connectionStatus')
   @ServiceApiRole('lobbyApi')
   updatePlayerConnectionStatus(@Param('gameId') gameId: string, @Param('playerId') playerId: string, @Param('connectionStatus') connectionStatus: PlayerConnectionState) {
-    console.log(gameId, playerId, connectionStatus);
     return this.gameService.updatePlayerConnectionStatus(gameId, playerId, connectionStatus);
   }
 

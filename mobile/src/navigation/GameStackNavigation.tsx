@@ -5,10 +5,10 @@ import { Text } from 'react-native';
 import { AppStackParamList } from './types';
 
 import { GameProvider, useGame } from '~/contexts/GameContext';
+import { GamerRoomScreen } from '~/screens/GameRoomScreen';
 import { LobbyScreen } from '~/screens/LobbyScreen';
 import ModelTrainingScreen from '~/screens/ModelTrainingScreen';
 import SplashScreen from '~/screens/SplashScreen';
-import { GamerRoomScreen } from '~/screens/GameRoomScreen';
 
 const GameStack = () => {
   const route = useRoute<RouteProp<AppStackParamList, 'GameStack'>>();

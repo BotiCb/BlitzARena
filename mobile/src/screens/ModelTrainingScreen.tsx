@@ -3,6 +3,7 @@ import { View, Text } from 'react-native';
 
 import SplashScreen from './SplashScreen';
 
+import { useGame } from '~/contexts/GameContext';
 import { useTraining } from '~/hooks/useTraining';
 import { PhotosFromYouView } from '~/views/PhotosFromYouView';
 import TrainingCameraView from '~/views/TraingCameraView';
@@ -20,6 +21,12 @@ const ModelTrainingScreen = () => {
     phase,
   } = useTraining();
 
+  const { isPhaseInfosNeeded } = useGame();
+
+  if (isPhaseInfosNeeded) {
+    return <SplashScreen />;
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <Text>Training Group</Text>
@@ -31,8 +38,6 @@ const ModelTrainingScreen = () => {
       <Text>Player: {trainingPlayer?.firstName + ' ' + trainingPlayer?.lastName}</Text>
       {(() => {
         switch (phase) {
-          case 'initializing':
-            return <SplashScreen />;
           case 'photos-from-you':
             return <PhotosFromYouView />;
           case 'take-photos':

@@ -8,7 +8,7 @@ import { apiClient } from '../restApi/RestApiService';
 import { PlayerInfoResponseDto } from '../restApi/dto/response.dto';
 
 import { GameStackParamList } from '~/navigation/types';
-import { mergePlayerArray, mergePlayer } from '~/utils/mappers';
+import { fromPlayerWSInfoToPlayerModel, extendPlayer } from '~/utils/mappers';
 import { Player } from '~/utils/models';
 import { GamePhase } from '~/utils/types';
 
@@ -22,8 +22,6 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   private navigator: StackNavigationProp<GameStackParamList> | null = null;
   private pinghandlerFunction: (ping: number) => void = () => {};
   private pingInterval: NodeJS.Timeout | null = null;
-
-  private pendingConnections = new Set<string>([]);
 
   setWebSocketEventListeners() {
     this.websocketService.onMessageType('game_info', this.handleGameInfoEvent);
@@ -44,6 +42,9 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   private startPingInterval() {
     if (!this.pingInterval) {
       this.pingInterval = setInterval(() => {
+        if (!this.websocketService.isConnected()) {
+          return;
+        }
         const currentTime = Date.now();
         this.websocketService.sendMessage({
           type: WebSocketMessageType.PING,
@@ -90,14 +91,10 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     }
     const gameInfo: GameWSInfo = message.data;
     try {
-      const playerDetails: PlayerInfoResponseDto[] = (
-        await apiClient.get(
-          USER_ENDPOINTS.GET_PLAYERS_IN_GAME(AbstractCustomWebSocketService.gameId)
-        )
-      ).data;
-      console.log('Players in game', playerDetails);
-
       const playersInGame: PlayerWSInfo[] = gameInfo.players;
+      GameWebSocketService.playersHandlerFunction(() =>
+        playersInGame.map((player: PlayerWSInfo) => fromPlayerWSInfoToPlayerModel(player))
+      );
       if (
         playersInGame.find(
           (player: PlayerWSInfo) => player.playerId === AbstractCustomWebSocketService.sessionId
@@ -105,7 +102,9 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       ) {
         this.areYouHostHandlerFunction(true);
       }
-      GameWebSocketService.playersHandlerFunction(mergePlayerArray(playersInGame, playerDetails));
+
+      this.fetchPlayersData();
+
       this.gamePhaseHandlerFunction(gameInfo.currentPhase);
     } catch (e) {
       console.log(e);
@@ -115,29 +114,20 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   handlePlayerJoinedEvent = async (message: WebSocketMsg) => {
     try {
       const connectedPlayer: PlayerWSInfo = message.data;
-      this.pendingConnections.add(connectedPlayer.playerId);
-      const playerDetails: PlayerInfoResponseDto = (
-        await apiClient.get(USER_ENDPOINTS.GET_PLAYER_BY_SESSION_ID(connectedPlayer.playerId))
-      ).data;
 
-      const mergedPlayer = mergePlayer(connectedPlayer, playerDetails);
       GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => [
         ...prevPlayers,
-        mergedPlayer,
+        fromPlayerWSInfoToPlayerModel(connectedPlayer),
       ]);
+
+      this.fetchPlayerData(connectedPlayer.playerId);
     } catch (e) {
       console.log(e);
-    } finally {
-      this.pendingConnections.delete(message.data.playerId);
     }
   };
 
   handlePlayerConnectedEvent = async (message: WebSocketMsg) => {
     const connectedPlayerId: string = message.data.trim();
-    while (this.pendingConnections.has(connectedPlayerId)) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      console.log('Waiting for player to end the joining process...');
-    }
 
     GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
       return prevPlayers.map((player: Player) => {
@@ -221,6 +211,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
 
   handleGamePhaseChangedEvent = async (message: WebSocketMsg) => {
     this.gamePhaseHandlerFunction(message.data);
+    AbstractCustomWebSocketService.isPhaseInfosNeededHandlerFunction(true);
   };
 
   startNextGamePhase = () => {
@@ -264,5 +255,37 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   handleTrainingProgressEvent = async (message: WebSocketMsg) => {
     const { progress } = message.data;
     this.trainingProgressHandlerFunction(progress);
+  };
+
+  fetchPlayersData = async () => {
+    const playerDetails: PlayerInfoResponseDto[] = (
+      await apiClient.get(USER_ENDPOINTS.GET_PLAYERS_IN_GAME(AbstractCustomWebSocketService.gameId))
+    ).data;
+    GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
+      return prevPlayers.map((player: Player) => {
+        const playerDetail = playerDetails.find(
+          (playerDetail: PlayerInfoResponseDto) => playerDetail.sessionId === player.sessionID
+        );
+        if (!playerDetail) {
+          return player;
+        }
+        return extendPlayer(player, playerDetail);
+      });
+    });
+  };
+
+  fetchPlayerData = async (playerId: string) => {
+    const playerDetails: PlayerInfoResponseDto = (
+      await apiClient.get(USER_ENDPOINTS.GET_PLAYER_BY_SESSION_ID(playerId))
+    ).data;
+    GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
+      return prevPlayers.map((player: Player) => {
+        if (player.sessionID === playerId) {
+          return extendPlayer(player, playerDetails);
+        }
+        return player;
+      });
+    });
+    console.log('Fetched player data:', playerDetails);
   };
 }

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Button } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
+import SplashScreen from './SplashScreen';
+
 import { PlayerListComponent } from '~/components/PlayerListComponent';
 import { useGame } from '~/contexts/GameContext';
 import { LobbyWebSocketService } from '~/services/websocket/lobby.websocket.service';
@@ -16,6 +18,7 @@ export const LobbyScreen = () => {
     onRemovePlayer,
     playerHandlerFunction,
     onStartNextGamePhase,
+    isPhaseInfosNeeded,
   } = useGame();
 
   const [ready, setReady] = useState(false);
@@ -39,11 +42,16 @@ export const LobbyScreen = () => {
     lobbywebsocketService.setWebSocketEventListeners();
     lobbywebsocketService.setPlayersHandlerFunction(playerHandlerFunction);
     lobbywebsocketService.setReadyHandlerFunction(setReady);
+    lobbywebsocketService.readyForPhase();
 
     return () => {
       lobbywebsocketService.close();
     };
   }, []);
+
+  if (isPhaseInfosNeeded) {
+    return <SplashScreen />;
+  }
   return (
     <View>
       <QRCode value={'Game ID: ' + gameId} size={250} />

@@ -48,6 +48,7 @@ class GameInstance:
         self.websockets.register_handler("exit_from_game", self.exit_from_game)
         self.websockets.register_handler("set_host", self.new_host)
         self.websockets.register_handler("remove_player", self.remove_player)
+        self.websockets.register_handler("ready_for_phase", self.on_player_ready_to_phase)
 
     def _initialize_phase_service(self):
         """Initialize the current phase service."""
@@ -68,9 +69,6 @@ class GameInstance:
 
         await self.websockets.send_to_all(
             Message({"type": "game_phase", "data": phase})
-        )
-        await self.websockets.send_to_all(
-            Message({"type": "game_info", "data": self.get_game_info()})
         )
 
     async def add_player(self, player_id: str):
@@ -199,7 +197,8 @@ class GameInstance:
             "game_id": self.game_id,
             "players": [PlayerInfoDto(player) for player in self.players],
             "current_phase": self.current_phase,
-            "max_players": self.max_players
+            "max_players": self.max_players,
+            "is_model_trained": self.is_model_trained
         }
 
     async def handle_websocket_message(self, player_id: str, message: Message):
@@ -237,3 +236,7 @@ class GameInstance:
     async def update_player_connection_state(self, player, status):
         res =await self.httpx_service.get_api_client().post(f"game/{self.game_id}/player/{player.id}/connection-status/{status}")
         print( f"Player {player.id} connection status updated to {status}")
+
+
+    async def on_player_ready_to_phase(self, player_id: str, message: dict):
+        await self.current_phase_service.on_player_ready_to_phase(player_id)

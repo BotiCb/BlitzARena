@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Button, Text } from 'react-native';
 
+import SplashScreen from './SplashScreen';
+
 import { PlayerListComponent } from '~/components/PlayerListComponent';
 import { useGame } from '~/contexts/GameContext';
-import { LobbyWebSocketService } from '~/services/websocket/lobby.websocket.service';
+import { GameRoomWebSocketService } from '~/services/websocket/game-room.websocket.service';
 
 export const GamerRoomScreen = () => {
   const {
@@ -16,15 +18,16 @@ export const GamerRoomScreen = () => {
     onStartNextGamePhase,
     modelReady,
     trainingProgress,
+    isPhaseInfosNeeded,
   } = useGame();
 
   const [ready, setReady] = useState(false);
   const [isEveryOneReady, setIsEveryOneReady] = useState(false);
 
-  const lobbywebsocketService = LobbyWebSocketService.getInstance();
+  const gameRoomWebsocketService = GameRoomWebSocketService.getInstance();
 
   const handleReadyPress = () => {
-    lobbywebsocketService.setMyStatus(!ready);
+    gameRoomWebsocketService.setMyStatus(!ready);
   };
 
   useEffect(() => {
@@ -36,14 +39,19 @@ export const GamerRoomScreen = () => {
   }, [players]);
 
   useEffect(() => {
-    lobbywebsocketService.setWebSocketEventListeners();
-    lobbywebsocketService.setPlayersHandlerFunction(playerHandlerFunction);
-    lobbywebsocketService.setReadyHandlerFunction(setReady);
+    gameRoomWebsocketService.setWebSocketEventListeners();
+    gameRoomWebsocketService.setPlayersHandlerFunction(playerHandlerFunction);
+    gameRoomWebsocketService.setReadyHandlerFunction(setReady);
+    gameRoomWebsocketService.readyForPhase();
 
     return () => {
-      lobbywebsocketService.close();
+      gameRoomWebsocketService.close();
     };
   }, []);
+
+  if (isPhaseInfosNeeded) {
+    return <SplashScreen />;
+  }
   return (
     <View>
       {trainingProgress !== null && <Text>Training Progress: {trainingProgress}</Text>}

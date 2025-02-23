@@ -8,6 +8,7 @@ export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
 
   setWebSocketEventListeners() {
     this.websocketService.onMessageType('player_status', this.setPlayerStatus);
+    this.websocketService.onMessageType('game_room_phase_info', this.onPhaseInfo);
   }
 
   setReadyHandlerFunction(readyHandlerFunction: (isReady: boolean) => void) {
@@ -36,6 +37,21 @@ export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
       },
     });
   }
+
+  onPhaseInfo = (message: WebSocketMsg) => {
+    const playeReadyArray = message.data as { playerId: string; isReady: boolean }[];
+    GameRoomWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
+      return prevPlayers.map((player: Player) => {
+        for (const playerReady of playeReadyArray) {
+          if (player.sessionID === playerReady.playerId) {
+            return { ...player, isReady: playerReady.isReady };
+          }
+        }
+        return player;
+      });
+    });
+    GameRoomWebSocketService.isPhaseInfosNeededHandlerFunction(false);
+  };
   close(): void {
     this.websocketService.offMessageType('player_status');
   }
