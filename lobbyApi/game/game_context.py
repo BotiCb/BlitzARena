@@ -12,7 +12,8 @@ class GameContext:
         transition_to_phase_callback: callable,
         get_current_phase: callable,
         get_game_id: callable,
-        is_model_trained: callable
+        is_model_trained: callable,
+        get_teams: callable
     ):
         self.websockets = websockets
         self.players = players
@@ -20,6 +21,7 @@ class GameContext:
         self._get_current_phase = get_current_phase
         self.get_game_id = get_game_id
         self._is_model_trained = is_model_trained
+        self.get_teams = get_teams
 
     def get_player(self, player_id: str) -> Player:
         for player in self.players:
@@ -43,3 +45,6 @@ class GameContext:
     
     def is_model_trained(self) -> bool:
         return self._is_model_trained
+    
+    def get_players_in_team(self, team: str) -> List[Player]:
+        return [player for player in self.players if player.get_team() == team]

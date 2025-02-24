@@ -9,6 +9,7 @@ class Player:
         self.added_at =  datetime.utcnow()
         self.is_connected = False
         self.training_photo_count = 0
+        self.team = None
 
     def set_ready(self, ready: bool):
         """Set the ready status for the player."""
@@ -27,6 +28,12 @@ class Player:
 
     def get_training_photo_count(self):
         return self.training_photo_count
+    
+    def get_team(self):
+        return self.team
+    
+    def set_team(self, team: str):
+        self.team=team
 
 
 

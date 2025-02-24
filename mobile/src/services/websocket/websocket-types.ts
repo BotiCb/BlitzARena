@@ -1,4 +1,4 @@
-import { GamePhase } from '~/utils/types';
+import { GamePhase, TEAM } from '~/utils/types';
 
 export type WebSocketMsg = {
   type: WebSocketMessageType;
@@ -18,6 +18,7 @@ export enum WebSocketMessageType {
   REMOVE_PLAYER = 'remove_player',
   SET_MY_STATE = 'set_player_ready',
   NEXT_GAME_PHASE = 'start_next_phase',
+  SELECT_TEAM = 'select_team',
 }
 
 export type TrainingImage = {
@@ -30,6 +31,7 @@ export type PlayerWSInfo = {
   playerId: string;
   isConnected: boolean;
   isHost: boolean;
+  team: TEAM | null;
 };
 
 export type GameWSInfo = {

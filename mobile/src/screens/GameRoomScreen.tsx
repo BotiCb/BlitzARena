@@ -4,8 +4,10 @@ import { View, Button, Text } from 'react-native';
 import SplashScreen from './SplashScreen';
 
 import { PlayerListComponent } from '~/components/PlayerListComponent';
+import { TeamSelectorComponent } from '~/components/TeamSelectorComponent';
 import { useGame } from '~/contexts/GameContext';
 import { useGameRoom } from '~/hooks/useGameRoom';
+import { TEAM } from '~/utils/types';
 
 export const GamerRoomScreen = () => {
   const {
@@ -20,7 +22,7 @@ export const GamerRoomScreen = () => {
     isPhaseInfosNeeded,
   } = useGame();
 
-  const { handleReadyPress, ready, isEveryOneReady } = useGameRoom();
+  const { handleReadyPress, ready, isEveryOneReady, handleTeamSelection } = useGameRoom();
 
   if (isPhaseInfosNeeded) {
     return <SplashScreen />;
@@ -28,8 +30,26 @@ export const GamerRoomScreen = () => {
   return (
     <View>
       {trainingProgress !== null && <Text>Training Progress: {trainingProgress}</Text>}
+      <TeamSelectorComponent handleTeamSelection={handleTeamSelection} />
+      <Text>No team</Text>
       <PlayerListComponent
-        players={players}
+        players={players.filter((player) => !player.team)}
+        areYouHost={areYouHost}
+        onSetAsHost={setPlayerAsHost}
+        yourSessionId={userSessionId}
+        onRemovePlayer={onRemovePlayer}
+      />
+      <Text>Red team</Text>
+      <PlayerListComponent
+        players={players.filter((player) => player.team === TEAM.RED)}
+        areYouHost={areYouHost}
+        onSetAsHost={setPlayerAsHost}
+        yourSessionId={userSessionId}
+        onRemovePlayer={onRemovePlayer}
+      />
+      <Text>Blue team</Text>
+      <PlayerListComponent
+        players={players .filter((player) => player.team === TEAM.BLUE)}
         areYouHost={areYouHost}
         onSetAsHost={setPlayerAsHost}
         yourSessionId={userSessionId}

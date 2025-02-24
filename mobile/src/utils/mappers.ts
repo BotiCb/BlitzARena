@@ -4,7 +4,12 @@ import { PlayerInfoResponseDto } from '~/services/restApi/dto/response.dto';
 import { PlayerWSInfo } from '~/services/websocket/websocket-types';
 
 export function fromPlayerWSInfoToPlayerModel(playerInfo: PlayerWSInfo): Player {
-  return new Player(playerInfo.playerId, playerInfo.isConnected, playerInfo.isHost);
+  return new Player(
+    playerInfo.playerId,
+    playerInfo.isConnected,
+    playerInfo.isHost,
+    playerInfo.team
+  );
 }
 
 export function extendPlayer(player: Player, playerInfo: PlayerInfoResponseDto): Player {

@@ -81,3 +81,8 @@ export type Model = {
   path: string;
   mapperArray: Record<number, string>;
 };
+
+export enum TEAM {
+  RED = 'red',
+  BLUE = 'blue',
+}

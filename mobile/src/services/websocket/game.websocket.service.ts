@@ -13,7 +13,6 @@ import { fromPlayerWSInfoToPlayerModel, extendPlayer } from '~/utils/mappers';
 import { Player } from '~/utils/models';
 import { GamePhase, Model } from '~/utils/types';
 
-// game.websocket.service.ts
 export class GameWebSocketService extends AbstractCustomWebSocketService {
   private areYouHostHandlerFunction: (areYouHost: boolean) => void = () => {};
   private gamePhaseHandlerFunction: (gamePhase: GamePhase) => void = () => {};

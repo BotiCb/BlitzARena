@@ -1,3 +1,4 @@
+import { TEAM } from '~/utils/types';
 import { AbstractCustomWebSocketService } from './custom-websocket.abstract-service';
 import { WebSocketMessageType, WebSocketMsg } from './websocket-types';
 
@@ -9,6 +10,7 @@ export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
   setWebSocketEventListeners() {
     this.websocketService.onMessageType('player_status', this.setPlayerStatus);
     this.websocketService.onMessageType('game_room_phase_info', this.onPhaseInfo);
+    this.websocketService.onMessageType('player_team_selected', this.onPlayerTeamSelected);
   }
 
   setReadyHandlerFunction(readyHandlerFunction: (isReady: boolean) => void) {
@@ -55,4 +57,25 @@ export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
   close(): void {
     this.websocketService.offMessageType('player_status');
   }
+
+  selectTeam = (team: TEAM) => {
+    this.websocketService.sendMessage({
+      type: WebSocketMessageType.SELECT_TEAM,
+      data: {
+        team,
+      },
+    });
+  };
+
+  onPlayerTeamSelected = (message: WebSocketMsg) => {
+    const { playerId, team } = message.data;
+    GameRoomWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
+      return prevPlayers.map((player: Player) => {
+        if (player.sessionID === playerId) {
+          return { ...player, team };
+        }
+        return player;
+      });
+    });
+  };
 }

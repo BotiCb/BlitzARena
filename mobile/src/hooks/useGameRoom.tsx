@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useGame } from '~/contexts/GameContext';
 import { GameRoomWebSocketService } from '~/services/websocket/game-room.websocket.service';
+import { TEAM } from '~/utils/types';
 
 export const useGameRoom = () => {
   const { players, playerHandlerFunction } = useGame();
@@ -33,5 +34,9 @@ export const useGameRoom = () => {
     };
   }, []);
 
-  return { handleReadyPress, ready, isEveryOneReady };
+  const handleTeamSelection = (team: TEAM) => {
+    gameRoomWebsocketService.selectTeam(team);
+  }
+
+  return { handleReadyPress, ready, isEveryOneReady, handleTeamSelection };
 };

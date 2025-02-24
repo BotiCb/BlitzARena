@@ -25,6 +25,7 @@ class GameInstance:
         self.is_model_trained = False
         self.httpx_service = HTTPXService()
         self.training_progress = 0
+        self.teams = ['red', 'blue']
 
         # Initialize context and phase services
         self.context = GameContext(
@@ -33,8 +34,8 @@ class GameInstance:
             transition_to_phase_callback=self.transition_to_phase,
             get_current_phase=lambda: self.current_phase,
             get_game_id=lambda: self.game_id,
-            is_model_trained=lambda: self.is_model_trained
-            
+            is_model_trained=lambda: self.is_model_trained,
+            get_teams=lambda: self.teams
         )
         self.phase_services: Dict[str, PhaseService] = {
             "lobby": LobbyService(self.context),
