@@ -1,3 +1,5 @@
+import { Player } from "./models";
+
 export type BoundingBox = {
   xc: number;
   yc: number;
@@ -76,3 +78,8 @@ export type TrainingPhase =
   | 'take-photos'
   | 'photos-from-you'
   | 'training-ready-for-group';
+
+export type Model = {
+  path: string;
+  mapperArray: Player[];
+};

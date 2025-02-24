@@ -36,5 +36,7 @@ export type GameWSInfo = {
   gameId: string;
   players: PlayerWSInfo[];
   currentPhase: GamePhase;
-  max_players: number;
+  maxPlayers: number;
+  isModelTrained: boolean;
+  trainingProgress: number;
 };

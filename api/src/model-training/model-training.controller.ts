@@ -9,7 +9,6 @@ import { TrainingRequestDto } from './dto/input/training-request';
 import { TrainingErrorDto } from './dto/input/training-error.dto';
 import { TrainingResultsDto } from './dto/input/training-result.dto';
 import { GameModel } from 'src/shared/schemas/collections/game.schema';
-import { UserModel } from 'src/shared/schemas/collections/user.schema';
 
 @Controller('game/:gameId/model-training')
 export class ModelTrainingController {
@@ -26,15 +25,12 @@ export class ModelTrainingController {
     if (!file) {
       throw new HttpException('No file uploaded', 400);
     }
-    console.log(dto);
-    console.log(game);
     return this.modelTrainingService.sendTrainingPhoto(file, game, dto.playerId, parseInt(dto.photoSize));
   }
 
   @ServiceApiRole('lobbyApi')
   @Post('start-training')
   async startTraining(@Param('gameId') gameId: string, @Body() input: TrainingRequestDto) {
-    console.log(input);
     return await this.modelTrainingService.sendStartTrainingSignal(gameId, input.numClasses, input.numImagesPerClass);
   }
 
@@ -54,7 +50,6 @@ export class ModelTrainingController {
   @ServiceApiRole('modelTrainerApi')
   @Post('training-progress/:progress')
   async trainingProgress(@Param('gameId') gameId: string, @Param('progress') progress: number) {
-    console.log(progress);
     return await this.modelTrainingService.trainingProgress(gameId, progress);
   }
 

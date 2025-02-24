@@ -29,3 +29,13 @@ export class CreateGameRequestDto {
     this.maxPlayers = maxPlayers;
   }
 }
+
+export class TfliteModelDto {
+  modelBase64: string;
+  labels: string[];
+
+  constructor(modelBase64: string, labels: string[]) {
+    this.modelBase64 = modelBase64;
+    this.labels = labels;
+  }
+}

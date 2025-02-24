@@ -16,7 +16,6 @@ export class PlayerInGameGuard implements CanActivate {
     const user = request.user;
 
     const gameId  = extractGameIdFromUrl(request.url);
-    console.log(gameId);
     if (!gameId) {
       throw new HttpException('Game not found in the url', 405);
     }

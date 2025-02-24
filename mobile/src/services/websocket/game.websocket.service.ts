@@ -5,19 +5,20 @@ import { AbstractCustomWebSocketService } from './custom-websocket.abstract-serv
 import { GameWSInfo, PlayerWSInfo, WebSocketMessageType, WebSocketMsg } from './websocket-types';
 import { GAME_ENDPOINTS, USER_ENDPOINTS } from '../restApi/Endpoints';
 import { apiClient } from '../restApi/RestApiService';
+import { TfliteModelDto } from '../restApi/dto/request.dto';
 import { PlayerInfoResponseDto } from '../restApi/dto/response.dto';
 
 import { GameStackParamList } from '~/navigation/types';
 import { fromPlayerWSInfoToPlayerModel, extendPlayer } from '~/utils/mappers';
 import { Player } from '~/utils/models';
-import { GamePhase } from '~/utils/types';
+import { GamePhase, Model } from '~/utils/types';
 
 // game.websocket.service.ts
 export class GameWebSocketService extends AbstractCustomWebSocketService {
   private areYouHostHandlerFunction: (areYouHost: boolean) => void = () => {};
   private gamePhaseHandlerFunction: (gamePhase: GamePhase) => void = () => {};
-  private modelReadyHandlerFunction: (modelReady: boolean) => void = () => {};
-  private trainingProgressHandlerFunction: (progress: number) => void = () => {};
+  private modelHandlerFunction: (model: Model) => void = () => {};
+  private trainingProgressHandlerFunction: (trainingProgress: number) => void = () => {};
 
   private navigator: StackNavigationProp<GameStackParamList> | null = null;
   private pinghandlerFunction: (ping: number) => void = () => {};
@@ -66,10 +67,6 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     this.areYouHostHandlerFunction = handler;
   };
 
-  setTrainingProgressHandlerFunction = (handler: (progress: number) => void) => {
-    this.trainingProgressHandlerFunction = handler;
-  };
-
   setNavigationHandler = (navigator: StackNavigationProp<GameStackParamList>) => {
     this.navigator = navigator;
   };
@@ -81,8 +78,12 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     this.gamePhaseHandlerFunction = handler;
   };
 
-  setModelReadyHandlerFunction = (handler: (modelReady: boolean) => void) => {
-    this.modelReadyHandlerFunction = handler;
+  setModelHandlerFunction = (handler: (model: Model) => void) => {
+    this.modelHandlerFunction = handler;
+  };
+
+  setTrainingProgressHandlerFunction = (handler: (trainingProgress: number) => void) => {
+    this.trainingProgressHandlerFunction = handler;
   };
 
   handleGameInfoEvent = async (message: WebSocketMsg) => {
@@ -106,6 +107,11 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       this.fetchPlayersData();
 
       this.gamePhaseHandlerFunction(gameInfo.currentPhase);
+      this.trainingProgressHandlerFunction(gameInfo.trainingProgress);
+
+      if (gameInfo.isModelTrained) {
+        this.setupModel();
+      }
     } catch (e) {
       console.log(e);
     }
@@ -237,19 +243,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   };
 
   handleModelreadyEvent = async (message: WebSocketMsg) => {
-    try {
-      const response = await apiClient.get(
-        GAME_ENDPOINTS.GET_TF_LITE_MODEL(GameWebSocketService.gameId)
-      );
-      const modelPath = `${RNFS.DocumentDirectoryPath}/model.tflite`;
-
-      await RNFS.writeFile(modelPath, response.data, 'base64');
-
-      console.log('Model downloaded and saved at:', modelPath);
-      this.modelReadyHandlerFunction(true);
-    } catch (e) {
-      console.error(`Error downloading model: ${e}`);
-    }
+    this.setupModel();
   };
 
   handleTrainingProgressEvent = async (message: WebSocketMsg) => {
@@ -287,5 +281,26 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       });
     });
     console.log('Fetched player data:', playerDetails);
+  };
+
+  private setupModel = async () => {
+    try {
+      const response = await apiClient.get(
+        GAME_ENDPOINTS.GET_TF_LITE_MODEL(GameWebSocketService.gameId)
+      );
+      const model: TfliteModelDto = response.data;
+
+      const modelPath = `${RNFS.DocumentDirectoryPath}/model.tflite`;
+
+      await RNFS.writeFile(modelPath, model.modelBase64, 'base64');
+
+      console.log('Model downloaded and saved at:', modelPath);
+      this.modelHandlerFunction({
+        path: modelPath,
+        mapperArray: [],
+      });
+    } catch (e) {
+      console.error(`Error downloading model: ${e}`);
+    }
   };
 }

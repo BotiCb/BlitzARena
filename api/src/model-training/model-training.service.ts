@@ -21,53 +21,52 @@ export class ModelTrainingService {
 
   async sendTrainingPhoto(file: Express.Multer.File, game: GameModel, playerId: string, photoSize: number) {
     try {
-    if (!game.players.find((p) => p.sessionId === playerId)) {
-      throw new HttpException('Player is not in the game', 400);
-    }
-    if (game.trainingSession && game.trainingSession.inProgress) {
-      throw new HttpException('Training is already in progress', 422);
-    }
-    if (!game.trainingSession) {
-      const trainingSession = await this.trainingSessionModel.create({ inProgress: false, photoSize });
-      game.trainingSession = trainingSession;
-      await game.save();
-    }
-
-    if (game.trainingSession.photoSize !== photoSize) {
-      console.log('Photo size does not match ' + game.trainingSession.photoSize + ' ' + photoSize);
-      throw new HttpException('Photo size does not match', 400);
-    }
-
-    const fileExtension = file.originalname.split('.').pop();
-    const uniqueFilename = `${uuidv4()}.${fileExtension}`;
-    const image = sharp(file.buffer);
-
-    const metadata = await image.metadata();
-    const shouldRotate = metadata.width > metadata.height;
-
-    let resizedImageBuffer;
-    if (shouldRotate) {
-      resizedImageBuffer = await image.resize(photoSize, photoSize, { fit: 'fill' }).rotate(90).toBuffer();
-    } else {
-      resizedImageBuffer = await image.resize(photoSize, photoSize, { fit: 'fill' }).toBuffer();
-    }
-
-    const formData = new FormData();
-    formData.append('file', resizedImageBuffer, {
-      filename: uniqueFilename,
-      contentType: file.mimetype,
-    });
-    console.log('Sending photo to server');
-    const response = await this.axiosService.modelTrainingApiClient.post(
-      `/collect-data/${game.gameId}/${playerId}/upload-training-photo`,
-      formData,
-      {
-        headers: {
-          ...formData.getHeaders(),
-        },
+      if (!game.players.find((p) => p.sessionId === playerId)) {
+        throw new HttpException('Player is not in the game', 400);
       }
-    );}
-    catch (error) {
+      if (game.trainingSession && game.trainingSession.inProgress) {
+        throw new HttpException('Training is already in progress', 422);
+      }
+      if (!game.trainingSession) {
+        const trainingSession = await this.trainingSessionModel.create({ inProgress: false, photoSize });
+        game.trainingSession = trainingSession;
+        await game.save();
+      }
+
+      if (game.trainingSession.photoSize !== photoSize) {
+        console.error('Photo size does not match ' + game.trainingSession.photoSize + ' ' + photoSize);
+        throw new HttpException('Photo size does not match', 400);
+      }
+
+      const fileExtension = file.originalname.split('.').pop();
+      const uniqueFilename = `${uuidv4()}.${fileExtension}`;
+      const image = sharp(file.buffer);
+
+      const metadata = await image.metadata();
+      const shouldRotate = metadata.width > metadata.height;
+
+      let resizedImageBuffer;
+      if (shouldRotate) {
+        resizedImageBuffer = await image.resize(photoSize, photoSize, { fit: 'fill' }).rotate(90).toBuffer();
+      } else {
+        resizedImageBuffer = await image.resize(photoSize, photoSize, { fit: 'fill' }).toBuffer();
+      }
+
+      const formData = new FormData();
+      formData.append('file', resizedImageBuffer, {
+        filename: uniqueFilename,
+        contentType: file.mimetype,
+      });
+      await this.axiosService.modelTrainingApiClient.post(
+        `/collect-data/${game.gameId}/${playerId}/upload-training-photo`,
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders(),
+          },
+        }
+      );
+    } catch (error) {
       console.log(error);
       throw error;
     }
@@ -117,7 +116,7 @@ export class ModelTrainingService {
     if (!game) {
       throw new HttpException('Game not found', 404);
     }
-    if(!game.trainingSession) {
+    if (!game.trainingSession) {
       throw new HttpException('Training session not initialized. Send training photos first.', 400);
     }
     game.trainingSession.inProgress = false;
@@ -148,18 +147,22 @@ export class ModelTrainingService {
   }
 
   async uploadTfLiteModel(gameId: string, file: Express.Multer.File) {
-    const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
-    if (!game) {
-      throw new HttpException('Game not found', 404);
+    try {
+      const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
+      if (!game) {
+        throw new HttpException('Game not found', 404);
+      }
+      if (!file) {
+        throw new HttpException('No file uploaded', 400);
+      }
+      if (game.endedAt) {
+        throw new HttpException('Game already ended', 400);
+      }
+      game.trainingSession.tfLiteModelUrl = await this.fileUploadService.uploadTfLiteModel(file);
+      await game.trainingSession.save();
+    } catch (error) {
+      console.log(error);
+      throw error;
     }
-    if (!file){
-      throw new HttpException('No file uploaded', 400);
-    }
-    if(game.endedAt)
-    {
-      throw new HttpException('Game already ended', 400);
-    }
-    game.trainingSession.tfLiteModelUrl = 'test' //await this.fileUploadService.uploadTfLiteModel(file);
-    await game.trainingSession.save();
   }
 }

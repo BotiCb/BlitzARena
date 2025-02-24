@@ -47,8 +47,7 @@ class ModelTrainingService:
             def on_train_end(trainer):
                 asyncio.run_coroutine_threadsafe(
                     self.send_training_progress(85, game_id),
-                    self._loop
-    )
+                    self._loop)
 
             model.add_callback("on_train_epoch_end", on_train_epoch_end)
             model.add_callback("on_train_end", on_train_end)
@@ -72,10 +71,12 @@ class ModelTrainingService:
                     response = await self.httpx_service.get_api_client().post(
                         f"game/{game_id}/model-training/upload-tflite-model",
                         files=files,
+                        timeout=30.0
                     )
                     if response.status_code != 201:
-                        raise Exception(f"Error uploading model: {response.text}")
+                        raise Exception(f"Error uploading model: {response}")
             await self.send_training_progress(100, game_id)
+            print("Model uploaded")
             await self.httpx_service.get_api_client().post(
                 f"game/{game_id}/model-training/training-ended"
             )

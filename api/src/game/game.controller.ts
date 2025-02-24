@@ -9,6 +9,7 @@ import { CreateGameResponseDto, JoinGameResponseDto } from './dto/output/game-in
 import { CurrentGame } from 'src/shared/decorators/current-game.decorator';
 import { GameModel } from 'src/shared/schemas/collections/game.schema';
 import { PlayerConnectionState } from 'src/shared/utils/types';
+import { TfliteModelDto } from './dto/output/tflite-model.dto';
 
 @Controller('game')
 export class GameController {
@@ -29,8 +30,9 @@ export class GameController {
 
   @Get('/:gameId/tflite-model')
   @PlayerInGameRole()
-  async getTfLiteModel(@CurrentGame() game: GameModel) : Promise<string> {
-    return this.gameService.getTfLiteModel(game);
+  async getTfLiteModel(@CurrentGame() game: GameModel) : Promise<TfliteModelDto> {
+    const model = await this.gameService.getTfLiteModel(game);
+    return model;
   }
 
   @Post('/:gameId/close')

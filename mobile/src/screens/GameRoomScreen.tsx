@@ -16,7 +16,7 @@ export const GamerRoomScreen = () => {
     onRemovePlayer,
     playerHandlerFunction,
     onStartNextGamePhase,
-    modelReady,
+    model,
     trainingProgress,
     isPhaseInfosNeeded,
   } = useGame();
@@ -62,7 +62,7 @@ export const GamerRoomScreen = () => {
         yourSessionId={userSessionId}
         onRemovePlayer={onRemovePlayer}
       />
-      {modelReady && <Button onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />}
+      {model && <Button onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />}
       {isEveryOneReady && areYouHost && (
         <Button title="Start Game" onPress={onStartNextGamePhase} />
       )}

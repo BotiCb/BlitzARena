@@ -7,7 +7,7 @@ import { AsyncStore } from '~/services/storage/AsyncStorage';
 import { GameWebSocketService } from '~/services/websocket/game.websocket.service';
 import { WebSocketService } from '~/services/websocket/websocket.service';
 import { Player } from '~/utils/models';
-import { GamePhase } from '~/utils/types';
+import { GamePhase, Model } from '~/utils/types';
 
 type GameContextType = {
   gamePhase: GamePhase;
@@ -21,9 +21,9 @@ type GameContextType = {
   setPlayerAsHost: (playerId: string) => void;
   onRemovePlayer: (playerId: string) => void;
   onStartNextGamePhase: () => void;
-  trainingProgress: number | null;
-  modelReady: boolean;
   isPhaseInfosNeeded: boolean;
+  model: Model | null;
+  trainingProgress: number;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -40,10 +40,9 @@ export const GameProvider: React.FC<{
   const [areYouHost, setAreYouHost] = useState<boolean>(false);
   const [ping, setPing] = useState<number>(0);
   const navigation = useNavigation<StackNavigationProp<GameStackParamList>>();
-  const [modelReady, setModelReady] = useState<boolean>(false);
-  const [trainingProgress, setTrainingProgress] = useState<number | null>(null);
   const [isPhaseInfosNeeded, setIsPhaseInfosNeeded] = useState<boolean>(true);
-
+  const [model, setModel] = useState<Model | null>(null);
+  const [trainingProgress, setTrainingProgress] = useState<number>(0);
   const setPlayerAsHost = (playerId: string) => {
     if (!areYouHost) {
       return;
@@ -77,7 +76,7 @@ export const GameProvider: React.FC<{
     gameWebsocketService.setSessionId(userSessionId);
     gameWebsocketService.setAreYouHostHandlerFunction(setAreYouHost);
     gameWebsocketService.setNavigationHandler(navigation);
-    gameWebsocketService.setModelReadyHandlerFunction(setModelReady);
+    gameWebsocketService.setModelHandlerFunction(setModel);
     gameWebsocketService.setTrainingProgressHandlerFunction(setTrainingProgress);
     gameWebsocketService.setIsPhaseInfosNeededHandlerFunction(setIsPhaseInfosNeeded);
     gameWebsocketService.setWebSocketEventListeners();
@@ -101,9 +100,9 @@ export const GameProvider: React.FC<{
         playerHandlerFunction: setPlayers,
         ping,
         onStartNextGamePhase,
-        modelReady,
-        trainingProgress,
         isPhaseInfosNeeded,
+        model,
+        trainingProgress,
       }}>
       {children}
     </GameContext.Provider>

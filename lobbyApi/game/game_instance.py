@@ -24,6 +24,7 @@ class GameInstance:
         self.game_id = game_id
         self.is_model_trained = False
         self.httpx_service = HTTPXService()
+        self.training_progress = 0
 
         # Initialize context and phase services
         self.context = GameContext(
@@ -198,7 +199,8 @@ class GameInstance:
             "players": [PlayerInfoDto(player) for player in self.players],
             "current_phase": self.current_phase,
             "max_players": self.max_players,
-            "is_model_trained": self.is_model_trained
+            "is_model_trained": self.is_model_trained,
+            "training_progress": self.training_progress
         }
 
     async def handle_websocket_message(self, player_id: str, message: Message):
@@ -224,6 +226,7 @@ class GameInstance:
         
         
     async def handle_training_progress(self, progress):
+        self.training_progress= progress
         await self.websockets.send_to_all(
             Message({"type": "training_progress", "data": {
                 "progress": progress
