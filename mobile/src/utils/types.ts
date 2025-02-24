@@ -1,5 +1,3 @@
-import { Player } from "./models";
-
 export type BoundingBox = {
   xc: number;
   yc: number;
@@ -81,5 +79,5 @@ export type TrainingPhase =
 
 export type Model = {
   path: string;
-  mapperArray: Player[];
+  mapperArray: Record<number, string>;
 };

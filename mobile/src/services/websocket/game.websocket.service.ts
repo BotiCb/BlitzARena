@@ -290,6 +290,14 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       );
       const model: TfliteModelDto = response.data;
 
+      const mappedLabels = model.labels.reduce(
+        (acc, label, index) => {
+          acc[index] = label;
+          return acc;
+        },
+        {} as Record<number, string>
+      );
+
       const modelPath = `${RNFS.DocumentDirectoryPath}/model.tflite`;
 
       await RNFS.writeFile(modelPath, model.modelBase64, 'base64');
@@ -297,7 +305,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       console.log('Model downloaded and saved at:', modelPath);
       this.modelHandlerFunction({
         path: modelPath,
-        mapperArray: [],
+        mapperArray: mappedLabels,
       });
     } catch (e) {
       console.error(`Error downloading model: ${e}`);

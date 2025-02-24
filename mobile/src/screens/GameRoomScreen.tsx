@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Button, Text } from 'react-native';
 
 import SplashScreen from './SplashScreen';
 
 import { PlayerListComponent } from '~/components/PlayerListComponent';
 import { useGame } from '~/contexts/GameContext';
-import { GameRoomWebSocketService } from '~/services/websocket/game-room.websocket.service';
+import { useGameRoom } from '~/hooks/useGameRoom';
 
 export const GamerRoomScreen = () => {
   const {
@@ -14,40 +14,13 @@ export const GamerRoomScreen = () => {
     setPlayerAsHost,
     userSessionId,
     onRemovePlayer,
-    playerHandlerFunction,
     onStartNextGamePhase,
     model,
     trainingProgress,
     isPhaseInfosNeeded,
   } = useGame();
 
-  const [ready, setReady] = useState(false);
-  const [isEveryOneReady, setIsEveryOneReady] = useState(false);
-
-  const gameRoomWebsocketService = GameRoomWebSocketService.getInstance();
-
-  const handleReadyPress = () => {
-    gameRoomWebsocketService.setMyStatus(!ready);
-  };
-
-  useEffect(() => {
-    if (players.every((player) => player.isReady)) {
-      setIsEveryOneReady(true);
-    } else {
-      setIsEveryOneReady(false);
-    }
-  }, [players]);
-
-  useEffect(() => {
-    gameRoomWebsocketService.setWebSocketEventListeners();
-    gameRoomWebsocketService.setPlayersHandlerFunction(playerHandlerFunction);
-    gameRoomWebsocketService.setReadyHandlerFunction(setReady);
-    gameRoomWebsocketService.readyForPhase();
-
-    return () => {
-      gameRoomWebsocketService.close();
-    };
-  }, []);
+  const { handleReadyPress, ready, isEveryOneReady } = useGameRoom();
 
   if (isPhaseInfosNeeded) {
     return <SplashScreen />;

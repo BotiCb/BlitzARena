@@ -8,7 +8,7 @@ import { Player } from '~/utils/models';
 import { TrainingPhase } from '~/utils/types';
 
 export const useTraining = () => {
-  const { players, userSessionId } = useGame();
+  const { players } = useGame();
   const [takePhotos, setTakePhotos] = useState(false);
   const [trainingPlayer, setTrainingPlayer] = useState<Player | null>(null);
   const [trainingGroup, setTrainingGroup] = useState<Player[] | null>(null);
@@ -53,7 +53,6 @@ export const useTraining = () => {
     trainingGroup,
     progress,
     plugin,
-    userSessionId,
     handleTakePhotos: setTakePhotos,
     handleImageCapture: modelTrainingWebsocketService.takePhoto,
   };
