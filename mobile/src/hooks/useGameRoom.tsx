@@ -36,7 +36,7 @@ export const useGameRoom = () => {
 
   const handleTeamSelection = (team: TEAM) => {
     gameRoomWebsocketService.selectTeam(team);
-  }
+  };
 
   return { handleReadyPress, ready, isEveryOneReady, handleTeamSelection };
 };

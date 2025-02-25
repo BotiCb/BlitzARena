@@ -41,7 +41,8 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.geolocation"
       ],
       "package": "com.boti13.mobile"
     },

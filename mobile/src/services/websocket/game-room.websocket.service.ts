@@ -1,8 +1,8 @@
-import { TEAM } from '~/utils/types';
 import { AbstractCustomWebSocketService } from './custom-websocket.abstract-service';
 import { WebSocketMessageType, WebSocketMsg } from './websocket-types';
 
 import { Player } from '~/utils/models';
+import { TEAM } from '~/utils/types';
 
 export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
   private readyHandlerFunction: (isReady: boolean) => void = () => {};

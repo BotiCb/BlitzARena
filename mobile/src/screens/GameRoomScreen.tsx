@@ -49,7 +49,7 @@ export const GamerRoomScreen = () => {
       />
       <Text>Blue team</Text>
       <PlayerListComponent
-        players={players .filter((player) => player.team === TEAM.BLUE)}
+        players={players.filter((player) => player.team === TEAM.BLUE)}
         areYouHost={areYouHost}
         onSetAsHost={setPlayerAsHost}
         yourSessionId={userSessionId}

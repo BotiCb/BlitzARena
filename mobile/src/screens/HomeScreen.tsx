@@ -3,6 +3,7 @@ import React from 'react';
 import { View, Button, Text, StyleSheet } from 'react-native';
 import AuthService from 'src/services/AuthService';
 
+import { MapComponent } from '~/components/MapComponent';
 import { useAuth } from '~/contexts/AuthContext';
 import { AppStackParamList } from '~/navigation/types';
 import { USER_ENDPOINTS } from '~/services/restApi/Endpoints';
@@ -31,6 +32,9 @@ const HomeScreen = () => {
       <Button title="GetProfile" onPress={handleGetProfile} />
       <Button title="Create Game" onPress={() => navigation.navigate('CreateGame')} />
       <Button title="Join Game" onPress={() => navigation.navigate('JoinGame')} />
+      <View style={styles.mapContainer}>
+        <MapComponent />
+      </View>
     </View>
   );
 };
@@ -60,5 +64,11 @@ const styles = StyleSheet.create({
   error: {
     color: 'red',
     marginBottom: 8,
+  },
+  mapContainer: {
+    flex: 1,
+    width: '100%',
+    marginTop: 16,
+    height: '100%',
   },
 });
