@@ -1,3 +1,5 @@
+import { LatLng } from 'react-native-maps';
+
 import { AbstractCustomWebSocketService } from './custom-websocket.abstract-service';
 import { WebSocketMessageType, WebSocketMsg } from './websocket-types';
 
@@ -6,16 +8,23 @@ import { TEAM } from '~/utils/types';
 
 export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
   private readyHandlerFunction: (isReady: boolean) => void = () => {};
+  private gameAreaHandlerFunction: (gameArea: LatLng[]) => void = () => {};
 
   setWebSocketEventListeners() {
     this.websocketService.onMessageType('player_status', this.setPlayerStatus);
     this.websocketService.onMessageType('game_room_phase_info', this.onPhaseInfo);
     this.websocketService.onMessageType('player_team_selected', this.onPlayerTeamSelected);
+    this.websocketService.onMessageType('game_area', this.onGameAreaUpdate);
   }
 
   setReadyHandlerFunction(readyHandlerFunction: (isReady: boolean) => void) {
     this.readyHandlerFunction = readyHandlerFunction;
   }
+
+  setGameAreaHandlerFunction(gameAreaHandlerFunction: (gameArea: LatLng[]) => void) {
+    this.gameAreaHandlerFunction = gameAreaHandlerFunction;
+  }
+
   setPlayerStatus = (message: WebSocketMsg) => {
     const { playerId, isReady } = message.data;
     if (playerId === GameRoomWebSocketService.sessionId) {
@@ -77,5 +86,10 @@ export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
         return player;
       });
     });
+  };
+
+  onGameAreaUpdate = (message: WebSocketMsg) => {
+    const gameArea = message.data as LatLng[];
+    this.gameAreaHandlerFunction(gameArea);
   };
 }

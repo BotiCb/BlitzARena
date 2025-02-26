@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Button, Text } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 
 import SplashScreen from './SplashScreen';
 
+import { MapComponent } from '~/components/MapComponent';
 import { PlayerListComponent } from '~/components/PlayerListComponent';
 import { TeamSelectorComponent } from '~/components/TeamSelectorComponent';
 import { useGame } from '~/contexts/GameContext';
@@ -22,13 +24,13 @@ export const GamerRoomScreen = () => {
     isPhaseInfosNeeded,
   } = useGame();
 
-  const { handleReadyPress, ready, isEveryOneReady, handleTeamSelection } = useGameRoom();
+  const { handleReadyPress, ready, isEveryOneReady, handleTeamSelection, gameArea } = useGameRoom();
 
   if (isPhaseInfosNeeded) {
     return <SplashScreen />;
   }
   return (
-    <View>
+    <ScrollView>
       {trainingProgress !== null && <Text>Training Progress: {trainingProgress}</Text>}
       <TeamSelectorComponent handleTeamSelection={handleTeamSelection} />
       <Text>No team</Text>
@@ -59,6 +61,7 @@ export const GamerRoomScreen = () => {
       {isEveryOneReady && areYouHost && (
         <Button title="Start Game" onPress={onStartNextGamePhase} />
       )}
-    </View>
+      <MapComponent gameArea={gameArea} />
+    </ScrollView>
   );
 };

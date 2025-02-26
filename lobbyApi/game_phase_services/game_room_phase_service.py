@@ -1,12 +1,15 @@
 # lobby_service.py
+from typing import List
 from game.game_context import GameContext
 from game_phase_services.phase_service import PhaseService
+from models.player import Coordinates
 from models.message import Message
 
 
 class GameRoomService(PhaseService):
     def __init__(self, context: GameContext):
         super().__init__(context)
+        self.game_area : List[Coordinates]  = []
 
     def on_enter(self):
         """Register lobby-specific WebSocket handlers."""
@@ -20,6 +23,8 @@ class GameRoomService(PhaseService):
         self.context.websockets.register_handler("set_player_ready", self.set_player_ready)
         self.context.websockets.register_handler("start_next_phase", self.start_match)
         self.context.websockets.register_handler("select_team", self.on_player_team_select)
+        self.context.websockets.register_handler("player_location", self.on_player_position)
+
         self._registered_handlers.extend(["set_player_ready", "start_next_phase"])
 
 
@@ -113,3 +118,57 @@ class GameRoomService(PhaseService):
         await self.context.websockets.send_to_all(
             Message({"type": "player_team_selected", "data": {"player_id": player_id, "team": team}})
         )
+        
+    async def on_player_position(self, player_id: str, message: dict):
+        try:
+            print(message)
+            longitude = message.get("longitude")
+            latitude = message.get("latitude")
+            
+            # Ensure longitude and latitude are valid numbers
+            if longitude is None or latitude is None:
+                raise ValueError("Longitude and latitude must be provided.")
+            
+            
+            self.context.get_player(player_id).set_coordinates(Coordinates(longitude, latitude))
+            
+          
+            players_with_location_count = sum(1 for player in self.context.players if player.get_coordinates() is not None)
+            if players_with_location_count == len(self.context.players) / 2 + 1:
+                self.calculate_initial_game_area()
+                await self.send_game_area()
+
+        except (KeyError, ValueError) as e:
+            await self.context.websockets.send_error(player_id, f"Error: {e}")
+            
+            
+    async def send_game_area(self):
+        print (self.game_area)
+        await self.context.websockets.send_to_all(
+            Message({"type": "game_area", "data": self.game_area})
+        )
+        
+    def calculate_game_center(self):
+        coordinates = [player.get_coordinates() for player in self.context.players if player.get_coordinates() is not None]
+   
+        if not coordinates:
+            raise ValueError("No valid player coordinates found.")
+
+        longitude = sum(coord.longitude for coord in coordinates) / len(coordinates)
+        latitude = sum(coord.latitude for coord in coordinates) / len(coordinates)
+        
+        center = Coordinates(longitude, latitude)
+        print(f"Calculated center: {center}")
+        return center
+    
+    def calculate_initial_game_area(self):
+        center = self.calculate_game_center()
+        delta = 0.2*0.009
+        half_delta = delta / 2
+        self.game_area = [
+            Coordinates(center.longitude + half_delta, center.latitude + half_delta),
+            Coordinates(center.longitude + half_delta, center.latitude - half_delta),
+            Coordinates(center.longitude - half_delta, center.latitude - half_delta),
+            Coordinates(center.longitude - half_delta, center.latitude + half_delta),
+        ]
+        

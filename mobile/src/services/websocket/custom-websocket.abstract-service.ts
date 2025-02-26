@@ -1,3 +1,5 @@
+import { LatLng } from 'react-native-maps';
+
 import { WebSocketMessageType } from './websocket-types';
 import { WebSocketService } from './websocket.service';
 
@@ -43,6 +45,16 @@ export abstract class AbstractCustomWebSocketService {
     }
     this.websocketService.sendMessage({
       type: WebSocketMessageType.READY_FOR_PHASE,
+    });
+  };
+
+  sendPlayersLocation = (coordinates: LatLng) => {
+    this.websocketService.sendMessage({
+      type: WebSocketMessageType.PLAYER_LOCATION,
+      data: {
+        longitude: coordinates.longitude,
+        latitude: coordinates.latitude,
+      },
     });
   };
 

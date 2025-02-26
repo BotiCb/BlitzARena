@@ -19,6 +19,7 @@ export enum WebSocketMessageType {
   SET_MY_STATE = 'set_player_ready',
   NEXT_GAME_PHASE = 'start_next_phase',
   SELECT_TEAM = 'select_team',
+  PLAYER_LOCATION = 'player_location',
 }
 
 export type TrainingImage = {

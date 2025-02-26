@@ -140,7 +140,7 @@ export class GameService {
     await game.save();
 
     if (game.trainingSession && game.trainingSession.tfLiteModelUrl) {
-      this.fileUploadService.deleteFile(game.trainingSession.tfLiteModelUrl);
+      //this.fileUploadService.deleteFile(game.trainingSession.tfLiteModelUrl);
     }
   }
 
