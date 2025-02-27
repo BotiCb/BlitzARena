@@ -1,9 +1,7 @@
 from datetime import datetime
 
-class Coordinates:
-    def __init__(self, longitude: float, latitude: float):
-        self.longitude = longitude
-        self.latitude = latitude
+from utils.models import Coordinates
+
         
 class Player:
     def __init__(self, player_id: str, is_host: bool = False):

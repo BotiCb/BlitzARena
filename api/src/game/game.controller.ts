@@ -31,7 +31,7 @@ export class GameController {
   @Get('/:gameId/tflite-model')
   @PlayerInGameRole()
   async getTfLiteModel(@CurrentGame() game: GameModel) : Promise<TfliteModelDto> {
-    const model = await this.gameService.getTfLiteModel(game);
+   const model = await this.gameService.getTfLiteModel(game);
     return model;
   }
 

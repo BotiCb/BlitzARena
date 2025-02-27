@@ -9,6 +9,7 @@ from game_phase_services.model_training_phase_service import ModelTrainingPhaseS
 from game_phase_services.phase_service import PhaseService
 
 from game_phase_services.game_room_phase_service import GameRoomService
+from utils.models import GameArea
 from services.httpx_service import HTTPXService
 from models.message import Message
 from models.player import  Player
@@ -26,6 +27,7 @@ class GameInstance:
         self.httpx_service = HTTPXService()
         self.training_progress = 0
         self.teams = ['red', 'blue']
+        self.game_area : GameArea = None
 
         # Initialize context and phase services
         self.context = GameContext(
