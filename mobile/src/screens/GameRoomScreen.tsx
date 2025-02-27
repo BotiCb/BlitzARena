@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Button, Text } from 'react-native';
+import { Button, Text } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import SplashScreen from './SplashScreen';
@@ -24,7 +24,14 @@ export const GamerRoomScreen = () => {
     isPhaseInfosNeeded,
   } = useGame();
 
-  const { handleReadyPress, ready, isEveryOneReady, handleTeamSelection, gameArea } = useGameRoom();
+  const {
+    handleReadyPress,
+    ready,
+    isEveryOneReady,
+    handleTeamSelection,
+    gameArea,
+    onGameAreaChange,
+  } = useGameRoom();
 
   if (isPhaseInfosNeeded) {
     return <SplashScreen />;
@@ -61,7 +68,11 @@ export const GamerRoomScreen = () => {
       {isEveryOneReady && areYouHost && (
         <Button title="Start Game" onPress={onStartNextGamePhase} />
       )}
-      <MapComponent gameArea={gameArea} />
+      <MapComponent
+        gameArea={gameArea}
+        readonly={!areYouHost}
+        onGameAreaChange={onGameAreaChange}
+      />
     </ScrollView>
   );
 };

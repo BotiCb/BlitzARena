@@ -1,3 +1,5 @@
+import { LatLng } from 'react-native-maps';
+
 export type BoundingBox = {
   xc: number;
   yc: number;
@@ -86,3 +88,8 @@ export enum TEAM {
   RED = 'red',
   BLUE = 'blue',
 }
+
+export type GameArea = {
+  edges: LatLng[];
+  teamBases: { coordinates: LatLng; team: TEAM }[];
+};

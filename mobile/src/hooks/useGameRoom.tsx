@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
-import { LatLng } from 'react-native-maps';
 
 import useCoordinates from './useCoordinates';
 
 import { useGame } from '~/contexts/GameContext';
 import { GameRoomWebSocketService } from '~/services/websocket/game-room.websocket.service';
-import { TEAM } from '~/utils/types';
+import { GameArea, TEAM } from '~/utils/types';
 
 export const useGameRoom = () => {
   const { players, playerHandlerFunction } = useGame();
   const [ready, setReady] = useState(false);
   const [isEveryOneReady, setIsEveryOneReady] = useState(false);
-  const [gameArea, setGameArea] = useState<LatLng[]>([]);
+  const [gameArea, setGameArea] = useState<GameArea | null>(null);
 
   const { location } = useCoordinates();
 
@@ -19,6 +18,10 @@ export const useGameRoom = () => {
 
   const handleReadyPress = () => {
     gameRoomWebsocketService.setMyStatus(!ready);
+  };
+
+  const onGameAreaChange = (gameArea: GameArea) => {
+    gameRoomWebsocketService.sendGameArea(gameArea);
   };
 
   useEffect(() => {
@@ -54,5 +57,12 @@ export const useGameRoom = () => {
     gameRoomWebsocketService.selectTeam(team);
   };
 
-  return { handleReadyPress, ready, isEveryOneReady, handleTeamSelection, gameArea };
+  return {
+    handleReadyPress,
+    ready,
+    isEveryOneReady,
+    handleTeamSelection,
+    gameArea,
+    onGameAreaChange,
+  };
 };

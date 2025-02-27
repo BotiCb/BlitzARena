@@ -1,14 +1,12 @@
-import { LatLng } from 'react-native-maps';
-
 import { AbstractCustomWebSocketService } from './custom-websocket.abstract-service';
 import { WebSocketMessageType, WebSocketMsg } from './websocket-types';
 
 import { Player } from '~/utils/models';
-import { TEAM } from '~/utils/types';
+import { GameArea, TEAM } from '~/utils/types';
 
 export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
   private readyHandlerFunction: (isReady: boolean) => void = () => {};
-  private gameAreaHandlerFunction: (gameArea: LatLng[]) => void = () => {};
+  private gameAreaHandlerFunction: (gameArea: GameArea) => void = () => {};
 
   setWebSocketEventListeners() {
     this.websocketService.onMessageType('player_status', this.setPlayerStatus);
@@ -21,7 +19,7 @@ export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
     this.readyHandlerFunction = readyHandlerFunction;
   }
 
-  setGameAreaHandlerFunction(gameAreaHandlerFunction: (gameArea: LatLng[]) => void) {
+  setGameAreaHandlerFunction(gameAreaHandlerFunction: (gameArea: GameArea) => void) {
     this.gameAreaHandlerFunction = gameAreaHandlerFunction;
   }
 
@@ -89,7 +87,14 @@ export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
   };
 
   onGameAreaUpdate = (message: WebSocketMsg) => {
-    const gameArea = message.data as LatLng[];
+    const gameArea = message.data as GameArea;
     this.gameAreaHandlerFunction(gameArea);
+  };
+
+  sendGameArea = (gameArea: GameArea) => {
+    this.websocketService.sendMessage({
+      type: WebSocketMessageType.GAME_AREA_CHANGE,
+      data: gameArea,
+    });
   };
 }

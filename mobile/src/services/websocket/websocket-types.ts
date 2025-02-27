@@ -20,6 +20,7 @@ export enum WebSocketMessageType {
   NEXT_GAME_PHASE = 'start_next_phase',
   SELECT_TEAM = 'select_team',
   PLAYER_LOCATION = 'player_location',
+  GAME_AREA_CHANGE = 'game_area_change',
 }
 
 export type TrainingImage = {
