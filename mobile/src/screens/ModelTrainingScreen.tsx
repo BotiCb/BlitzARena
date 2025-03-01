@@ -11,14 +11,13 @@ import { TrainingReadyForGroupView } from '~/views/TrainingReadyForGroupView';
 
 const ModelTrainingScreen = () => {
   const {
-    takePhotos,
     trainingPlayer,
     trainingGroup,
     progress,
-    handleTakePhotos,
     plugin,
-    handleImageCapture,
     phase,
+    takePhotos,
+    handleTakephotosStateChange
   } = useTraining();
 
   const { isPhaseInfosNeeded } = useGame();
@@ -43,11 +42,10 @@ const ModelTrainingScreen = () => {
           case 'take-photos':
             return (
               <TrainingCameraView
-                takePhotos={takePhotos}
-                handleTakePhotos={handleTakePhotos}
-                handleImageCapture={handleImageCapture}
                 playerId={trainingPlayer?.sessionID || ''}
                 plugin={plugin}
+                takePhotos={takePhotos}
+                handleTakePhotos={handleTakephotosStateChange}
               />
             );
           case 'training-ready-for-group':

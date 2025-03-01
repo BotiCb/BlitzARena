@@ -57,11 +57,11 @@ export enum KEYPOINTS {
 }
 
 export enum BODY_PART {
-  HEAD,
-  CHEST,
-  ARM,
-  LEG,
-  NOTHING,
+  HEAD = 'head',
+  CHEST = 'chest',
+  ARM = 'arm',
+  LEG = 'leg',
+  NOTHING = 'nothing',
 }
 
 export type Point = {

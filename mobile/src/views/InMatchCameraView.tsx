@@ -15,11 +15,11 @@ function tensorToString(tensor: TensorflowModel['inputs'][number]): string {
 }
 
 interface CameraViewProps {
-  plugins: TensorflowPlugin[];
+  models: TensorflowModel[];
   detections: ISharedValue<Detection | null>;
 }
 
-const InMatchCameraView = forwardRef<any, CameraViewProps>(({ plugins, detections }, ref) => {
+const InMatchCameraView = forwardRef<any, CameraViewProps>(({ models, detections }, ref) => {
   const device = useCameraDevices()[0];
 
   const isFocused = useIsFocused();
@@ -31,29 +31,26 @@ const InMatchCameraView = forwardRef<any, CameraViewProps>(({ plugins, detection
   if (!hasPermission) {
     requestPermission();
   }
-
-  const plugin = plugins[0];
-  const plugin2 = plugins[1];
-
+ const model = models[0];
+ const model2 = models[1];
   useEffect(() => {
-    const model = plugin.model;
+    
 
     if (model == null) return;
 
     console.log(
       `Model: ${model.inputs.map(tensorToString)} -> ${model.outputs.map(tensorToString)}`
     );
-  }, [plugin]);
+  }, [model]);
 
   useEffect(() => {
-    const model = plugin2.model;
 
-    if (model == null) return;
+    if (model2 == null) return;
 
     console.log(
-      `Model2: ${model.inputs.map(tensorToString)} -> ${model.outputs.map(tensorToString)}`
+      `Model2: ${model2.inputs.map(tensorToString)} -> ${model2.outputs.map(tensorToString)}`
     );
-  }, [plugin2]);
+  }, [model2]);
 
   const paint = Skia.Paint();
   paint.setColor(Skia.Color('red'));
@@ -73,21 +70,15 @@ const InMatchCameraView = forwardRef<any, CameraViewProps>(({ plugins, detection
     );
   }
 
-  return (
-    <View style={styles.container}>
-      {plugin.state ? (
+  return ( 
         <Camera
           style={StyleSheet.absoluteFill}
           device={device}
           isActive={isActive}
-          frameProcessor={InBattleFrameProcessor(plugin, plugin2, lastUpdateTime, detections)}
+          frameProcessor={InBattleFrameProcessor(model, model2, lastUpdateTime, detections, paint)}
           pixelFormat="yuv"
           outputOrientation="device"
-        />
-      ) : (
-        <ActivityIndicator size="large" color="#0000ff" />
-      )}
-    </View>
+        /> 
   );
 });
 

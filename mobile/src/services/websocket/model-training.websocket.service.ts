@@ -9,11 +9,13 @@ import { TrainingPhase } from '~/utils/types/types';
 
 export class ModelTrainingWebSocketService extends AbstractCustomWebSocketService {
   private remainingPhotoToSendCount: number = 0;
-  private isTakingPhotosHandlerFunction: (takePhotos: boolean) => void = () => {};
-  private photoCollectingProgressHandlerFunction: (progress: number) => void = () => {};
-  private currentTrainingPlayerHandlerFunction: (playerId: string) => void = () => {};
-  private trainingGroupHandlerFunction: (playerIds: string[] | null) => void = () => {};
-  private phaseHandlerFunction: (phase: TrainingPhase) => void = () => {};
+  private isTakingPhotosHandlerFunction: (takePhotos: boolean) => void = () => { };
+  private photoCollectingProgressHandlerFunction: (progress: number) => void = () => { };
+  private currentTrainingPlayerHandlerFunction: (playerId: string) => void = () => { };
+  private trainingGroupHandlerFunction: (playerIds: string[] | null) => void = () => { };
+  private phaseHandlerFunction: (phase: TrainingPhase) => void = () => { };
+  private takePhotoFunction: () => Promise<TrainingImage> = () => Promise.resolve({ photoUri: '', detectedPlayer: '', photoSize: 0 });
+  private isTakePhotos: boolean = false;
 
   setWebSocketEventListeners(): void {
     this.websocketService.onMessageType(
@@ -36,9 +38,18 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     this.phaseHandlerFunction = handler;
   };
 
-  setTakingPhotosHandlerFunction = (handler: (takePhotos: boolean) => void) => {
+  setIsTakingPhotosHandlerFunction = (handler: (takePhotos: boolean) => void) => {
     this.isTakingPhotosHandlerFunction = handler;
   };
+
+  setIsTakeingPhotos = (isTakePhotos: boolean) => {
+    this.isTakePhotos = isTakePhotos;
+  }
+
+
+  setTakePhotoFunction = (handler: () => Promise<TrainingImage>) => {
+    this.takePhotoFunction = handler;
+  }
 
   setCurrentTrainingPlayerHandlerFunction = (handler: (playerId: string) => void) => {
     this.currentTrainingPlayerHandlerFunction = handler;
@@ -61,52 +72,99 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     this.isTakingPhotosHandlerFunction(false);
   };
 
-  takePhoto = async (trainingImage: TrainingImage): Promise<void> => {
+  private photosInparalelCount: number = 0;
+
+  private photoQueue: TrainingImage[] = [];
+  private isUploading = false;
+  private maxConcurrentCaptures = 3; // Limit to avoid overloading the device
+
+  takePhotos = async (): Promise<void> => {
     if (this.remainingPhotoToSendCount <= 0) {
       this.isTakingPhotosHandlerFunction(false);
       return;
     }
 
+    const takePhotoLoop = async () => {
+      const capturePromises: Promise<void>[] = [];
+
+      while (this.remainingPhotoToSendCount > 0 && this.isTakePhotos) {
+        if (capturePromises.length < this.maxConcurrentCaptures) {
+          console.log('Capturing photo, remaining:', this.remainingPhotoToSendCount, capturePromises.length, this.photoQueue.length);
+          const capturePromise = this.captureAndQueuePhoto();
+          capturePromises.push(capturePromise);
+          capturePromise.finally(() => {
+            const index = capturePromises.indexOf(capturePromise);
+            if (index !== -1) capturePromises.splice(index, 1);
+          });
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+
+      await Promise.all(capturePromises); 
+      this.isTakingPhotosHandlerFunction(false);
+    };
+
+    takePhotoLoop();
+  };
+
+  private async captureAndQueuePhoto() {
     try {
-      await this.sendTrainingPhoto(trainingImage);
+      const trainingImage = await this.takePhotoFunction();
+      this.photoQueue.push(trainingImage); 
       this.remainingPhotoToSendCount--;
 
-      if (this.remainingPhotoToSendCount <= 0) {
-        this.isTakingPhotosHandlerFunction(false);
+      if (!this.isUploading) {
+        this.processPhotoQueue();
       }
+    } catch (error) {
+      console.error('Error capturing photo:', error);
+    }
+  }
+
+  private async processPhotoQueue() {
+    this.isUploading = true;
+
+    while (this.photoQueue.length > 0) {
+      const trainingImage = this.photoQueue.shift(); // Take first photo in queue
+      if (trainingImage) {
+        await this.sendTrainingPhoto(trainingImage);
+      }
+    }
+
+    this.isUploading = false;
+  }
+
+  private async sendTrainingPhoto(trainingImage: TrainingImage) {
+    try {
+      const formData = new FormData();
+      formData.append('file', {
+        uri: trainingImage.photoUri,
+        name: 'photo.jpg',
+        type: 'image/jpeg',
+      } as any);
+
+      formData.append('playerId', trainingImage.detectedPlayer);
+      formData.append('photoSize', trainingImage.photoSize.toString());
+
+      await apiClient.post(
+        MODEL_TRAINING_ENDPOINTS.UPLOAD_PHOTO(ModelTrainingWebSocketService.gameId),
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
 
       this.websocketService.sendMessage({
         type: WebSocketMessageType.TRAINING_PHOTO_SENT,
         data: { detectedPlayer: trainingImage.detectedPlayer },
       });
+
     } catch (error) {
-      console.error('Error processing photo:', error);
+      console.error('Error uploading photo:', error);
+      this.remainingPhotoToSendCount++;
     }
-  };
-
-  private async sendTrainingPhoto(trainingImage: TrainingImage) {
-    const formData = new FormData();
-    formData.append('file', {
-      uri: trainingImage.photoUri,
-      name: 'photo.jpg',
-      type: 'image/jpeg',
-    } as any);
-
-    formData.append('playerId', trainingImage.detectedPlayer);
-    formData.append('photoSize', trainingImage.photoSize.toString());
-
-    const response = await apiClient.post(
-      MODEL_TRAINING_ENDPOINTS.UPLOAD_PHOTO(ModelTrainingWebSocketService.gameId),
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-
-    console.log(response.data);
-    RNFS.unlink(trainingImage.photoUri); // Clean up the file after sending
+    finally{
+      await RNFS.unlink(trainingImage.photoUri);
+    }
   }
 
   onNextTrainingPlayer = (message: WebSocketMsg) => {
