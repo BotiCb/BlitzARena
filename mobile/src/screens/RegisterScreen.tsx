@@ -1,56 +1,57 @@
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import React, { useState } from "react";
+import { View, TextInput, Button, Text, StyleSheet } from "react-native";
 
-import { AuthStackParamList } from '~/navigation/types';
-import { AUTH_ENDPOINTS } from '~/services/restApi/Endpoints';
-import { apiClient } from '~/services/restApi/RestApiService';
-import { RegisterRequestDto } from '~/services/restApi/dto/request.dto';
+import { AuthStackParamList } from "~/navigation/types";
+import { RegisterRequestDto } from "~/services/restApi/dto/request.dto";
+import { AUTH_ENDPOINTS } from "~/services/restApi/Endpoints";
+import { apiClient } from "~/services/restApi/RestApiService";
 
 const RegisterScreen = () => {
-  const [email, setEmail] = useState('');
-  const [firstname, setFirstName] = useState('');
-  const [lastname, setLastName] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [firstname, setFirstName] = useState("");
+  const [lastname, setLastName] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const navigation = useNavigation<StackNavigationProp<AuthStackParamList, 'RegisterScreen'>>();
+  const navigation =
+    useNavigation<StackNavigationProp<AuthStackParamList, "RegisterScreen">>();
 
   const handleRegister = async () => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
       if (!email || !password || !firstname || !lastname || !confirmPassword) {
-        setError('Please enter all fields');
+        setError("Please enter all fields");
         return;
       }
 
       if (password !== confirmPassword) {
-        setError('Passwords do not match');
+        setError("Passwords do not match");
         return;
       }
       await apiClient.post(
         AUTH_ENDPOINTS.REGISTER,
-        new RegisterRequestDto(firstname, lastname, email, password)
+        new RegisterRequestDto(firstname, lastname, email, password),
       );
 
-      navigation.navigate('LoginScreen');
+      navigation.navigate("LoginScreen");
     } catch (err: any) {
       if (err.response.status === 400) {
         setError(err.response.data.message);
         return;
       }
       if (err.response.status === 409) {
-        setError('User already exists');
+        setError("User already exists");
         return;
       }
 
       console.log(err);
-      setError('Login failed. Please try again.');
+      setError("Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -59,7 +60,12 @@ const RegisterScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+      />
       <TextInput
         style={styles.input}
         placeholder="First name"
@@ -88,11 +94,14 @@ const RegisterScreen = () => {
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Button
-        title={loading ? 'Registering...' : 'Register'}
+        title={loading ? "Registering..." : "Register"}
         onPress={handleRegister}
         disabled={loading}
       />
-      <Button title="Login" onPress={() => navigation.navigate('LoginScreen')} />
+      <Button
+        title="Login"
+        onPress={() => navigation.navigate("LoginScreen")}
+      />
     </View>
   );
 };
@@ -102,8 +111,8 @@ export default RegisterScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 16,
   },
   title: {
@@ -111,16 +120,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   input: {
-    width: '100%',
+    width: "100%",
     height: 40,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 5,
     marginBottom: 12,
     paddingHorizontal: 8,
   },
   error: {
-    color: 'red',
+    color: "red",
     marginBottom: 8,
   },
 });

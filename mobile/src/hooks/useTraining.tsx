@@ -31,9 +31,16 @@ export const useTraining = () => {
     require('../../assets/models/yolo11n-pose_integer_quant.tflite'),
     delegate
   );
+  const handleTakephotosStateChange = (takePhotos: boolean) => {
+    setTakePhotos(takePhotos);
+    modelTrainingWebsocketService.setIsTakeingPhotos(takePhotos);
+    if (takePhotos) {
+      modelTrainingWebsocketService.takePhotos();
+    }
+  }
 
   useEffect(() => {
-    modelTrainingWebsocketService.setTakingPhotosHandlerFunction(setTakePhotos);
+    modelTrainingWebsocketService.setIsTakingPhotosHandlerFunction(handleTakephotosStateChange);
     modelTrainingWebsocketService.setProgressHandlerFunction(setProgress);
     modelTrainingWebsocketService.setCurrentTrainingPlayerHandlerFunction(handleTrainingPlayer);
     modelTrainingWebsocketService.setTrainingGroupHandlerFunction(handleTrainingGroup);
@@ -47,13 +54,12 @@ export const useTraining = () => {
   }, []);
 
   return {
-    takePhotos,
     phase,
     trainingPlayer,
     trainingGroup,
     progress,
     plugin,
-    handleTakePhotos: setTakePhotos,
-    handleImageCapture: modelTrainingWebsocketService.takePhoto,
+    takePhotos,
+    handleTakephotosStateChange
   };
 };

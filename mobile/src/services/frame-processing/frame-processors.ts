@@ -1,10 +1,12 @@
 import { SkPaint } from '@shopify/react-native-skia';
-import { TensorflowPlugin } from 'react-native-fast-tflite';
+import { TensorflowModel, TensorflowPlugin } from 'react-native-fast-tflite';
 import {
   DrawableFrame,
+  DrawableFrameProcessor,
   ReadonlyFrameProcessor,
   runAtTargetFps,
   useFrameProcessor,
+  useSkiaFrameProcessor,
 } from 'react-native-vision-camera';
 import { ISharedValue } from 'react-native-worklets-core';
 import * as useResizePlugin from 'vision-camera-resize-plugin';
@@ -17,7 +19,7 @@ import {
   CAMERA_CONSTANTS,
   TRAINING_CAMERA_CONSTANTS,
 } from '~/utils/constants/frame-processing-constans';
-import { Classification, Detection, ObjectDetection } from '~/utils/types/types';
+import { Classification, Detection, ObjectDetection } from '~/utils/types/detection-types';
 
 const { resize } = useResizePlugin.createResizePlugin();
 
@@ -116,7 +118,7 @@ export function trainingFrameProcessor(
       if (
         currentTime - lastUpdateTime.value >
         (1000 / TRAINING_CAMERA_CONSTANTS.FPS) *
-          TRAINING_CAMERA_CONSTANTS.MAX_FRAMES_WITHOUT_DETECTION
+        TRAINING_CAMERA_CONSTANTS.MAX_FRAMES_WITHOUT_DETECTION
       ) {
         detections.value = null;
       }
@@ -128,71 +130,72 @@ export function trainingFrameProcessor(
   );
 }
 export function InBattleFrameProcessor(
-  plugin: TensorflowPlugin,
-  plugin2: TensorflowPlugin,
+  model: TensorflowModel,
+  model2: TensorflowModel,
   lastUpdateTime: ISharedValue<number>,
-  detections: ISharedValue<Detection | null>
-): ReadonlyFrameProcessor {
-  return useFrameProcessor(
+  detections: ISharedValue<Detection | null>,
+  paint: SkPaint
+): DrawableFrameProcessor {
+  return useSkiaFrameProcessor(
     (frame) => {
       'worklet';
-      // frame.render();
+      frame.render();
 
-      if (plugin.state === 'loaded' && plugin2.state === 'loaded') {
-        runAtTargetFps(CAMERA_CONSTANTS.FPS, () => {
-          'worklet';
-          const resized = resize(frame, {
+
+      runAtTargetFps(CAMERA_CONSTANTS.FPS, () => {
+        'worklet';
+        const resized = resize(frame, {
+          scale: {
+            width: model.inputs[0].shape[1],
+            height: model.inputs[0].shape[2],
+          },
+          pixelFormat: 'rgb',
+          rotation: '90deg',
+          dataType: 'float32',
+          crop: { x: 0, y: 0, width: frame.width, height: frame.height },
+        });
+
+        const outputs = model.runSync([resized]);
+
+        const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
+          outputs,
+          model.outputs[0].shape[2]
+        );
+        outputs.length = 0;
+        if (objDetection) {
+          const cropData = {
+            x: objDetection.boundingBox.x1 * frame.width,
+            y: objDetection.boundingBox.y2 * frame.height,
+            height: objDetection.boundingBox.w * frame.height,
+            width: objDetection.boundingBox.h * frame.width,
+          };
+          const resized3 = resize(frame, {
             scale: {
-              width: plugin.model.inputs[0].shape[1],
-              height: plugin.model.inputs[0].shape[2],
+              width: model2.inputs[0].shape[1],
+              height: model2.inputs[0].shape[2],
             },
             pixelFormat: 'rgb',
             rotation: '90deg',
             dataType: 'float32',
-            crop: { x: 0, y: 0, width: frame.width, height: frame.height },
+            crop: cropData,
           });
 
-          const outputs = plugin.model.runSync([resized]);
+          const outputs2 = model2.runSync([resized3]);
+          const classification: Classification = decodeYoloClassifyOutput(outputs2[0]);
 
-          const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
-            outputs,
-            plugin.model.outputs[0].shape[2]
-          );
-          outputs.length = 0;
+          outputs2.length = 0;
+
           if (objDetection) {
-            const cropData = {
-              x: objDetection.boundingBox.x1 * frame.width,
-              y: objDetection.boundingBox.y2 * frame.height,
-              height: objDetection.boundingBox.w * frame.height,
-              width: objDetection.boundingBox.h * frame.width,
+            detections.value = {
+              objectDetection: objDetection,
+              classification,
+              bodyPart: getHitBodyPartFromKeypoints(objDetection.keypoints),
             };
-            const resized3 = resize(frame, {
-              scale: {
-                width: plugin2.model.inputs[0].shape[1],
-                height: plugin2.model.inputs[0].shape[2],
-              },
-              pixelFormat: 'rgb',
-              rotation: '90deg',
-              dataType: 'float32',
-              crop: cropData,
-            });
-
-            const outputs2 = plugin2.model.runSync([resized3]);
-            const classification: Classification = decodeYoloClassifyOutput(outputs2[0]);
-
-            outputs2.length = 0;
-
-            if (objDetection) {
-              detections.value = {
-                objectDetection: objDetection,
-                classification,
-                bodyPart: getHitBodyPartFromKeypoints(objDetection.keypoints),
-              };
-            }
-            lastUpdateTime.value = Date.now();
           }
-        });
-      }
+          lastUpdateTime.value = Date.now();
+        }
+      });
+
 
       const currentTime = Date.now();
       if (
@@ -201,7 +204,10 @@ export function InBattleFrameProcessor(
       ) {
         detections.value = null;
       }
+      if (detections.value) {
+        drawDetections(frame, detections.value.objectDetection, paint);
+      }
     },
-    [plugin, plugin2, detections]
+    [detections]
   );
 }

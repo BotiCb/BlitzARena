@@ -9,13 +9,13 @@ import { useSharedValue } from 'react-native-worklets-core';
 
 import { trainingFrameProcessor } from '~/services/frame-processing/frame-processors';
 import { takeCroppedTrainingImage } from '~/services/frame-processing/training-camera-utils';
+import { ModelTrainingWebSocketService } from '~/services/websocket/model-training.websocket.service';
 import { TrainingImage } from '~/services/websocket/websocket-types';
 import { TRAINING_CAMERA_CONSTANTS } from '~/utils/constants/frame-processing-constans';
-import { ObjectDetection } from '~/utils/types/types';
+import { ObjectDetection } from '~/utils/types/detection-types';
 
 interface TrainingCameraViewProps {
   takePhotos: boolean;
-  handleImageCapture: (trainingImage: TrainingImage) => Promise<void>;
   playerId: string;
   plugin: TensorflowPlugin;
   handleTakePhotos: (takePhotos: boolean) => void;
@@ -26,14 +26,12 @@ function tensorToString(tensor: TensorflowModel['inputs'][number]): string {
 
 const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   takePhotos,
-  handleImageCapture,
   playerId,
   plugin,
   handleTakePhotos,
 }) => {
   const isFocused = useIsFocused();
   const appState = useAppState();
-  const takePhotosRef = useRef(takePhotos);
   const isActive = isFocused && appState === 'active';
   const lastUpdateTime = useSharedValue<number>(Date.now());
 
@@ -47,9 +45,6 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
     }
   }, [hasPermission, requestPermission]);
 
-  useEffect(() => {
-    takePhotosRef.current = takePhotos;
-  }, [takePhotos]);
 
   // const format = useCameraFormat(device, [
   //   {
@@ -59,47 +54,40 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   //     },
   //   },
   // ]);
+
+
+  const capturePhotos = async (): Promise<TrainingImage> => {
+    if (!camera.current) {
+      throw new Error('No camera');
+    }
+    if (plugin.state !== 'loaded') {
+      throw new Error('No model');
+    }
+    const captureStart = Date.now();
+    if(!detections.value){
+      throw new Error('No detections');
+    }
+
+    const trainingImage = await takeCroppedTrainingImage(
+      camera.current,
+      detections,
+      lastUpdateTime,
+      playerId,
+      plugin.model.inputs[0].shape[1]
+    );
+    const captureDuration = Date.now() - captureStart;
+
+    console.log('Picture took in ms', captureDuration);
+
+    return trainingImage;
+  };
+
+  const modeltrainingWebsokcetService = ModelTrainingWebSocketService.getInstance();
+
   useEffect(() => {
-    if (!hasPermission || !plugin.model || !takePhotos) return;
+    modeltrainingWebsokcetService.setTakePhotoFunction(capturePhotos)
+  }, [])
 
-    const capturePhotos = async () => {
-      while (takePhotosRef.current && camera.current) {
-        const captureStart = Date.now();
-        try {
-          const trainingImage = await takeCroppedTrainingImage(
-            camera.current,
-            detections,
-            lastUpdateTime,
-            playerId,
-            takePhotosRef,
-            plugin.model.inputs[0].shape[1]
-          );
-          if (trainingImage) {
-            handleImageCapture(trainingImage);
-          }
-          const captureDuration = Date.now() - captureStart;
-          const remainingTime = Math.max(
-            TRAINING_CAMERA_CONSTANTS.TAKE_PHOTO_INTERVAL - captureDuration,
-            0
-          );
-
-          console.log('Time between captures:', captureDuration);
-          console.log('Waiting for next photo capture...', remainingTime);
-
-          await new Promise((resolve) => setTimeout(resolve, remainingTime));
-        } catch (error) {
-          console.error('Photo capture error:', error);
-          break;
-        }
-      }
-    };
-
-    capturePhotos();
-
-    return () => {
-      takePhotosRef.current = false; // Cleanup on unmount
-    };
-  }, [takePhotos, hasPermission, plugin.model]);
 
   const paint = Skia.Paint();
   paint.setColor(Skia.Color(TRAINING_CAMERA_CONSTANTS.PAINT_COLOR));
