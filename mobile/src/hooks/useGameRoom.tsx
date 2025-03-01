@@ -4,7 +4,7 @@ import useCoordinates from './useCoordinates';
 
 import { useGame } from '~/contexts/GameContext';
 import { GameRoomWebSocketService } from '~/services/websocket/game-room.websocket.service';
-import { GameArea, TEAM } from '~/utils/types';
+import { GameArea, TEAM } from '~/utils/types/types';
 
 export const useGameRoom = () => {
   const { players, playerHandlerFunction } = useGame();

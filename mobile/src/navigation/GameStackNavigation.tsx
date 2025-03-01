@@ -9,6 +9,7 @@ import { GamerRoomScreen } from '~/screens/GameRoomScreen';
 import { LobbyScreen } from '~/screens/LobbyScreen';
 import ModelTrainingScreen from '~/screens/ModelTrainingScreen';
 import SplashScreen from '~/screens/SplashScreen';
+import InMatchScreen from '~/screens/InMatchScreen';
 
 const GameStack = () => {
   const route = useRoute<RouteProp<AppStackParamList, 'GameStack'>>();
@@ -34,6 +35,8 @@ const GameContent = () => {
             return <ModelTrainingScreen />;
           case 'game-room':
             return <GamerRoomScreen />;
+          case 'match':
+            return <InMatchScreen />;
           default:
             return <SplashScreen />;
         }

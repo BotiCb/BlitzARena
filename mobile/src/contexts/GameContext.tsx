@@ -7,7 +7,7 @@ import { AsyncStore } from '~/services/storage/AsyncStorage';
 import { GameWebSocketService } from '~/services/websocket/game.websocket.service';
 import { WebSocketService } from '~/services/websocket/websocket.service';
 import { Player } from '~/utils/models';
-import { GamePhase, Model } from '~/utils/types';
+import { GamePhase, Model } from '~/utils/types/types';
 
 type GameContextType = {
   gamePhase: GamePhase;

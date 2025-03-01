@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Button } from 'react-native';
 
-import { TEAM } from '~/utils/types';
+import { TEAM } from '~/utils/types/types';
 
 export interface TeamSelectorComponentProps {
   handleTeamSelection: (team: TEAM) => void;

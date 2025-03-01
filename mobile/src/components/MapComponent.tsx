@@ -3,7 +3,7 @@ import { View, StyleSheet, Text } from 'react-native';
 import MapView, { LatLng, Marker, Polygon, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import useCoordinates from '~/hooks/useCoordinates';
-import { GameArea } from '~/utils/types';
+import { GameArea } from '~/utils/types/types';
 
 const AREA_SIZE_KM = 0.2;
 const DEGREES_PER_KM = 0.009;

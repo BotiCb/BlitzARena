@@ -1,5 +1,3 @@
-import { LatLng } from 'react-native-maps';
-
 export type BoundingBox = {
   xc: number;
   yc: number;
@@ -69,27 +67,4 @@ export enum BODY_PART {
 export type Point = {
   x: number;
   y: number;
-};
-
-export type GamePhase = 'lobby' | 'training' | 'game-room';
-
-export type TrainingPhase =
-  | 'initializing'
-  | 'take-photos'
-  | 'photos-from-you'
-  | 'training-ready-for-group';
-
-export type Model = {
-  path: string;
-  mapperArray: Record<number, string>;
-};
-
-export enum TEAM {
-  RED = 'red',
-  BLUE = 'blue',
-}
-
-export type GameArea = {
-  edges: LatLng[];
-  teamBases: { coordinates: LatLng; team: TEAM }[];
 };

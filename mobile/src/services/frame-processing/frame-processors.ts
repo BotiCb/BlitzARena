@@ -17,7 +17,7 @@ import {
   CAMERA_CONSTANTS,
   TRAINING_CAMERA_CONSTANTS,
 } from '~/utils/constants/frame-processing-constans';
-import { Classification, Detection, ObjectDetection } from '~/utils/types';
+import { Classification, Detection, ObjectDetection } from '~/utils/types/types';
 
 const { resize } = useResizePlugin.createResizePlugin();
 

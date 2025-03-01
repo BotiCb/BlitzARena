@@ -5,7 +5,7 @@ import { useTensorflowModel } from 'react-native-fast-tflite';
 import { useGame } from '~/contexts/GameContext';
 import { ModelTrainingWebSocketService } from '~/services/websocket/model-training.websocket.service';
 import { Player } from '~/utils/models';
-import { TrainingPhase } from '~/utils/types';
+import { TrainingPhase } from '~/utils/types/types';
 
 export const useTraining = () => {
   const { players } = useGame();

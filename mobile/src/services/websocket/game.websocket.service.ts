@@ -11,7 +11,7 @@ import { PlayerInfoResponseDto } from '../restApi/dto/response.dto';
 import { GameStackParamList } from '~/navigation/types';
 import { fromPlayerWSInfoToPlayerModel, extendPlayer } from '~/utils/mappers';
 import { Player } from '~/utils/models';
-import { GamePhase, Model } from '~/utils/types';
+import { GamePhase, Model } from '~/utils/types/types';
 
 export class GameWebSocketService extends AbstractCustomWebSocketService {
   private areYouHostHandlerFunction: (areYouHost: boolean) => void = () => {};

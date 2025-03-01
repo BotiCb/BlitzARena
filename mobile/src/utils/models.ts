@@ -1,4 +1,4 @@
-import { TEAM } from './types';
+import { TEAM } from './types/types';
 
 export class Player {
   sessionID: string;

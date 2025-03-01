@@ -5,7 +5,7 @@ import { TrainingImage, WebSocketMessageType, WebSocketMsg } from './websocket-t
 import { MODEL_TRAINING_ENDPOINTS } from '../restApi/Endpoints';
 import { apiClient } from '../restApi/RestApiService';
 
-import { TrainingPhase } from '~/utils/types';
+import { TrainingPhase } from '~/utils/types/types';
 
 export class ModelTrainingWebSocketService extends AbstractCustomWebSocketService {
   private remainingPhotoToSendCount: number = 0;

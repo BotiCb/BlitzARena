@@ -9,7 +9,7 @@ import { PlayerListComponent } from '~/components/PlayerListComponent';
 import { TeamSelectorComponent } from '~/components/TeamSelectorComponent';
 import { useGame } from '~/contexts/GameContext';
 import { useGameRoom } from '~/hooks/useGameRoom';
-import { TEAM } from '~/utils/types';
+import { TEAM } from '~/utils/types/types';
 
 export const GamerRoomScreen = () => {
   const {

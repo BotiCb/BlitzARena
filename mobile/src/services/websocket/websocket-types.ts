@@ -1,4 +1,4 @@
-import { GamePhase, TEAM } from '~/utils/types';
+import { GamePhase, TEAM } from '~/utils/types/types';
 
 export type WebSocketMsg = {
   type: WebSocketMessageType;

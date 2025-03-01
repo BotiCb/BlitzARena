@@ -7,7 +7,7 @@ import { ISharedValue } from 'react-native-worklets-core';
 import { TrainingImage } from '../websocket/websocket-types';
 
 import { TRAINING_CAMERA_CONSTANTS } from '~/utils/constants/frame-processing-constans';
-import { ObjectDetection } from '~/utils/types';
+import { ObjectDetection } from '~/utils/types/types';
 
 export async function takeCroppedTrainingImage(
   camera: Camera,

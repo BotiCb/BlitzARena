@@ -1,5 +1,5 @@
 import { YOLO_POSE_CONSTANTS } from '~/utils/constants/detection-constants';
-import { ObjectDetection, BoundingBox, Keypoints, Classification } from '~/utils/types';
+import { ObjectDetection, BoundingBox, Keypoints, Classification } from '~/utils/types/types';
 
 // Keypoint names (you can expand or adjust these based on your model)
 

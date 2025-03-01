@@ -11,7 +11,7 @@ import { trainingFrameProcessor } from '~/services/frame-processing/frame-proces
 import { takeCroppedTrainingImage } from '~/services/frame-processing/training-camera-utils';
 import { TrainingImage } from '~/services/websocket/websocket-types';
 import { TRAINING_CAMERA_CONSTANTS } from '~/utils/constants/frame-processing-constans';
-import { ObjectDetection } from '~/utils/types';
+import { ObjectDetection } from '~/utils/types/types';
 
 interface TrainingCameraViewProps {
   takePhotos: boolean;

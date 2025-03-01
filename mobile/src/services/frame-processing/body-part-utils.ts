@@ -1,5 +1,5 @@
 import { BODY_PART_DETECTIONS_CONSTANTS } from '~/utils/constants/detection-constants';
-import { BODY_PART, Keypoints, KEYPOINTS, Point } from '~/utils/types';
+import { BODY_PART, Keypoints, KEYPOINTS, Point } from '~/utils/types/types';
 function distance(p1: Point, p2: Point): number {
   'worklet';
   return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
