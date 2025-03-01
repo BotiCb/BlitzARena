@@ -17,7 +17,7 @@ class ModelTrainingPhaseService(PhaseService):
 
     def __init__(self, context: GameContext):
         super().__init__(context)
-        self.max_photos_per_player = 5
+        self.max_photos_per_player = 50
         
         self.groups: Dict[int, List[str]] = {}
         self.httpx_service: HTTPXService = HTTPXService()

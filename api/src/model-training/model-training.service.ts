@@ -158,7 +158,7 @@ export class ModelTrainingService {
       if (game.endedAt) {
         throw new HttpException('Game already ended', 400);
       }
-      game.trainingSession.tfLiteModelUrl = 'test'//await this.fileUploadService.uploadTfLiteModel(file);
+      game.trainingSession.tfLiteModelUrl = await this.fileUploadService.uploadTfLiteModel(file);
       await game.trainingSession.save();
     } catch (error) {
       console.log(error);

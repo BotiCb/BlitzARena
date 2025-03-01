@@ -1,6 +1,7 @@
 # game_context.py
 from typing import List
 from fastapi import HTTPException
+from utils.models import GameArea
 from models.player import Player
 from services.websocket_service import WebSocketService
 
@@ -13,7 +14,8 @@ class GameContext:
         get_current_phase: callable,
         get_game_id: callable,
         is_model_trained: callable,
-        get_teams: callable
+        get_teams: callable,
+        game_area: GameArea
     ):
         self.websockets = websockets
         self.players = players
@@ -22,6 +24,7 @@ class GameContext:
         self.get_game_id = get_game_id
         self._is_model_trained = is_model_trained
         self.get_teams = get_teams
+        self.game_area = game_area
 
     def get_player(self, player_id: str) -> Player:
         for player in self.players:
@@ -48,3 +51,5 @@ class GameContext:
     
     def get_players_in_team(self, team: str) -> List[Player]:
         return [player for player in self.players if player.get_team() == team]
+    
+    

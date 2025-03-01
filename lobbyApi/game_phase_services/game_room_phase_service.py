@@ -11,7 +11,6 @@ from models.message import Message
 class GameRoomService(PhaseService):
     def __init__(self, context: GameContext):
         super().__init__(context)
-        self.game_area : GameArea = None
 
     def on_enter(self):
         """Register lobby-specific WebSocket handlers."""
@@ -27,8 +26,7 @@ class GameRoomService(PhaseService):
         self.context.websockets.register_handler("select_team", self.on_player_team_select)
         self.context.websockets.register_handler("player_location", self.on_player_position)
         self.context.websockets.register_handler("game_area_change", self.on_game_area_change)
-
-        self._registered_handlers.extend(["set_player_ready", "start_next_phase"])
+        self._registered_handlers.extend(["set_player_ready", "start_next_phase", "select_team", "player_location", "game_area_change"])
 
 
 
@@ -76,7 +74,6 @@ class GameRoomService(PhaseService):
                 Message({"type": "error", "data": "At least one team has no players"})
             )
             return
-        
         await self.context.transition_to_phase("match")
                 
         
@@ -125,7 +122,7 @@ class GameRoomService(PhaseService):
         
     async def on_player_position(self, player_id: str, message: dict):
         try:
-            if self.game_area:
+            if self.context.game_area:
                 return  
             longitude = message.get("longitude")
             latitude = message.get("latitude")
@@ -145,10 +142,10 @@ class GameRoomService(PhaseService):
             await self.context.websockets.send_error(player_id, f"Error: {e}")
                 
     async def send_game_area(self, player_id: str = None):
-        if not self.game_area:
+        if not self.context.game_area:
             return
         
-        game_area_dict = self.game_area.to_dict()
+        game_area_dict = self.context.game_area.to_dict()
         
         if player_id:
             await self.context.websockets.send_to_player(player_id,
@@ -191,7 +188,7 @@ class GameRoomService(PhaseService):
             {"coordinates": Coordinates(center.longitude - half_delta / 2, center.latitude), "team": "red"},
         ]
 
-        self.game_area = GameArea(edges=edges, team_bases=team_bases)
+        self.context.game_area = GameArea(edges=edges, team_bases=team_bases)
         
             
     async def on_game_area_change(self, player_id: str, message: dict):
@@ -240,7 +237,7 @@ class GameRoomService(PhaseService):
                 await self.send_game_area(player_id)
                 
                 return
-            self.game_area = game_area
+            self.context.game_area = game_area
             await self.send_game_area()
 
         except (KeyError, TypeError) as e:

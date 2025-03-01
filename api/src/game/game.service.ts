@@ -125,8 +125,8 @@ export class GameService {
     if (!game.trainingSession.tfLiteModelUrl) {
       throw new HttpException('Model not ready', 404);
     }
-    //const buffer = await this.fileUploadService.downloadTfLiteModel(game.trainingSession.tfLiteModelUrl);
-    const modelBase64 = 'test';//buffer.toString('base64');
+    const buffer = await this.fileUploadService.downloadTfLiteModel(game.trainingSession.tfLiteModelUrl);
+    const modelBase64 = buffer.toString('base64');
     const label = game.trainingSession.trainingResults.metadata.classNames;
     return { modelBase64, labels: label } as TfliteModelDto;
   }
@@ -140,7 +140,7 @@ export class GameService {
     await game.save();
 
     if (game.trainingSession && game.trainingSession.tfLiteModelUrl) {
-      //this.fileUploadService.deleteFile(game.trainingSession.tfLiteModelUrl);
+      this.fileUploadService.deleteFile(game.trainingSession.tfLiteModelUrl);
     }
   }
 

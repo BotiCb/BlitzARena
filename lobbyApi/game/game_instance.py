@@ -37,7 +37,8 @@ class GameInstance:
             get_current_phase=lambda: self.current_phase,
             get_game_id=lambda: self.game_id,
             is_model_trained=lambda: self.is_model_trained,
-            get_teams=lambda: self.teams
+            get_teams=lambda: self.teams,
+            game_area=self.game_area
         )
         self.phase_services: Dict[str, PhaseService] = {
             "lobby": LobbyService(self.context),

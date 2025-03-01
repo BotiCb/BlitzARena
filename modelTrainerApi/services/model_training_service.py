@@ -108,7 +108,7 @@ class ModelTrainingService:
                 data=f"{self.dataset_dir}/{game_id}",
                 imgsz=320,
                 rect=True,
-                epochs=5,
+                epochs=20,
                 batch=200,
                 workers=0,
                 device=0,
