@@ -8,6 +8,8 @@ export type TrainingPhase =
   | 'photos-from-you'
   | 'training-ready-for-group';
 
+
+export type MatchPhase = 'initializing' | 'waiting-for-players' | 'match' ;
 export type Model = {
   path: string;
   mapperArray: Record<number, string>;
@@ -22,3 +24,5 @@ export type GameArea = {
   edges: LatLng[];
   teamBases: { coordinates: LatLng; team: TEAM }[];
 };
+
+

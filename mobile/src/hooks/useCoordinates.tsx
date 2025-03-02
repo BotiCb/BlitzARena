@@ -32,6 +32,9 @@ const useCoordinates = (options: Location.LocationOptions = {}) => {
       isMounted = false;
     };
   }, []);
+  useEffect(() => {
+    console.log(location);
+  }, [location]);
 
   return { location, isLoading, error };
 };

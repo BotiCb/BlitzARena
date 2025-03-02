@@ -4,8 +4,7 @@ import { useGame } from '~/contexts/GameContext';
 import { LobbyWebSocketService } from '~/services/websocket/lobby.websocket.service';
 
 export const useLobby = () => {
-  const { players, playerHandlerFunction } = useGame();
-  const [ready, setReady] = useState(false);
+  const { players, playerHandlerFunction, ready } = useGame();
   const [isEveryOneReady, setIsEveryOneReady] = useState(false);
   const lobbywebsocketService = LobbyWebSocketService.getInstance();
 
@@ -24,7 +23,6 @@ export const useLobby = () => {
   useEffect(() => {
     lobbywebsocketService.setWebSocketEventListeners();
     lobbywebsocketService.setPlayersHandlerFunction(playerHandlerFunction);
-    lobbywebsocketService.setReadyHandlerFunction(setReady);
     lobbywebsocketService.readyForPhase();
 
     return () => {

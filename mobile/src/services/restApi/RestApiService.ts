@@ -18,6 +18,7 @@ apiClient.interceptors.request.use(async (config) => {
     if (AuthService.isTokenExpired(token)) {
       try {
         token = await AuthService.refreshTokenAsync();
+        console.warn('JWT Token refreshed');
       } catch (error) {
         console.error('Error refreshing token:', error);
       }

@@ -22,11 +22,11 @@ export const GamerRoomScreen = () => {
     model,
     trainingProgress,
     isPhaseInfosNeeded,
+    ready,
   } = useGame();
 
   const {
     handleReadyPress,
-    ready,
     isEveryOneReady,
     handleTeamSelection,
     gameArea,

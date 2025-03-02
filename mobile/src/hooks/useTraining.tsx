@@ -25,12 +25,7 @@ export const useTraining = () => {
     );
   };
 
-  const delegate = Platform.OS === 'ios' ? 'core-ml' : undefined;
 
-  const plugin = useTensorflowModel(
-    require('../../assets/models/yolo11n-pose_integer_quant.tflite'),
-    delegate
-  );
   const handleTakephotosStateChange = (takePhotos: boolean) => {
     setTakePhotos(takePhotos);
     modelTrainingWebsocketService.setIsTakeingPhotos(takePhotos);
@@ -58,7 +53,6 @@ export const useTraining = () => {
     trainingPlayer,
     trainingGroup,
     progress,
-    plugin,
     takePhotos,
     handleTakephotosStateChange
   };

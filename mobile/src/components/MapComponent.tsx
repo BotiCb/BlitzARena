@@ -18,8 +18,8 @@ export interface MapComponentProps {
 export const MapComponent = ({ gameArea, readonly, onGameAreaChange }: MapComponentProps) => {
   const { location: userLocation } = useCoordinates({
     accuracy: 5,
-    timeInterval: 1000,
-    distanceInterval: 1,
+    timeInterval: 0, 
+    distanceInterval: 0,
   });
 
   const [isDragging, setIsDragging] = useState(false);

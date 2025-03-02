@@ -9,34 +9,14 @@ export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
   private gameAreaHandlerFunction: (gameArea: GameArea) => void = () => {};
 
   setWebSocketEventListeners() {
-    this.websocketService.onMessageType('player_status', this.setPlayerStatus);
     this.websocketService.onMessageType('game_room_phase_info', this.onPhaseInfo);
     this.websocketService.onMessageType('player_team_selected', this.onPlayerTeamSelected);
     this.websocketService.onMessageType('game_area', this.onGameAreaUpdate);
   }
 
-  setReadyHandlerFunction(readyHandlerFunction: (isReady: boolean) => void) {
-    this.readyHandlerFunction = readyHandlerFunction;
-  }
-
   setGameAreaHandlerFunction(gameAreaHandlerFunction: (gameArea: GameArea) => void) {
     this.gameAreaHandlerFunction = gameAreaHandlerFunction;
   }
-
-  setPlayerStatus = (message: WebSocketMsg) => {
-    const { playerId, isReady } = message.data;
-    if (playerId === GameRoomWebSocketService.sessionId) {
-      this.readyHandlerFunction(isReady);
-    }
-    GameRoomWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
-      return prevPlayers.map((player: Player) => {
-        if (player.sessionID === playerId) {
-          return { ...player, isReady };
-        }
-        return player;
-      });
-    });
-  };
 
   setMyStatus(isReady: boolean) {
     this.websocketService.sendMessage({
