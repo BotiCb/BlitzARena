@@ -77,7 +77,7 @@ export function drawDetections(frame: DrawableFrame, detection: ObjectDetection,
 }
 
 export function trainingFrameProcessor(
-  plugin: TensorflowPlugin,
+  model: TensorflowModel,
   lastUpdateTime: ISharedValue<number>,
   detections: ISharedValue<ObjectDetection | null>,
   paint: SkPaint
@@ -87,32 +87,32 @@ export function trainingFrameProcessor(
     (frame) => {
       'worklet';
       //frame.render();
-      if (plugin.state === 'loaded') {
-        runAtTargetFps(TRAINING_CAMERA_CONSTANTS.FPS, () => {
-          'worklet';
-          const resized = resize(frame, {
-            scale: {
-              width: plugin.model.inputs[0].shape[1],
-              height: plugin.model.inputs[0].shape[2],
-            },
-            pixelFormat: 'rgb',
-            rotation: '90deg',
-            dataType: 'float32',
-            crop: { x: 0, y: 0, width: frame.width, height: frame.height },
-          });
 
-          const outputs = plugin.model.runSync([resized]);
-
-          const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
-            outputs,
-            plugin.model.outputs[0].shape[2]
-          );
-          if (objDetection) {
-            detections.value = objDetection;
-            lastUpdateTime.value = Date.now();
-          }
+      runAtTargetFps(TRAINING_CAMERA_CONSTANTS.FPS, () => {
+        'worklet';
+        const resized = resize(frame, {
+          scale: {
+            width: model.inputs[0].shape[1],
+            height: model.inputs[0].shape[2],
+          },
+          pixelFormat: 'rgb',
+          rotation: '90deg',
+          dataType: 'float32',
+          crop: { x: 0, y: 0, width: frame.width, height: frame.height },
         });
-      }
+
+        const outputs = model.runSync([resized]);
+
+        const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
+          outputs,
+          model.outputs[0].shape[2]
+        );
+        if (objDetection) {
+          detections.value = objDetection;
+          lastUpdateTime.value = Date.now();
+        }
+      });
+
 
       const currentTime = Date.now();
       if (
@@ -126,7 +126,7 @@ export function trainingFrameProcessor(
         //drawDetections(frame, detections.value, paint);
       }
     },
-    [plugin, detections]
+    [model, detections]
   );
 }
 export function InBattleFrameProcessor(

@@ -10,24 +10,29 @@ import CameraView from "../views/InMatchCameraView";
 import { useGame } from "~/contexts/GameContext";
 import { useMatch } from "~/hooks/useMatch";
 import SplashScreen from "./SplashScreen";
+import { useDetections } from "~/hooks/useDetections";
 
 const InMatchScreen = () => {
   const cameraRef = useRef<any>(null);
-  const { classifyModel, poseModel, detectedPerson, detections } = useMatch();
+  const { classifyModel, poseModel, detectedPerson, detections } = useDetections();
+  const { isPhaseInfosNeeded } = useGame();
+  const { round, maxRounds, matchPhase } = useMatch();
+
+  if(isPhaseInfosNeeded || !classifyModel || !poseModel) {
+    return <SplashScreen />
+  }
 
   return (
     <View style={{ flex: 1 }}>
-      {classifyModel && poseModel ? (
+     
     <CameraView
       ref={cameraRef}
       models={[poseModel, classifyModel]}
       detections={detections}
     />
-  ) : (
-    <SplashScreen />
-  )}
-      <Scope />
+       
       <Text style={{ color: "white" }}>{detectedPerson?.player.firstName + " " + detectedPerson?.player.lastName + " " + detectedPerson?.bodyPart + " " + detectedPerson?.confidence}</Text>
+      <Text style={{ color: "white" }}>Round: {round} / {maxRounds} - {matchPhase} </Text>
     </View>
   );
 };

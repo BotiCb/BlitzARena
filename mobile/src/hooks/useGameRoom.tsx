@@ -7,8 +7,7 @@ import { GameRoomWebSocketService } from '~/services/websocket/game-room.websock
 import { GameArea, TEAM } from '~/utils/types/types';
 
 export const useGameRoom = () => {
-  const { players, playerHandlerFunction } = useGame();
-  const [ready, setReady] = useState(false);
+  const { players, playerHandlerFunction, ready } = useGame();
   const [isEveryOneReady, setIsEveryOneReady] = useState(false);
   const [gameArea, setGameArea] = useState<GameArea | null>(null);
 
@@ -44,7 +43,6 @@ export const useGameRoom = () => {
   useEffect(() => {
     gameRoomWebsocketService.setWebSocketEventListeners();
     gameRoomWebsocketService.setPlayersHandlerFunction(playerHandlerFunction);
-    gameRoomWebsocketService.setReadyHandlerFunction(setReady);
     gameRoomWebsocketService.setGameAreaHandlerFunction(setGameArea);
     gameRoomWebsocketService.readyForPhase();
 

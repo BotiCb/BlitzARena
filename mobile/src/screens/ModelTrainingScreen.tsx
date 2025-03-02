@@ -8,21 +8,22 @@ import { useTraining } from '~/hooks/useTraining';
 import { PhotosFromYouView } from '~/views/PhotosFromYouView';
 import TrainingCameraView from '~/views/TraingCameraView';
 import { TrainingReadyForGroupView } from '~/views/TrainingReadyForGroupView';
+import { useDetections } from '~/hooks/useDetections';
 
 const ModelTrainingScreen = () => {
   const {
     trainingPlayer,
     trainingGroup,
     progress,
-    plugin,
     phase,
     takePhotos,
     handleTakephotosStateChange
   } = useTraining();
+  const { poseModel } = useDetections();
 
   const { isPhaseInfosNeeded } = useGame();
 
-  if (isPhaseInfosNeeded) {
+  if (isPhaseInfosNeeded || !poseModel) {
     return <SplashScreen />;
   }
 
@@ -43,7 +44,7 @@ const ModelTrainingScreen = () => {
             return (
               <TrainingCameraView
                 playerId={trainingPlayer?.sessionID || ''}
-                plugin={plugin}
+                model={poseModel}
                 takePhotos={takePhotos}
                 handleTakePhotos={handleTakephotosStateChange}
               />

@@ -24,6 +24,7 @@ type GameContextType = {
   isPhaseInfosNeeded: boolean;
   model: Model | null;
   trainingProgress: number;
+  ready: boolean;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -42,6 +43,7 @@ export const GameProvider: React.FC<{
   const navigation = useNavigation<StackNavigationProp<GameStackParamList>>();
   const [isPhaseInfosNeeded, setIsPhaseInfosNeeded] = useState<boolean>(true);
   const [model, setModel] = useState<Model | null>(null);
+  const [ready, setReady] = useState<boolean>(false);
   const [trainingProgress, setTrainingProgress] = useState<number>(0);
   const setPlayerAsHost = (playerId: string) => {
     if (!areYouHost) {
@@ -79,6 +81,7 @@ export const GameProvider: React.FC<{
     gameWebsocketService.setModelHandlerFunction(setModel);
     gameWebsocketService.setTrainingProgressHandlerFunction(setTrainingProgress);
     gameWebsocketService.setIsPhaseInfosNeededHandlerFunction(setIsPhaseInfosNeeded);
+    gameWebsocketService.setReadyHandlerFunction(setReady);
     gameWebsocketService.setWebSocketEventListeners();
     websocketService.connect(gameId, userSessionId);
 
@@ -103,6 +106,7 @@ export const GameProvider: React.FC<{
         isPhaseInfosNeeded,
         model,
         trainingProgress,
+        ready,
       }}>
       {children}
     </GameContext.Provider>

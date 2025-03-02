@@ -17,7 +17,7 @@ import { ObjectDetection } from '~/utils/types/detection-types';
 interface TrainingCameraViewProps {
   takePhotos: boolean;
   playerId: string;
-  plugin: TensorflowPlugin;
+  model: TensorflowModel;
   handleTakePhotos: (takePhotos: boolean) => void;
 }
 function tensorToString(tensor: TensorflowModel['inputs'][number]): string {
@@ -27,7 +27,7 @@ function tensorToString(tensor: TensorflowModel['inputs'][number]): string {
 const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   takePhotos,
   playerId,
-  plugin,
+  model,
   handleTakePhotos,
 }) => {
   const isFocused = useIsFocused();
@@ -60,11 +60,11 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
     if (!camera.current) {
       throw new Error('No camera');
     }
-    if (plugin.state !== 'loaded') {
+    if (!model) {
       throw new Error('No model');
     }
     const captureStart = Date.now();
-    if(!detections.value){
+    if (!detections.value) {
       throw new Error('No detections');
     }
 
@@ -73,7 +73,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
       detections,
       lastUpdateTime,
       playerId,
-      plugin.model.inputs[0].shape[1]
+      model.inputs[0].shape[1]
     );
     const captureDuration = Date.now() - captureStart;
 
@@ -94,14 +94,13 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   paint.setStrokeWidth(TRAINING_CAMERA_CONSTANTS.PAINT_STROKE_WIDTH);
 
   useEffect(() => {
-    const model = plugin.model;
 
     if (model == null) return;
 
     console.log(
       `Model: ${model.inputs.map(tensorToString)} -> ${model.outputs.map(tensorToString)}`
     );
-  }, [plugin]);
+  }, [model]);
 
   const detections = useSharedValue<ObjectDetection | null>(null);
 
@@ -124,7 +123,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
         photo
         ref={camera}
         // format={format}
-        frameProcessor={trainingFrameProcessor(plugin, lastUpdateTime, detections, paint)}
+        frameProcessor={trainingFrameProcessor(model, lastUpdateTime, detections, paint)}
       />
       {!takePhotos ? (
         <Button title="Take Photos" onPress={() => handleTakePhotos(true)} />

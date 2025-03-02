@@ -5,30 +5,12 @@ import { WebSocketMessageType, WebSocketMsg } from './websocket-types';
 import { Player } from '~/utils/models';
 
 export class LobbyWebSocketService extends AbstractCustomWebSocketService {
-  private readyHandlerFunction: (isReady: boolean) => void = () => {};
 
   setWebSocketEventListeners() {
-    this.websocketService.onMessageType('player_status', this.setPlayerStatus);
     this.websocketService.onMessageType('lobby_phase_info', this.onLobbyPhaseInfo);
   }
 
-  setReadyHandlerFunction(readyHandlerFunction: (isReady: boolean) => void) {
-    this.readyHandlerFunction = readyHandlerFunction;
-  }
-  setPlayerStatus = (message: WebSocketMsg) => {
-    const { playerId, isReady } = message.data;
-    if (playerId === LobbyWebSocketService.sessionId) {
-      this.readyHandlerFunction(isReady);
-    }
-    LobbyWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
-      return prevPlayers.map((player: Player) => {
-        if (player.sessionID === playerId) {
-          return { ...player, isReady };
-        }
-        return player;
-      });
-    });
-  };
+ 
 
   setMyStatus(isReady: boolean) {
     this.websocketService.sendMessage({

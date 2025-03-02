@@ -17,6 +17,8 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   private areYouHostHandlerFunction: (areYouHost: boolean) => void = () => {};
   private gamePhaseHandlerFunction: (gamePhase: GamePhase) => void = () => {};
   private modelHandlerFunction: (model: Model) => void = () => {};
+  private readyHandlerFunction: (isReady: boolean) => void = () => {};
+
   private trainingProgressHandlerFunction: (trainingProgress: number) => void = () => {};
 
   private navigator: StackNavigationProp<GameStackParamList> | null = null;
@@ -36,6 +38,8 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     this.websocketService.onMessageType('game_phase', this.handleGamePhaseChangedEvent);
     this.websocketService.onMessageType('model_ready', this.handleModelreadyEvent);
     this.websocketService.onMessageType('training_progress', this.handleTrainingProgressEvent);
+    this.websocketService.onMessageType('player_status', this.setPlayerStatus);
+
 
     this.startPingInterval();
   }
@@ -65,6 +69,9 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   setAreYouHostHandlerFunction = (handler: (areYouHost: boolean) => void) => {
     this.areYouHostHandlerFunction = handler;
   };
+  setReadyHandlerFunction(readyHandlerFunction: (isReady: boolean) => void) {
+    this.readyHandlerFunction = readyHandlerFunction;
+  }
 
   setNavigationHandler = (navigator: StackNavigationProp<GameStackParamList>) => {
     this.navigator = navigator;
@@ -216,6 +223,11 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
 
   handleGamePhaseChangedEvent = async (message: WebSocketMsg) => {
     this.gamePhaseHandlerFunction(message.data);
+    AbstractCustomWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
+      return prevPlayers.map((player: Player) => {
+        return { ...player, isReady: false };
+      });
+    });
     AbstractCustomWebSocketService.isPhaseInfosNeededHandlerFunction(true);
   };
 
@@ -310,4 +322,20 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       console.error(`Error downloading model: ${e}`);
     }
   };
+  setPlayerStatus = (message: WebSocketMsg) => {
+    const { playerId, isReady } = message.data;
+    if (playerId === GameWebSocketService.sessionId) {
+      this.readyHandlerFunction(isReady);
+    }
+    GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
+      return prevPlayers.map((player: Player) => {
+        if (player.sessionID === playerId) {
+          return { ...player, isReady };
+        }
+        return player;
+      });
+    });
+  };
+
+  
 }
