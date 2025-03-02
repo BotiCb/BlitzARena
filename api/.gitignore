@@ -60,3 +60,5 @@ firebase-service-account.json
 *.env.yml
 
 firebase-service-account.json
+
+plain_tflite.json

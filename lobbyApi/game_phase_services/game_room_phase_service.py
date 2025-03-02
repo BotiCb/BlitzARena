@@ -1,14 +1,14 @@
 # lobby_service.py
 from typing import List
 from game.game_context import GameContext
-from game_phase_services.phase_service import PhaseService
+from game_phase_services.phase_abstract_service import PhaseAbstractService
 from utils.area_validation import validate_area
-from utils.models import GameArea
+from utils.models import GameArea, TeamBase
 from models.player import Coordinates
 from models.message import Message
 
 
-class GameRoomService(PhaseService):
+class GameRoomService(PhaseAbstractService):
     def __init__(self, context: GameContext):
         super().__init__(context)
 
@@ -122,19 +122,19 @@ class GameRoomService(PhaseService):
         
     async def on_player_position(self, player_id: str, message: dict):
         try:
-            if self.context.game_area:
-                return  
             longitude = message.get("longitude")
             latitude = message.get("latitude")
+            self.context.get_player(player_id).set_coordinates(Coordinates(longitude, latitude))
+            if self.context.game_area:
+                return  
             
             if longitude is None or latitude is None:
                 raise ValueError("Longitude and latitude must be provided.")
             
-            self.context.get_player(player_id).set_coordinates(Coordinates(longitude, latitude))
             
             
             players_with_location_count = sum(1 for p in self.context.players if p.get_coordinates() is not None)
-            required = (len(self.context.players) + 1) // 2
+            required = (len(self.context.players)) // 2 + 1
             if players_with_location_count >= required:
                 self.calculate_initial_game_area()
                 await self.send_game_area()
@@ -184,8 +184,14 @@ class GameRoomService(PhaseService):
 
         # Corrected team_bases structure
         team_bases = [
-            {"coordinates": Coordinates(center.longitude + half_delta / 2, center.latitude), "team": "blue"},
-            {"coordinates": Coordinates(center.longitude - half_delta / 2, center.latitude), "team": "red"},
+           TeamBase(
+            coordinates=Coordinates(center.longitude + half_delta / 2, center.latitude), 
+            team="blue"
+        ),
+        TeamBase(
+            coordinates=Coordinates(center.longitude - half_delta / 2, center.latitude), 
+            team="red"
+        ),
         ]
 
         self.context.game_area = GameArea(edges=edges, team_bases=team_bases)
@@ -198,53 +204,56 @@ class GameRoomService(PhaseService):
                 player_id,
                 Message({"type": "error", "data": "You are not the host"})
             )
+            await self.send_game_area(player_id)
+            return
+        
+        if not player.coordinates:
+            await self.context.websockets.send_to_player(
+                player_id,
+                Message({"type": "error", "data": "You must set your position first"})
+            )
+            await self.send_game_area(player_id)
             return
 
         edges_data = message.get("edges")
         team_bases_data = message.get("team_bases")
 
-        if not edges_data or len(edges_data) != 4:
-            await self.context.websockets.send_to_player(
-                player_id,
-                Message({"type": "error", "data": "Invalid edges data"})
-            )
-            return
-
         try:
-            # Convert edges data to Coordinates objects
+            # Convert edges data to Coordinates
             edges = [
                 Coordinates(edge["longitude"], edge["latitude"])
                 for edge in edges_data
             ]
 
-            # Convert team bases data to proper structure
+            # Convert team bases to TeamBase objects
             team_bases = []
             for tb in team_bases_data:
-                coords = tb["coordinates"]
-                team_bases.append({
-                    "coordinates": Coordinates(coords["longitude"], coords["latitude"]),
-                    "team": tb["team"]
-                })
+                coords_data = tb["coordinates"]
+                coordinates = Coordinates(
+                    longitude=coords_data["longitude"],
+                    latitude=coords_data["latitude"]
+                )
+                team_base = TeamBase(coordinates=coordinates, team=tb["team"])
+                team_bases.append(team_base)
 
-            # Create the GameArea object
+            # Create GameArea instance
             game_area = GameArea(edges=edges, team_bases=team_bases)
-            player= self.context.get_player(player_id)
+
+            # Validate the new area
             if not validate_area(player.get_coordinates(), game_area):
                 await self.context.websockets.send_to_player(
                     player_id,
-                    Message({"type": "error", "data": "Invalid game area data"})
+                    Message({"type": "error", "data": "Invalid game area."})
                 )
                 await self.send_game_area(player_id)
-                
                 return
+
             self.context.game_area = game_area
             await self.send_game_area()
 
         except (KeyError, TypeError) as e:
-            await self.context.websockets.send_error(
-                player_id,
-                f"Invalid game area data: {str(e)}"
-            )
+            await self.context.websockets.send_error(player_id, f"Invalid data: {str(e)}")
+            print(f"Error while changing game area: {str(e)}")
         
         
             

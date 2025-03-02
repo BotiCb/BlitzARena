@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from game.game_context import GameContext
 
 
-class PhaseService(ABC):
+class PhaseAbstractService(ABC):
 
     def __init__(self, context: GameContext):
         self.context = context

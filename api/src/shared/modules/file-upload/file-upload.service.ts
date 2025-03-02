@@ -64,10 +64,15 @@ export class FileUploadService {
   }
 
   async downloadTfLiteModel(url: string): Promise<Buffer> {
+    try{
     const storage = this.firebaseService.getStorageInstance();
     const bucket = storage.bucket();
     const file = bucket.file(url);
     const [data] = await file.download();
     return data;
+  }
+  catch (error) {
+    throw new HttpException('File not found', 404);
+  }
   }
 }

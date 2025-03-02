@@ -1,6 +1,7 @@
 
 from typing import List
 from utils.models import Coordinates, GameArea
+from math import radians, sin, cos, sqrt, atan2
 
 
 def validate_area(player_coords: Coordinates, game_area: GameArea) -> bool:
@@ -16,7 +17,7 @@ def validate_area(player_coords: Coordinates, game_area: GameArea) -> bool:
         return False
     
     for team_base in game_area.team_bases:
-        tb_coords = team_base["coordinates"]
+        tb_coords = team_base.coordinates 
         if not _is_point_in_polygon(tb_coords, edges):
             return False
     
@@ -103,3 +104,28 @@ def _is_point_on_segment(p: Coordinates, a: Coordinates, b: Coordinates) -> bool
     if _orientation(a, b, p) != 0:
         return False
     return _on_segment(a, p, b)
+
+
+def are_coordinates_within_distance(coord1: Coordinates, coord2: Coordinates, distance: float) -> bool:
+    """
+    Returns True if the two coordinates are closer than the given distance (in meters), otherwise False.
+    """
+    R = 6371000  # Radius of Earth in meters
+
+    # Convert latitude and longitude from degrees to radians
+    lat1, lon1 = radians(coord1.latitude), radians(coord1.longitude)
+    lat2, lon2 = radians(coord2.latitude), radians(coord2.longitude)
+
+    # Differences
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    # Haversine formula
+    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    distance_between = R * c  # Distance in meters
+
+    return distance_between < distance
+
+
+

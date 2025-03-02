@@ -1,19 +1,25 @@
-from game_phase_services.phase_service import PhaseService
+from typing import Dict
+from game_phase_services.match_phase_services.match_pase_abstract_service import MatchPhaseAbstractService
+from game_phase_services.phase_abstract_service import PhaseAbstractService
 from game.game_context import GameContext
-from lobbyApi.utils.models import Coordinates
+from game_phase_services.match_phase_services.round_waiting_phase_service import RoundWaitingService
+from models.message import Message
 
 
-class MatchService(PhaseService):
+
+class MatchService(PhaseAbstractService):
     
     def __init__(self, context: GameContext):
         super().__init__(context)
         self.current_round = 0
-        self.max_rounds = 10
-        self.round_phases = {
-            "waiting": RoundWaitingService(context),
-            "battle": RoundBattleService(context)
+        self.total_rounds = 10
+        self.match_phases_services: Dict[str, MatchPhaseAbstractService] = {
+            "waiting-for-players": RoundWaitingService(context),
+            # "battle": RoundBattleService(context)
         }
-        self.current_phase_service = None
+        
+        self.current_match_phase = "waiting-for-players"
+        self.current_match_phase_service = self.match_phases_services[self.current_match_phase]
         
     def on_enter(self):
         """Register lobby-specific WebSocket handlers."""
@@ -26,19 +32,35 @@ class MatchService(PhaseService):
     def _register_handlers(self):
         self.context.websockets.register_handler("player_location", self.on_player_position)
         
+
+            
+    async def on_player_ready_to_phase(self, player_id):
+        await self.context.websockets.send_to_player(player_id, Message({"type": "match_phase_info", "data": {
+            "current_round": self.current_round,
+            "total_rounds": self.total_rounds,
+            "current_phase": self.current_match_phase
+        }}))
+        
+        
     async def on_player_position(self, player_id: str, message: dict):
-        try:
-                if self.context.game_area:
-                    return  
-                longitude = message.get("longitude")
-                latitude = message.get("latitude")
-                
-                if longitude is None or latitude is None:
-                    raise ValueError("Longitude and latitude must be provided.")
-                
-                self.context.get_player(player_id).set_coordinates(Coordinates(longitude, latitude))
-        except (KeyError, ValueError) as e:
-            await self.context.websockets.send_error(player_id, f"Error: {e}")
+        await self.current_match_phase_service.on_player_position(player_id, message)
+        
+        
+    async def trainsition_to_match_phase(self, phase: str):
+        if self.current_match_phase_service:
+            self.current_match_phase_service.on_exit()
+        self.current_match_phase = phase
+        self.current_match_phase_service = self.match_phases_services.get(phase)
+        
+        if self.current_match_phase_service:
+            self.current_match_phase_service.on_enter()
+            
+        await self.context.websockets.send_to_all(
+            Message({"type": "match_phase", "data": {
+                "current_round": self.current_round,
+                "current_phase": self.current_match_phase
+            }})
+        )
 
 
 

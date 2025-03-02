@@ -3,7 +3,7 @@ from typing import List, Dict
 
 
 from game.game_context import GameContext
-from game_phase_services.phase_service import PhaseService
+from game_phase_services.phase_abstract_service import PhaseAbstractService
 
 
 from utils.dto_convention_converter import convert_dict_to_camel_case
@@ -13,11 +13,11 @@ import asyncio
 from services.httpx_service import HTTPXService
 
 
-class ModelTrainingPhaseService(PhaseService):
+class ModelTrainingPhaseService(PhaseAbstractService):
 
     def __init__(self, context: GameContext):
         super().__init__(context)
-        self.max_photos_per_player = 50
+        self.max_photos_per_player = 10
         
         self.groups: Dict[int, List[str]] = {}
         self.httpx_service: HTTPXService = HTTPXService()

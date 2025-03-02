@@ -6,9 +6,10 @@ from dto.player.player_info_dto import PlayerInfoDto
 from game.game_context import GameContext
 from game_phase_services.lobby_phase_service import LobbyService
 from game_phase_services.model_training_phase_service import ModelTrainingPhaseService
-from game_phase_services.phase_service import PhaseService
+from game_phase_services.phase_abstract_service import PhaseAbstractService
 
 from game_phase_services.game_room_phase_service import GameRoomService
+from game_phase_services.match_phase_service import MatchService
 from utils.models import GameArea
 from services.httpx_service import HTTPXService
 from models.message import Message
@@ -40,11 +41,11 @@ class GameInstance:
             get_teams=lambda: self.teams,
             game_area=self.game_area
         )
-        self.phase_services: Dict[str, PhaseService] = {
+        self.phase_services: Dict[str, PhaseAbstractService] = {
             "lobby": LobbyService(self.context),
             "training": ModelTrainingPhaseService(self.context),
             "game-room": GameRoomService(self.context),
-            # Add other phases here (e.g., "training": TrainingService(self.context))
+            "match": MatchService(self.context)
         }
         self.current_phase_service = self.phase_services.get(self.current_phase)
         self._initialize_phase_service()

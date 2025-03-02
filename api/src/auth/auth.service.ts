@@ -31,11 +31,10 @@ export class AuthService {
     const payload = { email: user.email, id: user._id.toString() };
 
     const accessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '15m',
+      expiresIn: '1m',
       secret: config.get('auth.jwtSecret'),
     });
     const refreshToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '7d',
       secret: config.get('auth.refreshTokenSecret'),
     });
 
@@ -56,12 +55,11 @@ export class AuthService {
 
     // Generate a new access token
     const newAccessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '1d',
+      expiresIn: '1m',
       secret: config.get('auth.jwtSecret'),
     });
 
     const newRefreshToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '7d',
       secret: config.get('auth.refreshTokenSecret'),
     });
     const hashedRefreshToken = newRefreshToken;

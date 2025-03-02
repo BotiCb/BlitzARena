@@ -1,10 +1,10 @@
 # lobby_service.py
 from game.game_context import GameContext
-from game_phase_services.phase_service import PhaseService
+from game_phase_services.phase_abstract_service import PhaseAbstractService
 from models.message import Message
 
 
-class LobbyService(PhaseService):
+class LobbyService(PhaseAbstractService):
     def __init__(self, context: GameContext):
         super().__init__(context)
 

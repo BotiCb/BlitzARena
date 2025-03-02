@@ -25,8 +25,8 @@ export class GameService {
 
   async createGame(user: UserModel, createGameDto: CreateGameDto): Promise<CreateGameResponseDto> {
     try {
-      const response = await this.axiosService.apiClient.post('/game/create-game', createGameDto);
-      await this.axiosService.modelTrainingApiClient.get('');
+      const response = await this.axiosService.apiClient.post('/game/create-game', createGameDto, { timeout: 5000 });
+      await this.axiosService.modelTrainingApiClient.get('', { timeout: 5000 });
       const gameInfo: GameInfoDto = response.data;
 
       const sessionId = this.generateSessionIdforUser();
@@ -47,7 +47,7 @@ export class GameService {
 
       return { gameId: gameInfo.gameId, sessionId };
     } catch (error) {
-      this.logger.error(error);
+      console.log(error.message);
       throw new HttpException('The game could not be created', 503);
     }
   }
@@ -122,11 +122,16 @@ export class GameService {
   }
 
   async getTfLiteModel(game: GameModel): Promise<TfliteModelDto> {
-    if (!game.trainingSession.tfLiteModelUrl) {
+    if (game.trainingSession.tfLiteModelUrl === null || game.trainingSession.tfLiteModelUrl === undefined) {
       throw new HttpException('Model not ready', 404);
     }
 
-     const buffer = await this.fileUploadService.downloadTfLiteModel(game.trainingSession.tfLiteModelUrl);
+    if(game.endedAt) {
+      throw new HttpException('Game already ended', 400);
+    }
+
+
+    const buffer = await this.fileUploadService.downloadTfLiteModel(game.trainingSession.tfLiteModelUrl);
     const modelBase64 = buffer.toString('base64');
     const label = game.trainingSession.trainingResults.metadata.classNames;
     return { modelBase64, labels: label } as TfliteModelDto;
@@ -137,12 +142,18 @@ export class GameService {
     if (!game) {
       throw new HttpException('Game not found', 404);
     }
-    game.endedAt = new Date();
-    await game.save();
 
+    if (game.endedAt) {
+      throw new HttpException('Game already ended', 400);
+    }
+    game.endedAt = new Date();
+    
     if (game.trainingSession && game.trainingSession.tfLiteModelUrl) {
       this.fileUploadService.deleteFile(game.trainingSession.tfLiteModelUrl);
     }
+    game.trainingSession.tfLiteModelUrl = null;
+    await game.trainingSession.save();
+    await game.save();
   }
 
   async updatePlayerConnectionStatus(gameId: string, userSessionId: string, connection: PlayerConnectionState) {
