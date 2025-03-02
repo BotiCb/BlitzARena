@@ -6,6 +6,9 @@ from concurrent.futures import ThreadPoolExecutor
 import threading
 from typing import Optional
 from datetime import timedelta
+from utils.dto_convention_converter import convert_dict_to_camel_case
+from utils.csv_file_converter import read_training_csv
+from utils.mappers import map_training_data
 from services.httpx_service import HTTPXService
 from utils.jwt_handler import create_jwt
 from ultralytics import YOLO
@@ -166,6 +169,31 @@ class ModelTrainingService:
                 self.send_training_progress(85, game_id),
                 self._loop
             ).result()
+            
+            csv_path = os.path.join(str(results.save_dir), "results.csv")
+            concurrent_count = ModelTrainingService._active_trainings - 1
+        
+            stats = convert_dict_to_camel_case(
+                map_training_data(
+                    results,
+                    read_training_csv(csv_path),
+                    model,
+                    concurrent_trainings=concurrent_count
+                )
+            )
+
+            asyncio.run_coroutine_threadsafe(
+                self.httpx_service.get_api_client().post(
+                    f"game/{game_id}/model-training/statistics",
+                    json=stats
+                ),
+                self._loop
+            ).result()
+            
+            asyncio.run_coroutine_threadsafe(
+                self.send_training_progress(90, game_id),
+                self._loop
+            ).result()
 
             model.export(
                 format="tflite",
@@ -175,11 +203,6 @@ class ModelTrainingService:
                 project=f"models/{game_id}"
             )
             
-            asyncio.run_coroutine_threadsafe(
-                self.send_training_progress(90, game_id),
-                self._loop
-            ).result()
-
             return str(results.save_dir) + "\\weights\\best_saved_model\\best_float32.tflite"
 
         except Exception as e:
