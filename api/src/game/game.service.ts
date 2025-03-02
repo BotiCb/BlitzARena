@@ -122,6 +122,9 @@ export class GameService {
   }
 
   async getTfLiteModel(game: GameModel): Promise<TfliteModelDto> {
+    if( !game.trainingSession ) {
+      throw new HttpException('Model not ready', 404);
+    }
     if (game.trainingSession.tfLiteModelUrl === null || game.trainingSession.tfLiteModelUrl === undefined) {
       throw new HttpException('Model not ready', 404);
     }
@@ -150,9 +153,9 @@ export class GameService {
     
     if (game.trainingSession && game.trainingSession.tfLiteModelUrl) {
       this.fileUploadService.deleteFile(game.trainingSession.tfLiteModelUrl);
+      game.trainingSession.tfLiteModelUrl = null;
+      await game.trainingSession.save();
     }
-    game.trainingSession.tfLiteModelUrl = null;
-    await game.trainingSession.save();
     await game.save();
   }
 

@@ -95,7 +95,6 @@ export class ModelTrainingService {
 
       this.axiosService.modelTrainingApiClient.post(`/training/${gameId}/start-training`);
     } catch (error) {
-      console.log(error);
       throw new HttpException('Error starting training', 503);
     }
   }
@@ -121,18 +120,31 @@ export class ModelTrainingService {
     }
     game.trainingSession.inProgress = false;
     game.trainingSession.endedAt = new Date();
+    if( game.endedAt && !errorMessage.includes("Game already ended")) {
+      errorMessage = errorMessage + " Game already ended";
+    }
+
     game.trainingSession.errorMessage = errorMessage;
     await game.trainingSession.save();
     game.unsuccessfulTrainingSessions.push(game.trainingSession);
     game.trainingSession = null;
     await game.save();
-    await this.axiosService.apiClient.post(`game/${gameId}/training-error`);
+    if(!game.endedAt) {
+      await this.axiosService.apiClient.post(`game/${gameId}/training-error`);
+    }
   }
 
   async trainingProgress(gameId: string, progress: number) {
     const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
     if (!game) {
       throw new HttpException('Game not found', 404);
+    }
+
+    if (!game.trainingSession) {
+      throw new HttpException('Training session not initialized. Send training photos first.', 400);
+    }
+    if (game.endedAt) {
+      throw new HttpException('Game already ended', 400);
     }
     await this.axiosService.apiClient.post(`game/${gameId}/training-progress/${progress}`);
   }
@@ -147,22 +159,17 @@ export class ModelTrainingService {
   }
 
   async uploadTfLiteModel(gameId: string, file: Express.Multer.File) {
-    try {
-      const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
-      if (!game) {
-        throw new HttpException('Game not found', 404);
-      }
-      if (!file) {
-        throw new HttpException('No file uploaded', 400);
-      }
-      if (game.endedAt) {
-        throw new HttpException('Game already ended', 400);
-      }
-      game.trainingSession.tfLiteModelUrl = await this.fileUploadService.uploadTfLiteModel(file);
-      await game.trainingSession.save();
-    } catch (error) {
-      console.log(error);
-      throw error;
+    const game = await this.gameModel.findOne({ gameId }).populate('trainingSession').exec();
+    if (!game) {
+      throw new HttpException('Game not found', 404);
     }
+    if (!file) {
+      throw new HttpException('No file uploaded', 400);
+    }
+    if (game.endedAt) {
+      throw new HttpException('Game already ended', 400);
+    }
+    game.trainingSession.tfLiteModelUrl = await this.fileUploadService.uploadTfLiteModel(file);
+    await game.trainingSession.save();
   }
 }

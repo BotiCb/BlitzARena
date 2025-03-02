@@ -25,9 +25,9 @@ export class PlayerInGameGuard implements CanActivate {
       throw new HttpException('Game not found', 404);
     }
 
-    // if (!game.players.map((player) => player.userId.toString()).includes(user._id.toString())) {
-    //   throw new ForbiddenException('You are not a player in this game');
-    // }
+    if (!game.players.map((player) => player.userId.toString()).includes(user._id.toString())) {
+      throw new ForbiddenException('You are not a player in this game');
+    }
 
     request['game'] = game;
     return true;
