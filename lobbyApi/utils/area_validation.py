@@ -124,7 +124,7 @@ def are_coordinates_within_distance(coord1: Coordinates, coord2: Coordinates, di
     a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     distance_between = R * c  # Distance in meters
-
+    print (f"Distance between {coord1} and {coord2}: {distance_between} meters")
     return distance_between < distance
 
 

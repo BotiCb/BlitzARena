@@ -7,17 +7,13 @@ import { GameRoomWebSocketService } from '~/services/websocket/game-room.websock
 import { GameArea, TEAM } from '~/utils/types/types';
 
 export const useGameRoom = () => {
-  const { players, playerHandlerFunction, ready } = useGame();
+  const { players, playerHandlerFunction, ready, handleReadyPress } = useGame();
   const [isEveryOneReady, setIsEveryOneReady] = useState(false);
   const [gameArea, setGameArea] = useState<GameArea | null>(null);
 
   const { location } = useCoordinates();
 
   const gameRoomWebsocketService = GameRoomWebSocketService.getInstance();
-
-  const handleReadyPress = () => {
-    gameRoomWebsocketService.setMyStatus(!ready);
-  };
 
   const onGameAreaChange = (gameArea: GameArea) => {
     gameRoomWebsocketService.sendGameArea(gameArea);

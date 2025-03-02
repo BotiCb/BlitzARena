@@ -151,11 +151,11 @@ export class GameService {
     }
     game.endedAt = new Date();
     
-    if (game.trainingSession && game.trainingSession.tfLiteModelUrl) {
-      this.fileUploadService.deleteFile(game.trainingSession.tfLiteModelUrl);
-      game.trainingSession.tfLiteModelUrl = null;
-      await game.trainingSession.save();
-    }
+    // if (game.trainingSession && game.trainingSession.tfLiteModelUrl) {
+    //   this.fileUploadService.deleteFile(game.trainingSession.tfLiteModelUrl);
+    //   game.trainingSession.tfLiteModelUrl = null;
+    //   await game.trainingSession.save();
+    // }
     await game.save();
   }
 

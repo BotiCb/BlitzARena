@@ -25,6 +25,7 @@ type GameContextType = {
   model: Model | null;
   trainingProgress: number;
   ready: boolean;
+  handleReadyPress: () => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -65,6 +66,14 @@ export const GameProvider: React.FC<{
     }
     gameWebsocketService.startNextGamePhase();
   };
+
+  const handleReadyPress = () => {
+    gameWebsocketService.setMyStatus(!ready);
+  };
+
+  useEffect(() => {
+    console.log(players);
+  }, [ready, players]);
 
   useEffect(() => {
     gameWebsocketService.setNavigationHandler(navigation);
@@ -107,6 +116,7 @@ export const GameProvider: React.FC<{
         model,
         trainingProgress,
         ready,
+        handleReadyPress,
       }}>
       {children}
     </GameContext.Provider>

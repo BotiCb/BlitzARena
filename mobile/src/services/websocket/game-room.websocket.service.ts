@@ -18,15 +18,6 @@ export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
     this.gameAreaHandlerFunction = gameAreaHandlerFunction;
   }
 
-  setMyStatus(isReady: boolean) {
-    this.websocketService.sendMessage({
-      type: WebSocketMessageType.SET_MY_STATE,
-      data: {
-        isReady,
-      },
-    });
-  }
-
   onPhaseInfo = (message: WebSocketMsg) => {
     const playeReadyArray = message.data as { playerId: string; isReady: boolean }[];
     GameRoomWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
@@ -42,7 +33,9 @@ export class GameRoomWebSocketService extends AbstractCustomWebSocketService {
     GameRoomWebSocketService.isPhaseInfosNeededHandlerFunction(false);
   };
   close(): void {
-    this.websocketService.offMessageType('player_status');
+    this.websocketService.offMessageType('game_room_phase_info');
+    this.websocketService.offMessageType('player_team_selected');
+    this.websocketService.offMessageType('game_area');
   }
 
   selectTeam = (team: TEAM) => {

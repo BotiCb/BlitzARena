@@ -3,6 +3,7 @@ from game_phase_services.match_phase_services.match_pase_abstract_service import
 from game_phase_services.phase_abstract_service import PhaseAbstractService
 from game.game_context import GameContext
 from game_phase_services.match_phase_services.round_waiting_phase_service import RoundWaitingService
+from game_phase_services.match_phase_services.match_context import MatchContext
 from models.message import Message
 
 
@@ -13,8 +14,12 @@ class MatchService(PhaseAbstractService):
         super().__init__(context)
         self.current_round = 0
         self.total_rounds = 10
+        self.match_context = MatchContext(game_context=context,
+                                          transition_to_match_phase_callback=self.trainsition_to_match_phase,
+                                          get_round_number_callback= lambda: self.current_round
+                                          )
         self.match_phases_services: Dict[str, MatchPhaseAbstractService] = {
-            "waiting-for-players": RoundWaitingService(context),
+            "waiting-for-players": RoundWaitingService(self.match_context),
             # "battle": RoundBattleService(context)
         }
         

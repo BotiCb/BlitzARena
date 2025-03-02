@@ -22,7 +22,6 @@ export const GamerRoomScreen = () => {
     model,
     trainingProgress,
     isPhaseInfosNeeded,
-    ready,
   } = useGame();
 
   const {
@@ -31,6 +30,7 @@ export const GamerRoomScreen = () => {
     handleTeamSelection,
     gameArea,
     onGameAreaChange,
+    ready,
   } = useGameRoom();
 
   if (isPhaseInfosNeeded) {

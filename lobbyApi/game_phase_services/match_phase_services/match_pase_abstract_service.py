@@ -20,7 +20,7 @@ class MatchPhaseAbstractService(ABC):
     
     def _unregister_handlers(self):
         for handler_type in self._registered_handlers:
-            self.context.game_context.gwebsockets.unregister_handler(handler_type)
+            self.context.game_context.websockets.unregister_handler(handler_type)
         self._registered_handlers.clear()
         
         
@@ -34,7 +34,7 @@ class MatchPhaseAbstractService(ABC):
                     raise ValueError("Longitude and latitude must be provided.")
                 player  = self.context.game_context.get_player(player_id)
                 player.set_coordinates(Coordinates(longitude, latitude))
-                await self.handle_player_position_change(player, message)
+                await self.handle_player_position_change(player)
         except (KeyError, ValueError) as e:
             await self.context.game_context.websockets.send_error(player_id, f"Error: {e}")
             

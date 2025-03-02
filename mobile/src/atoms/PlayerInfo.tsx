@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 5,
     height: 'auto',
+    color: 'grey',
   },
   menuContainer: {
     position: 'relative',

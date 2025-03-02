@@ -12,14 +12,6 @@ export class LobbyWebSocketService extends AbstractCustomWebSocketService {
 
  
 
-  setMyStatus(isReady: boolean) {
-    this.websocketService.sendMessage({
-      type: WebSocketMessageType.SET_MY_STATE,
-      data: {
-        isReady,
-      },
-    });
-  }
 
   onLobbyPhaseInfo = (message: WebSocketMsg) => {
     const playeReadyArray = message.data as { playerId: string; isReady: boolean }[];
@@ -37,11 +29,6 @@ export class LobbyWebSocketService extends AbstractCustomWebSocketService {
   };
 
   close(): void {
-    this.websocketService.offMessageType('player_status');
-    GameWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
-      return prevPlayers.map((player: Player) => {
-        return { ...player, isReady: false };
-      });
-    });
+    this.websocketService.offMessageType('lobby_phase_info');
   }
 }

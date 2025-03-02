@@ -40,7 +40,6 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     this.websocketService.onMessageType('training_progress', this.handleTrainingProgressEvent);
     this.websocketService.onMessageType('player_status', this.setPlayerStatus);
 
-
     this.startPingInterval();
   }
   private startPingInterval() {
@@ -228,6 +227,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
         return { ...player, isReady: false };
       });
     });
+    this.readyHandlerFunction(false);
     AbstractCustomWebSocketService.isPhaseInfosNeededHandlerFunction(true);
   };
 
@@ -337,5 +337,12 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     });
   };
 
-  
+  setMyStatus(isReady: boolean) {
+    this.websocketService.sendMessage({
+      type: WebSocketMessageType.SET_MY_STATE,
+      data: {
+        isReady,
+      },
+    });
+  }
 }
