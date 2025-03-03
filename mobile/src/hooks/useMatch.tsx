@@ -1,20 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-import { MatchWebSocketService } from "~/services/websocket/match-websocket.service";
-import { MatchPhase } from "~/utils/types/types";
-import useCoordinates from "./useCoordinates";
+import { MatchWebSocketService } from '~/services/websocket/match-websocket.service';
+import { MatchPhase } from '~/utils/types/types';
+import useCoordinates from './useCoordinates';
 
 export const useMatch = () => {
   const [round, setRound] = useState<number>(1);
   const [maxRounds, setMaxRounds] = useState<number>(10);
-  const [matchPhase, setMatchPhase] = useState<MatchPhase>("initializing");
+  const [matchPhase, setMatchPhase] = useState<MatchPhase>('initializing');
   const matchWebSocketService = MatchWebSocketService.getInstance();
   const { location } = useCoordinates({
-    accuracy: 5,
-    timeInterval: 1000,
-    distanceInterval: 0,
+    keepRefreshing: true,
+    refreshTimeInterval: 2000,
+    options: {
+      accuracy: 5,
+      timeInterval: 1000,
+      distanceInterval: 0,
+    },
   });
-
 
   useEffect(() => {
     if (location) {
@@ -24,7 +27,6 @@ export const useMatch = () => {
       });
     }
   }, [location]);
-
 
   useEffect(() => {
     matchWebSocketService.setWebSocketEventListeners();
@@ -37,10 +39,9 @@ export const useMatch = () => {
     };
   }, []);
 
-
   return {
     round,
     maxRounds,
-    matchPhase
+    matchPhase,
   };
 };

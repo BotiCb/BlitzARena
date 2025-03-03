@@ -11,6 +11,7 @@ interface PlayerInfoProps {
   isYou: boolean;
   onSetAsHost: () => void;
   onRemovePlayer: () => void;
+  color?: string;
 }
 
 export const PlayerInfo: React.FC<PlayerInfoProps> = ({
@@ -19,14 +20,15 @@ export const PlayerInfo: React.FC<PlayerInfoProps> = ({
   onSetAsHost,
   onRemovePlayer,
   isYou,
+  color="black",
 }) => {
   const [menuVisible, setMenuVisible] = useState(false);
 
   return (
     <Provider>
-      <View style={styles.container}>
+      <View style={[styles.container, { borderColor: color }]}>
         {!player.isConnected && (
-          <MaterialCommunityIcons name="power-plug-off" size={24} color="black" />
+          <MaterialCommunityIcons name="power-plug-off" size={24} color={color} />
         )}
 
         <Image
@@ -38,15 +40,15 @@ export const PlayerInfo: React.FC<PlayerInfoProps> = ({
           }
         />
 
-        <Text style={styles.text}>{player.firstName + ' ' + player.lastName}</Text>
-        {isYou && <Text style={styles.text}>(You)</Text>}
+        <Text style={[styles.text, { color }]} >{player.firstName + ' ' + player.lastName}</Text>
+        {isYou && <Text style={[styles.text, { color }]}>(You)</Text>}
 
         {player.isHost && <MaterialCommunityIcons name="crown" size={24} color="gold" />}
 
         {player.isReady ? (
           <Ionicons name="checkmark-circle" size={24} color="green" />
         ) : (
-          <Ionicons name="checkmark-circle-outline" size={24} color="black" />
+          <Ionicons name="checkmark-circle-outline" size={24} color={color} />
         )}
 
         {areYouHost && !isYou && (
@@ -58,7 +60,7 @@ export const PlayerInfo: React.FC<PlayerInfoProps> = ({
                 <TouchableOpacity
                   onPress={() => setMenuVisible(!menuVisible)}
                   style={styles.menuButton}>
-                  <MaterialCommunityIcons name="dots-vertical" size={24} color="black" />
+                  <MaterialCommunityIcons name="dots-vertical" size={24} color={color} />
                 </TouchableOpacity>
               }>
               <Menu.Item onPress={onRemovePlayer} title="Remove Player" />
@@ -96,7 +98,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 5,
     height: 'auto',
-    color: 'grey',
   },
   menuContainer: {
     position: 'relative',

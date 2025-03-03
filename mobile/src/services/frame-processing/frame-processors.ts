@@ -135,11 +135,11 @@ export function InBattleFrameProcessor(
   lastUpdateTime: ISharedValue<number>,
   detections: ISharedValue<Detection | null>,
   paint: SkPaint
-): DrawableFrameProcessor {
-  return useSkiaFrameProcessor(
+): ReadonlyFrameProcessor {
+  return useFrameProcessor(
     (frame) => {
       'worklet';
-      frame.render();
+      //frame.render();
 
 
       runAtTargetFps(CAMERA_CONSTANTS.FPS, () => {
@@ -204,9 +204,9 @@ export function InBattleFrameProcessor(
       ) {
         detections.value = null;
       }
-      if (detections.value) {
-        drawDetections(frame, detections.value.objectDetection, paint);
-      }
+      // if (detections.value) {
+      //   drawDetections(frame, detections.value.objectDetection, paint);
+      // }
     },
     [detections]
   );

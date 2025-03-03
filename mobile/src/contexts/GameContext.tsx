@@ -71,9 +71,6 @@ export const GameProvider: React.FC<{
     gameWebsocketService.setMyStatus(!ready);
   };
 
-  useEffect(() => {
-    console.log(players);
-  }, [ready, players]);
 
   useEffect(() => {
     gameWebsocketService.setNavigationHandler(navigation);

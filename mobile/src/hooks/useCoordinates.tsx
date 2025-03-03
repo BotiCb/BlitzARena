@@ -1,58 +1,86 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import * as Location from 'expo-location';
 
-const useCoordinates = (options: Location.LocationOptions = {}) => {
+const useCoordinates = (
+  {
+    keepRefreshing = false,
+    refreshTimeInterval = 5000,
+    options = {}
+  }: {
+    keepRefreshing?: boolean;
+    refreshTimeInterval?: number;
+    options?: Location.LocationOptions;
+  } = {}
+) => {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const prevLocationRef = useRef<Location.LocationObject | null>(null);
   const optionsRef = useRef(options);
+  const isMountedRef = useRef(true);
 
-  // Keep optionsRef updated with the latest options
-  optionsRef.current = options;
+  // Update refs when props change
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
+
+  const updateLocation = useCallback(async () => {
+    try {
+      const currentLocation = await Location.getCurrentPositionAsync(optionsRef.current);
+      
+      // Check if coordinates actually changed
+      const hasChanged = !prevLocationRef.current || 
+        currentLocation.coords.latitude !== prevLocationRef.current.coords.latitude ||
+        currentLocation.coords.longitude !== prevLocationRef.current.coords.longitude;
+
+      if (hasChanged && isMountedRef.current) {
+        setLocation(currentLocation);
+        prevLocationRef.current = currentLocation;
+      }
+    } catch (err: any) {
+      if (isMountedRef.current) setError(err.message);
+    }
+  }, []);
 
   useEffect(() => {
-    let isMounted = true;
-    let intervalId: NodeJS.Timeout;
+    let intervalId: NodeJS.Timeout | null = null;
 
-    (async () => {
+    const requestLocation = async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
-
+        
         if (status !== 'granted') {
-          if (isMounted) setError('Permission to access location was denied');
+          if (isMountedRef.current) setError('Permission to access location was denied');
           return;
         }
 
-        // Fetch initial location immediately
-        const initialLocation = await Location.getCurrentPositionAsync(optionsRef.current);
-        if (isMounted) setLocation(initialLocation);
+        // Initial location fetch
+        await updateLocation();
 
-        // Set up interval to refresh every 5 seconds
-        intervalId = setInterval(async () => {
-          try {
-            const currentLocation = await Location.getCurrentPositionAsync(optionsRef.current);
-            if (isMounted) setLocation(currentLocation);
-          } catch (err: any) {
-            if (isMounted) setError(err.message);
-          }
-        }, 2000); // 5000ms = 5 seconds
-
+        // Set up interval if needed
+        if (keepRefreshing) {
+          intervalId = setInterval(updateLocation, refreshTimeInterval);
+        }
       } catch (err: any) {
-        if (isMounted) setError(err.message);
+        if (isMountedRef.current) setError(err.message);
       } finally {
-        if (isMounted) setIsLoading(false);
+        if (isMountedRef.current) setIsLoading(false);
       }
-    })();
+    };
 
-    // Cleanup on unmount
+    requestLocation();
+
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
       if (intervalId) clearInterval(intervalId);
     };
-  }, []); // Empty dependency array ensures effect runs once
+  }, [keepRefreshing, refreshTimeInterval, updateLocation]);
 
+  // Deduplicated logging
   useEffect(() => {
-    console.log(location);
+    if (location && location !== prevLocationRef.current) {
+      console.log('New coordinates:', location.coords);
+    }
   }, [location]);
 
   return { location, isLoading, error };

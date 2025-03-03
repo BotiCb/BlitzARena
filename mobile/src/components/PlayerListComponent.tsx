@@ -10,6 +10,7 @@ interface PlayerListComponentProps {
   areYouHost: boolean;
   onSetAsHost: (playerId: string) => void;
   onRemovePlayer: (playerId: string) => void;
+  color?: string;
 }
 
 export const PlayerListComponent: React.FC<PlayerListComponentProps> = ({
@@ -18,6 +19,7 @@ export const PlayerListComponent: React.FC<PlayerListComponentProps> = ({
   onSetAsHost,
   yourSessionId,
   onRemovePlayer,
+  color,
 }) => {
   return (
     <View style={styles.container}>
@@ -29,6 +31,7 @@ export const PlayerListComponent: React.FC<PlayerListComponentProps> = ({
             onSetAsHost={() => onSetAsHost(player.sessionID)}
             onRemovePlayer={() => onRemovePlayer(player.sessionID)}
             isYou={player.sessionID === yourSessionId}
+            color={color}
           />
         </View>
       ))}

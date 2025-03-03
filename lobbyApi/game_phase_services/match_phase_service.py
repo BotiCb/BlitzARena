@@ -16,7 +16,8 @@ class MatchService(PhaseAbstractService):
         self.total_rounds = 10
         self.match_context = MatchContext(game_context=context,
                                           transition_to_match_phase_callback=self.trainsition_to_match_phase,
-                                          get_round_number_callback= lambda: self.current_round
+                                          get_round_number_callback= lambda: self.current_round,
+                                          increment_round_callback=self.increment_round
                                           )
         self.match_phases_services: Dict[str, MatchPhaseAbstractService] = {
             "waiting-for-players": RoundWaitingService(self.match_context),
@@ -66,6 +67,9 @@ class MatchService(PhaseAbstractService):
                 "current_phase": self.current_match_phase
             }})
         )
+        
+    def increment_round(self):
+        self.current_round += 1
 
 
 

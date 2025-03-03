@@ -11,7 +11,15 @@ export const useGameRoom = () => {
   const [isEveryOneReady, setIsEveryOneReady] = useState(false);
   const [gameArea, setGameArea] = useState<GameArea | null>(null);
 
-  const { location } = useCoordinates();
+  const { location } = useCoordinates({
+    keepRefreshing: true,
+    refreshTimeInterval: 5000,
+    options: {
+      accuracy: 5,
+      timeInterval: 1000,
+      distanceInterval: 0,
+    },
+  });
 
   const gameRoomWebsocketService = GameRoomWebSocketService.getInstance();
 
