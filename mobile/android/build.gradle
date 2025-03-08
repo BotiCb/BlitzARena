@@ -16,9 +16,11 @@ buildscript {
         mavenCentral()
     }
     dependencies {
+        classpath("com.android.tools.build:gradle")
         classpath('com.android.tools.build:gradle')
         classpath('com.facebook.react:react-native-gradle-plugin')
         classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+        classpath ('org.tensorflow:tensorflow-lite-gpu:2.14.0')
     }
 }
 
