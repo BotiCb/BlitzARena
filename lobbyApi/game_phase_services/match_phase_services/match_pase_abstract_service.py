@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from game.game_context import GameContext
 from game_phase_services.match_phase_services.match_context import MatchContext
 from models.player import Player
@@ -9,10 +10,10 @@ class MatchPhaseAbstractService(ABC):
     def __init__(self, context: MatchContext):
         self.context = context
         self._registered_handlers = []
-        self.ends_at = None
+        self.ends_at: datetime = None
         
     @abstractmethod
-    def on_enter(self):
+    async def on_enter(self):
         pass
     
     @abstractmethod

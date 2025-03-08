@@ -2,8 +2,9 @@ from typing import Dict
 from game_phase_services.match_phase_services.match_pase_abstract_service import MatchPhaseAbstractService
 from game_phase_services.phase_abstract_service import PhaseAbstractService
 from game.game_context import GameContext
-from game_phase_services.match_phase_services.round_waiting_phase_service import RoundWaitingService
+from game_phase_services.match_phase_services.waiting_match_phase_service import WaitingMatchPhaseService
 from game_phase_services.match_phase_services.match_context import MatchContext
+from game_phase_services.match_phase_services.battle_match_phase_service import BattleMatchPhaseService
 from models.message import Message
 
 
@@ -20,8 +21,8 @@ class MatchService(PhaseAbstractService):
                                           increment_round_callback=self.increment_round
                                           )
         self.match_phases_services: Dict[str, MatchPhaseAbstractService] = {
-            "waiting-for-players": RoundWaitingService(self.match_context),
-            # "battle": RoundBattleService(context)
+            "waiting-for-players": WaitingMatchPhaseService(self.match_context),
+            "battle": BattleMatchPhaseService(self.match_context)
         }
         
         self.current_match_phase = "waiting-for-players"
@@ -45,8 +46,8 @@ class MatchService(PhaseAbstractService):
             "current_round": self.current_round,
             "total_rounds": self.total_rounds,
             "current_phase": self.current_match_phase,
-            "ends_at": self.current_match_phase_service.ends_at
-        }}))
+            "ends_at": self.current_match_phase_service.ends_at.isoformat() if self.current_match_phase_service.ends_at else None
+            }}))
         
         
     async def on_player_position(self, player_id: str, message: dict):
@@ -60,13 +61,15 @@ class MatchService(PhaseAbstractService):
         self.current_match_phase_service = self.match_phases_services.get(phase)
         
         if self.current_match_phase_service:
-            self.current_match_phase_service.on_enter()
+            for player in self.context.players:
+                player.set_ready(False)
+            await self.current_match_phase_service.on_enter()
             
         await self.context.websockets.send_to_all(
             Message({"type": "match_phase", "data": {
                 "current_round": self.current_round,
-                "current_phase": self.current_match_phase
-            }})
+                "current_phase": self.current_match_phase,
+                "ends_at": self.current_match_phase_service.ends_at.isoformat() if self.current_match_phase_service.ends_at else None}})
         )
         
     def increment_round(self):
