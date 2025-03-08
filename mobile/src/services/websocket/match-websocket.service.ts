@@ -1,6 +1,7 @@
 import { MatchPhase } from "~/utils/types/types";
 import { AbstractCustomWebSocketService } from "./custom-websocket.abstract-service";
 import { WebSocketMsg } from "./websocket-types";
+import { Player } from "~/utils/models";
 
 export class MatchWebSocketService extends AbstractCustomWebSocketService {
     private currentRoundHandlerFunction: (round: number) => void = () => {};
@@ -34,7 +35,8 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
     
 
     onPhaseInfo = (message: WebSocketMsg) => {
-        const { currentRound, totalRounds, currentPhase } = message.data;
+        const { currentRound, totalRounds, currentPhase, endsAt } = message.data;
+        this.timerHandlerFunction(endsAt || '');
         this.currentRoundHandlerFunction(currentRound);
         this.totalRoundsHandlerFunction(totalRounds);
         this.currentMatchPhaseHandlerFunction(currentPhase);
@@ -47,9 +49,13 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
     }
 
     onMatchPhase = (message: WebSocketMsg) => {
-       const { currentRound, currentPhase } = message.data;
+       const { currentRound, currentPhase, endsAt } = message.data;
+       this.timerHandlerFunction(endsAt || '');
        this.currentRoundHandlerFunction(currentRound);
        this.currentMatchPhaseHandlerFunction(currentPhase);
+       AbstractCustomWebSocketService.playersHandlerFunction((players: Player[]) => {
+           return players.map((player: Player) => ({ ...player, isReady: false }));
+       });
     }
 
     close(): void {

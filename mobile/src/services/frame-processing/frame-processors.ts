@@ -102,7 +102,7 @@ export function trainingFrameProcessor(
         });
         const start = Date.now();
         const outputs = model.runSync([resized]);
-        console.log('Inference time: ', Date.now() - start);
+        //console.log('Inference time: ', Date.now() - start);
         const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
           outputs,
           model.outputs[0].shape[2]
@@ -158,7 +158,7 @@ export function InBattleSkiaFrameProcessor(
         try {
         const outputs = model.runSync([resized]);
         
-        console.log('pose time: ', Date.now() - start);
+        //console.log('pose time: ', Date.now() - start);
         const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
           outputs,
           model.outputs[0].shape[2]
@@ -184,7 +184,7 @@ export function InBattleSkiaFrameProcessor(
 
           const start = Date.now();
           const outputs2 = model2.runSync([resized3]);
-          console.log('class time: ', Date.now() - start);
+          //console.log('class time: ', Date.now() - start);
           const classification: Classification = decodeYoloClassifyOutput(outputs2[0]);
 
           outputs2.length = 0;

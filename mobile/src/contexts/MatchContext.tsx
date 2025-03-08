@@ -1,21 +1,30 @@
-import { useEffect, useState } from 'react';
-
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { MatchWebSocketService } from '~/services/websocket/match-websocket.service';
 import { MatchPhase } from '~/utils/types/types';
-import useCoordinates from './useCoordinates';
+import useCoordinates from '~/hooks/useCoordinates';
+import React from 'react'; 
 
-export const useMatch = () => {
+type MatchContextType = {
+  round: number;
+  maxRounds: number;
+  matchPhase: MatchPhase;
+  matchPhaseEndsAt: string;
+};
+
+const MatchContext = createContext<MatchContextType | undefined>(undefined);
+
+export const MatchProvider = ({ children }: { children: ReactNode }) => {
   const [round, setRound] = useState<number>(1);
   const [maxRounds, setMaxRounds] = useState<number>(10);
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('initializing');
+  const [matchPhaseEndsAt, setMatchPhaseEndsAt] = useState<string>('');
   const matchWebSocketService = MatchWebSocketService.getInstance();
+
   const { location } = useCoordinates({
     keepRefreshing: true,
     refreshTimeInterval: 2000,
     options: {
-      accuracy: 5,
-      timeInterval: 1000,
-      distanceInterval: 0,
+      accuracy: 6,
     },
   });
 
@@ -26,22 +35,35 @@ export const useMatch = () => {
         longitude: location.coords.longitude,
       });
     }
-  }, [location]);
+  }, [location, matchWebSocketService]);
 
   useEffect(() => {
     matchWebSocketService.setWebSocketEventListeners();
     matchWebSocketService.setCurrentRoundHandlerFunction(setRound);
     matchWebSocketService.setTotalRoundsHandlerFunction(setMaxRounds);
     matchWebSocketService.setCurrentMatchPhaseHandlerFunction(setMatchPhase);
+    matchWebSocketService.setTimerHandlerFunction(setMatchPhaseEndsAt);
     matchWebSocketService.readyForPhase();
+
     return () => {
       matchWebSocketService.close();
     };
-  }, []);
+  }, [matchWebSocketService]);
 
-  return {
+  const value = {
     round,
     maxRounds,
     matchPhase,
+    matchPhaseEndsAt,
   };
+
+  return <MatchContext.Provider value={value}>{children}</MatchContext.Provider>;
+};
+
+export const useMatch = () => {
+  const context = useContext(MatchContext);
+  if (!context) {
+    throw new Error('useMatch must be used within a MatchProvider');
+  }
+  return context;
 };

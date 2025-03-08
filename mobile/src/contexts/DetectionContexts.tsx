@@ -34,7 +34,7 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
   const detectedPersonRef = useRef<DetectedPerson | null>(null);
 
   const detectionHandler = useCallback(() => {
-    console.log('detections', detections.value);
+    //console.log('detections', detections.value);
     if (!detections.value) {
       if (detectedPersonRef.current) {
         detectedPersonRef.current = null;

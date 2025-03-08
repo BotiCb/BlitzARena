@@ -11,6 +11,7 @@ import ModelTrainingScreen from '~/screens/ModelTrainingScreen';
 import SplashScreen from '~/screens/SplashScreen';
 import InMatchScreen from '~/screens/InMatchScreen';
 import { DetectionProvider } from '~/contexts/DetectionContexts';
+import { MatchProvider } from '~/contexts/MatchContext';
 
 const GameStack = () => {
   const route = useRoute<RouteProp<AppStackParamList, 'GameStack'>>();
@@ -30,27 +31,27 @@ const GameContent = () => {
       <Text>{ping}</Text>
       {(() => {
         switch (gamePhase) {
-          // case 'lobby':
-          //   return <LobbyScreen />;
-          // case 'training':
-          //   return (
-          //     <DetectionProvider>
-          //       <ModelTrainingScreen />
-          //     </DetectionProvider>
-          //   );
-          // case 'game-room':
-          //   return <GamerRoomScreen />;
-          // case 'match':
-          //   return (
-          //     <DetectionProvider>
-          //       <InMatchScreen />
-          //     </DetectionProvider>
-          //   );
-          default:
+          case 'lobby':
+            return <LobbyScreen />;
+          case 'training':
             return (
               <DetectionProvider>
-                <InMatchScreen />
+                <ModelTrainingScreen />
               </DetectionProvider>
+            );
+          case 'game-room':
+            return <GamerRoomScreen />;
+          case 'match':
+            return (
+              <DetectionProvider>
+                  <MatchProvider>
+                    <InMatchScreen />
+                  </MatchProvider>
+              </DetectionProvider>
+            );
+          default:
+            return (
+              <SplashScreen />
             );
         }
       })()}

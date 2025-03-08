@@ -9,7 +9,7 @@ export type TrainingPhase =
   | 'training-ready-for-group';
 
 
-export type MatchPhase = 'initializing' | 'waiting-for-players' | 'match' ;
+export type MatchPhase = 'initializing' | 'waiting-for-players' | 'battle' ;
 export type Model = {
   path: string;
   mapperArray: Record<number, string>;

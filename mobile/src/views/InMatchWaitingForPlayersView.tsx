@@ -3,12 +3,12 @@ import { View } from 'react-native';
 import BigCountdownTimer from '~/atoms/BigCountdownTimer';
 import { PlayerListComponent } from '~/components/PlayerListComponent';
 import { useGame } from '~/contexts/GameContext';
-import { useMatchWaitingForPlayers } from '~/hooks/useMatchWaitingForPlayers';
+import { useMatch } from '~/contexts/MatchContext';
 
 export const InMatchWaitingForPlayersView = () => {
   const { players, areYouHost, setPlayerAsHost, userSessionId, onRemovePlayer } = useGame();
 
-  const { timerEndsAt } = useMatchWaitingForPlayers();
+  const { matchPhaseEndsAt } = useMatch();
   return (
     <View>
       <PlayerListComponent
@@ -19,7 +19,7 @@ export const InMatchWaitingForPlayersView = () => {
         onRemovePlayer={onRemovePlayer}
         color="white"
       />
-      {timerEndsAt && <BigCountdownTimer endsAt={timerEndsAt} />}
+      {matchPhaseEndsAt && <BigCountdownTimer endsAt={matchPhaseEndsAt} />}
     </View>
   );
 };
