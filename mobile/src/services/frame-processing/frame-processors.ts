@@ -19,7 +19,7 @@ import {
   CAMERA_CONSTANTS,
   TRAINING_CAMERA_CONSTANTS,
 } from '~/utils/constants/frame-processing-constans';
-import { Classification, Detection, ObjectDetection } from '~/utils/types/detection-types';
+import { BODY_PART, Classification, Detection, ObjectDetection } from '~/utils/types/detection-types';
 
 const { resize } = useResizePlugin.createResizePlugin();
 
@@ -88,7 +88,7 @@ export function trainingFrameProcessor(
       'worklet';
       //frame.render();
 
-      runAtTargetFps(TRAINING_CAMERA_CONSTANTS.FPS, () => {
+      runAtTargetFps(5, () => {
         'worklet';
         const resized = resize(frame, {
           scale: {
@@ -100,9 +100,9 @@ export function trainingFrameProcessor(
           dataType: 'float32',
           crop: { x: 0, y: 0, width: frame.width, height: frame.height },
         });
-
+        const start = Date.now();
         const outputs = model.runSync([resized]);
-
+        console.log('Inference time: ', Date.now() - start);
         const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
           outputs,
           model.outputs[0].shape[2]
@@ -129,20 +129,20 @@ export function trainingFrameProcessor(
     [model, detections]
   );
 }
-export function InBattleFrameProcessor(
+export function InBattleSkiaFrameProcessor(
   model: TensorflowModel,
   model2: TensorflowModel,
   lastUpdateTime: ISharedValue<number>,
   detections: ISharedValue<Detection | null>,
   paint: SkPaint
-): ReadonlyFrameProcessor {
-  return useFrameProcessor(
+): DrawableFrameProcessor {
+  return useSkiaFrameProcessor(
     (frame) => {
       'worklet';
-      //frame.render();
+      frame.render();
 
 
-      runAtTargetFps(CAMERA_CONSTANTS.FPS, () => {
+      runAtTargetFps(15, () => {
         'worklet';
         const resized = resize(frame, {
           scale: {
@@ -154,9 +154,11 @@ export function InBattleFrameProcessor(
           dataType: 'float32',
           crop: { x: 0, y: 0, width: frame.width, height: frame.height },
         });
-
+        const start = Date.now();
+        try {
         const outputs = model.runSync([resized]);
-
+        
+        console.log('pose time: ', Date.now() - start);
         const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
           outputs,
           model.outputs[0].shape[2]
@@ -180,7 +182,9 @@ export function InBattleFrameProcessor(
             crop: cropData,
           });
 
+          const start = Date.now();
           const outputs2 = model2.runSync([resized3]);
+          console.log('class time: ', Date.now() - start);
           const classification: Classification = decodeYoloClassifyOutput(outputs2[0]);
 
           outputs2.length = 0;
@@ -190,6 +194,101 @@ export function InBattleFrameProcessor(
               objectDetection: objDetection,
               classification,
               bodyPart: getHitBodyPartFromKeypoints(objDetection.keypoints),
+            };
+          }
+          lastUpdateTime.value = Date.now();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      });
+
+
+      const currentTime = Date.now();
+      if (
+        currentTime - lastUpdateTime.value >
+        (1000 / CAMERA_CONSTANTS.FPS) * CAMERA_CONSTANTS.MAX_FRAMES_WITHOUT_DETECTION
+      ) {
+        detections.value = null;
+      }
+      if (detections.value) {
+        drawDetections(frame, detections.value.objectDetection, paint);
+      }
+    },
+    [detections]
+  );
+}
+
+
+
+export function InBattleFrameProcessor(
+  model: TensorflowModel,
+  model2: TensorflowModel,
+  lastUpdateTime: ISharedValue<number>,
+  detections: ISharedValue<Detection | null>,
+  paint: SkPaint
+): ReadonlyFrameProcessor {
+  return useFrameProcessor(
+    (frame) => {
+      'worklet';
+      
+
+
+      runAtTargetFps(detections.value ? 10 : 3, () => {
+        'worklet';
+        const resized = resize(frame, {
+          scale: {
+            width: model.inputs[0].shape[1],
+            height: model.inputs[0].shape[2],
+          },
+          pixelFormat: 'rgb',
+          rotation: '90deg',
+          dataType: 'float32',
+          crop: { x: 0, y: 0, width: frame.width, height: frame.height },
+        });
+        const start = performance.now();
+        const outputs = model.runSync([resized]);
+        
+        //console.log('pose time: ', performance.now() - start);
+        const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
+          outputs,
+          model.outputs[0].shape[2]
+        );
+        outputs.length = 0;
+        if (!objDetection) {
+          return;
+        }
+        const bodyPart = getHitBodyPartFromKeypoints(objDetection.keypoints);
+        if (objDetection) {
+          const cropData = {
+            x: objDetection.boundingBox.x1 * frame.width,
+            y: objDetection.boundingBox.y2 * frame.height,
+            height: objDetection.boundingBox.w * frame.height,
+            width: objDetection.boundingBox.h * frame.width,
+          };
+          const resized3 = resize(frame, {
+            scale: {
+              width: model2.inputs[0].shape[1],
+              height: model2.inputs[0].shape[2],
+            },
+            pixelFormat: 'rgb',
+            rotation: '90deg',
+            dataType: 'float32',
+            crop: cropData,
+          });
+
+          const start = performance.now();
+          const outputs2 = model2.runSync([resized3]);
+          console.log('class time: ', performance.now() - start);
+          const classification: Classification = decodeYoloClassifyOutput(outputs2[0]);
+
+          outputs2.length = 0;
+
+          if (objDetection) {
+            detections.value = {
+              objectDetection: objDetection,
+              classification,
+              bodyPart: BODY_PART.ARM,
             };
           }
           lastUpdateTime.value = Date.now();
@@ -204,9 +303,6 @@ export function InBattleFrameProcessor(
       ) {
         detections.value = null;
       }
-      // if (detections.value) {
-      //   drawDetections(frame, detections.value.objectDetection, paint);
-      // }
     },
     [detections]
   );

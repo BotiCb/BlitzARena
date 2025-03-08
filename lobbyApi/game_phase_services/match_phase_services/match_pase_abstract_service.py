@@ -9,6 +9,7 @@ class MatchPhaseAbstractService(ABC):
     def __init__(self, context: MatchContext):
         self.context = context
         self._registered_handlers = []
+        self.ends_at = None
         
     @abstractmethod
     def on_enter(self):

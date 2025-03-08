@@ -44,7 +44,8 @@ class MatchService(PhaseAbstractService):
         await self.context.websockets.send_to_player(player_id, Message({"type": "match_phase_info", "data": {
             "current_round": self.current_round,
             "total_rounds": self.total_rounds,
-            "current_phase": self.current_match_phase
+            "current_phase": self.current_match_phase,
+            "ends_at": self.current_match_phase_service.ends_at
         }}))
         
         

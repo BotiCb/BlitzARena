@@ -55,8 +55,9 @@ class RoundWaitingService(MatchPhaseAbstractService):
     async def start_countdown(self):
         self.countdown_started = True
         time_delta = timedelta(seconds=10)
+        self.ends_at = datetime.now()+ time_delta
         await self.context.game_context.websockets.send_to_all(Message({"type": "start_countdown", "data": {
-            "ends_at": (datetime.now() + time_delta).isoformat()
+            "ends_at": (self.ends_at).isoformat()
         }}))
         
         #wait fot 10 seconds

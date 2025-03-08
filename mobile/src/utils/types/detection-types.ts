@@ -1,3 +1,5 @@
+import { Player } from "../models";
+
 export type BoundingBox = {
   xc: number;
   yc: number;
@@ -67,4 +69,10 @@ export enum BODY_PART {
 export type Point = {
   x: number;
   y: number;
+};
+
+export type DetectedPerson = {
+  player: Player;
+  bodyPart: BODY_PART;
+  confidence: number;
 };

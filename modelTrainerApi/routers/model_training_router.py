@@ -7,11 +7,12 @@ from utils.jwt_handler import verify_jwt
 
 router = APIRouter()
 
-@router.post("/{game_id}/start-training")
+@router.post("/{game_id}/start-training/{image_size}")
 async def upload_training_photo(
     game_id: str,
+    image_size: int,
     model_training_service: ModelTrainingService = Depends(get_model_training_service),
 ):
     print('Starting training...')
-    asyncio.create_task(model_training_service.train(game_id))
+    asyncio.create_task(model_training_service.train(game_id, image_size))
     return {"status": "success", "message": "Training process started"}

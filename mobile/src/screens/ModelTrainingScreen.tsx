@@ -8,7 +8,7 @@ import { useTraining } from '~/hooks/useTraining';
 import { PhotosFromYouView } from '~/views/PhotosFromYouView';
 import TrainingCameraView from '~/views/TraingCameraView';
 import { TrainingReadyForGroupView } from '~/views/TrainingReadyForGroupView';
-import { useDetections } from '~/hooks/useDetections';
+import { useDetection } from '~/contexts/DetectionContexts';
 
 const ModelTrainingScreen = () => {
   const {
@@ -19,7 +19,7 @@ const ModelTrainingScreen = () => {
     takePhotos,
     handleTakephotosStateChange
   } = useTraining();
-  const { poseModel } = useDetections();
+  const { poseModel } = useDetection();
 
   const { isPhaseInfosNeeded } = useGame();
 

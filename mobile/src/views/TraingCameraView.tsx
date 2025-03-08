@@ -73,7 +73,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
       detections,
       lastUpdateTime,
       playerId,
-      model.inputs[0].shape[1]
+      TRAINING_CAMERA_CONSTANTS.OUTPUT_IMAGE_SIZE
     );
     const captureDuration = Date.now() - captureStart;
 

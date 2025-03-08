@@ -93,9 +93,9 @@ export class ModelTrainingService {
       // Save the updated training session document
       await game.trainingSession.save();
 
-      this.axiosService.modelTrainingApiClient.post(`/training/${gameId}/start-training`);
+      this.axiosService.modelTrainingApiClient.post(`/training/${gameId}/start-training/${game.trainingSession.photoSize}`);
     } catch (error) {
-      throw new HttpException('Error starting training', 503);
+      this.trainingError(gameId, error.message);
     }
   }
 

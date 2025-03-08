@@ -54,7 +54,7 @@ class ModelTrainingService:
             print(f"Error sending progress: {e}")
             raise
 
-    async def train(self, game_id: str):
+    async def train(self, game_id: str, image_size: int):
         try:
             with self._lock:
                 ModelTrainingService._active_trainings += 1
@@ -96,7 +96,7 @@ class ModelTrainingService:
                 model_path = await self._loop.run_in_executor(
                     self.executor,
                     self._train_model_sync,
-                    model, game_id, abort_event
+                    model, game_id, image_size, abort_event
                 )
             except TrainingAbortedError as e:
                 await self.handle_training_abortion(game_id, e.server_message)
@@ -142,20 +142,17 @@ class ModelTrainingService:
             )
             response.raise_for_status()
 
-    def _train_model_sync(self, model, game_id: str, abort_event: threading.Event) -> str:
+    def _train_model_sync(self, model, game_id: str, image_size: int, abort_event: threading.Event) -> str:
         try:
             os.makedirs(f"models/{game_id}", exist_ok=True)
 
             results = model.train(
                 data=f"{self.dataset_dir}/{game_id}",
-                imgsz=320,
-                rect=True,
+                imgsz=image_size,
                 epochs=5,
                 batch=200,
                 workers=0,
                 device=0,
-                amp=True,
-                half=True,
                 project=f"models/{game_id}",
                 plots=True,
                 verbose=False
@@ -198,7 +195,7 @@ class ModelTrainingService:
             model.export(
                 format="tflite",
                 batch=1,
-                imgsz=320,
+                imgsz=image_size,
                 rect=True,
                 project=f"models/{game_id}"
             )
