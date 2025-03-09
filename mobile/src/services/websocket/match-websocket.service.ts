@@ -1,13 +1,15 @@
 import { MatchPhase } from "~/utils/types/types";
 import { AbstractCustomWebSocketService } from "./custom-websocket.abstract-service";
-import { WebSocketMsg } from "./websocket-types";
+import { WebSocketMessageType, WebSocketMsg } from "./websocket-types";
 import { Player } from "~/utils/models";
+import { DetectedPerson } from "~/utils/types/detection-types";
 
 export class MatchWebSocketService extends AbstractCustomWebSocketService {
     private currentRoundHandlerFunction: (round: number) => void = () => {};
     private totalRoundsHandlerFunction: (round: number) => void = () => {};
     private currentMatchPhaseHandlerFunction: (phase: MatchPhase) => void = () => {};
     private timerHandlerFunction: (endsAt: string) => void = () => {};
+    private isAbleToShootHandlerFunction: (isAbleToShoot: boolean) => void = () => {};
 
     setCurrentRoundHandlerFunction = (handler: (round: number) => void) => {
         this.currentRoundHandlerFunction = handler;
@@ -23,6 +25,10 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
 
     setTimerHandlerFunction = (handler: (endsAt: string) => void) => {
         this.timerHandlerFunction = handler;
+    }
+
+    setIsAbleToShootHandlerFunction = (handler: (isAbleToShoot: boolean) => void) => {
+        this.isAbleToShootHandlerFunction = handler;
     }
 
     setWebSocketEventListeners(): void {
@@ -60,6 +66,13 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
 
     close(): void {
         
+    }
+
+    shoot = (detecedPerson: DetectedPerson | null) => {
+        this.websocketService.sendMessage({
+            type: WebSocketMessageType.SHOOT,
+            data: detecedPerson
+        })
     }
     
 }

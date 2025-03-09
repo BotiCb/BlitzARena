@@ -234,7 +234,7 @@ export function InBattleFrameProcessor(
       
 
 
-      runAtTargetFps(detections.value ? 10 : 3, () => {
+      runAtTargetFps(detections.value ? 5 : 3, () => {
         'worklet';
         const resized = resize(frame, {
           scale: {
@@ -279,7 +279,7 @@ export function InBattleFrameProcessor(
 
           const start = performance.now();
           const outputs2 = model2.runSync([resized3]);
-          console.log('class time: ', performance.now() - start);
+          //console.log('class time: ', performance.now() - start);
           const classification: Classification = decodeYoloClassifyOutput(outputs2[0]);
 
           outputs2.length = 0;
@@ -288,7 +288,7 @@ export function InBattleFrameProcessor(
             detections.value = {
               objectDetection: objDetection,
               classification,
-              bodyPart: BODY_PART.ARM,
+              bodyPart,
             };
           }
           lastUpdateTime.value = Date.now();

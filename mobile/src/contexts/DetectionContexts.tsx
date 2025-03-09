@@ -13,12 +13,14 @@ import { Player } from '~/utils/models';
 import { useGame } from '~/contexts/GameContext';
 import { loadTensorflowModel, TensorflowModel, useTensorflowModel } from 'react-native-fast-tflite';
 import { Platform } from 'react-native';
+import { HitPerson } from '~/services/websocket/websocket-types';
 
 type DetectionContextType = {
   detectedPerson: DetectedPerson | null;
   detections: ISharedValue<Detection | null>;
   classifyModel: TensorflowModel | null;
   poseModel: TensorflowModel | null;
+  getHitPerson: () => HitPerson | null;
 };
 
 const DetectionContext = createContext<DetectionContextType>({} as DetectionContextType);
@@ -80,13 +82,15 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
 
 
   useEffect(() => {
-    // if (model?.path) {
-    console.log('Loading model classifier:', delegate);
-    loadTensorflowModel(require(`../../assets/models/best_float32.tflite`)).then((model) => {
-      console.warn('Classify Model loaded');
-      setClassifyModel(model);
-    });
-    // }
+    if (model?.path) {
+      console.log('Loading model classifier:', delegate);
+      loadTensorflowModel({
+        url: "file://" + model.path,
+      }).then((model) => {
+        console.warn('Classify Model loaded');
+        setClassifyModel(model);
+      });
+    }
   }, [model]);
 
   const plugin = useTensorflowModel(
@@ -103,17 +107,32 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
   }, [plugin]);
 
 
+  const getHitPerson = (): HitPerson | null => {
+    const detection = detections.value;
 
-  const value = useMemo(() => ({
-    detectedPerson: detectedPersonRef.current,
+    if (!detection) {
+      return null;
+    }
+
+    const sessionID = model?.mapperArray[detection.classification.id ?? 0] as string;
+
+
+    return {
+      playerId: sessionID,
+      bodyPart: detection.bodyPart as BODY_PART,
+      confidence: Math.round(detection.classification.confidenceAdvantage * 100),
+    };
+  }
+
+  const value =
+  {
+    detectedPerson,
     detections,
     classifyModel,
-    poseModel
-  }), [
-    detectedPerson?.player?.sessionID,
-    classifyModel,
-    poseModel
-  ]);
+    poseModel,
+    getHitPerson
+  }
+
 
   return (
     <DetectionContext.Provider value={value}>

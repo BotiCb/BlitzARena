@@ -1,3 +1,4 @@
+import { BODY_PART } from '~/utils/types/detection-types';
 import { GamePhase, TEAM } from '~/utils/types/types';
 
 export type WebSocketMsg = {
@@ -21,6 +22,7 @@ export enum WebSocketMessageType {
   SELECT_TEAM = 'select_team',
   PLAYER_LOCATION = 'player_location',
   GAME_AREA_CHANGE = 'game_area_change',
+  SHOOT = 'shoot',
 }
 
 export type TrainingImage = {
@@ -43,4 +45,11 @@ export type GameWSInfo = {
   maxPlayers: number;
   isModelTrained: boolean;
   trainingProgress: number;
+};
+
+
+export type HitPerson = {
+  playerId: string;
+  confidence: number;
+  bodyPart: BODY_PART;
 };

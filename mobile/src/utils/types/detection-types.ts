@@ -76,3 +76,4 @@ export type DetectedPerson = {
   bodyPart: BODY_PART;
   confidence: number;
 };
+
