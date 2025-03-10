@@ -1,6 +1,6 @@
 import { Container } from '@shopify/react-native-skia/lib/typescript/src/renderer/Container';
 import React from 'react';
-import { View, Button, StyleSheet } from 'react-native';
+import { View, Button, StyleSheet, Text } from 'react-native';
 import SmallCountdownTimer from '~/atoms/SmallCountdownTimer';
 import { useDetection } from '~/contexts/DetectionContexts';
 import { useGame } from '~/contexts/GameContext';
@@ -11,12 +11,13 @@ import { useGunHandling } from '~/hooks/useGunHandling';
 const InMatchBattleView = () => {
 
   const { matchPhaseEndsAt } = useMatch();
-  const { shoot } = useGunHandling();
+  const { shoot, isAbleToShoot, ammoInClip, totalAmmo } = useGunHandling();
   const { getHitPerson } = useDetection();
   return (
     <View  style={styles.container}>
      <SmallCountdownTimer endsAt={matchPhaseEndsAt}/>
-      <Button title='Shoot' onPress={() => shoot(getHitPerson())}/>
+     <Text>{ammoInClip}/{totalAmmo}</Text>
+      <Button title='Shoot' onPress={() => shoot(getHitPerson())} disabled={!isAbleToShoot}/>
     </View>
   );
 };

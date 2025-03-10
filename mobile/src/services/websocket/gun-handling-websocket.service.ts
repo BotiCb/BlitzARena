@@ -8,17 +8,24 @@ import { WebSocketService } from "./websocket.service";
 export class GunHandlingWebSocketService {
     protected websocketService: WebSocketService = WebSocketService.getInstance();
     
+    private ammoInClipHandlerFunction: (ammoInClip: number) => void = () => {};
+    private totalAmmoHandlerFunction: (totalAmmo: number) => void = () => {};
+    private nextShotAtHandlerFunction: (nextShotAt: string) => void = () => {};
 
-    private isAbleToShootHandlerFunction: (isAbleToShoot: boolean) => void = () => {};
+    setNextShotAtHandlerFunction = (handler: (nextShotAt: string) => void) => {
+        this.nextShotAtHandlerFunction = handler;
+    }
 
-    
-    setIsAbleToShootHandlerFunction = (handler: (isAbleToShoot: boolean) => void) => {
-        this.isAbleToShootHandlerFunction = handler;
+    setAmmoInClipHandlerFunction = (handler: (ammoInClip: number) => void) => {
+        this.ammoInClipHandlerFunction = handler;
+    }
+
+    setTotalAmmoHandlerFunction = (handler: (totalAmmo: number) => void) => {
+        this.totalAmmoHandlerFunction = handler;
     }
 
     setWebSocketEventListeners(): void {
-        this.websocketService.onMessageType('is_able_to_shoot', this.isAbleToShootHandlerFunction);
-
+        this.websocketService.onMessageType('gun_info', this.onGunInfo);
     }
 
     shoot = (detectedPerson: HitPerson | null) => {
@@ -30,5 +37,12 @@ export class GunHandlingWebSocketService {
             }
         })
     }
-    
+
+
+    onGunInfo = (message: WebSocketMsg) => {
+       const  {name, ammoInClip, totalAmmo, nextShotAt} = message.data;
+       this.nextShotAtHandlerFunction(nextShotAt);
+       this.ammoInClipHandlerFunction(ammoInClip);
+       this.totalAmmoHandlerFunction(totalAmmo);
+    }
 }

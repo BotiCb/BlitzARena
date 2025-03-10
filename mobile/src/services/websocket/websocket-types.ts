@@ -22,7 +22,7 @@ export enum WebSocketMessageType {
   SELECT_TEAM = 'select_team',
   PLAYER_LOCATION = 'player_location',
   GAME_AREA_CHANGE = 'game_area_change',
-  SHOOT = 'shoot',
+  SHOOT = 'player_shoot',
 }
 
 export type TrainingImage = {

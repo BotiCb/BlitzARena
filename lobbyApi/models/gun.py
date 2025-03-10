@@ -49,7 +49,7 @@ class Gun:
             "name": self.name,
             "ammo_in_clip": self.ammo_in_clip,
             "total_ammo": self.total_ammo,
-            "next_shot_at": self.next_shot_at
+            "next_shot_at": self.next_shot_at.isoformat()
         }
         
         

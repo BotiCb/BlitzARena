@@ -14,7 +14,7 @@ class MatchService(PhaseAbstractService):
     
     def __init__(self, context: GameContext):
         super().__init__(context)
-        self.current_round = 0
+        self.current_round = 1
         self.total_rounds = 10
         self.match_context = MatchContext(game_context=context,
                                           transition_to_match_phase_callback=self.trainsition_to_match_phase,
@@ -50,7 +50,7 @@ class MatchService(PhaseAbstractService):
             "total_rounds": self.total_rounds,
             "current_phase": self.current_match_phase,
             "ends_at": self.current_match_phase_service.ends_at.isoformat() if self.current_match_phase_service.ends_at else None,
-            "gun": player.gun.to_dict()
+            "gun": player.gun.to_dict() if player.gun else None
             }}))
         player= self.context.get_player(player_id)
         player.gun= self.gun_factory.create_gun('TestPistol')
