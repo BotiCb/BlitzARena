@@ -20,7 +20,8 @@
         "react-native-fast-tflite",
         {
           "enableAndroidGpuLibraries": ["libOpenCL-pixel.so", "libGLES_mali.so"],
-          "enableGpuDelegate": true
+          "enableGpuDelegate": true,
+          "enableCoreMLDelegate": true
         }
       ]
     ],
@@ -39,7 +40,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera"
-      }
+      },
+      "bundleIdentifier": "com.boti13.mobile"
     },
     "android": {
       "adaptiveIcon": {

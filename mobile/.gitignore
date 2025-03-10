@@ -11,11 +11,6 @@ npm-debug.*
 web-build/
 
 
-
-
-ios
-
-
 # macOS
 .DS_Store
 
@@ -62,3 +57,6 @@ yarn-error.*
 *.tsbuildinfo
 
 # @end expo-cli
+
+*.apk
+*.aab
