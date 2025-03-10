@@ -10,7 +10,7 @@ from game_phase_services.phase_abstract_service import PhaseAbstractService
 
 from game_phase_services.game_room_phase_service import GameRoomService
 from game_phase_services.match_phase_service import MatchService
-from utils.models import GameArea
+from models.location import GameArea
 from services.httpx_service import HTTPXService
 from models.message import Message
 from models.player import  Player

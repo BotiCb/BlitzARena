@@ -7,7 +7,7 @@ from models.player import Player
 from models.message import Message
 from datetime import datetime, timedelta
 
-from utils.models import Coordinates, GameArea
+from models.location import Coordinates, GameArea
 
 
 class WaitingMatchPhaseService(MatchPhaseAbstractService):
@@ -17,6 +17,7 @@ class WaitingMatchPhaseService(MatchPhaseAbstractService):
 
     async def on_enter(self):
         self.context.increment_round()
+        self.context.reset_health_points_for_all_players()
     
     def on_exit(self):
         # Clean up any running countdown when leaving phase

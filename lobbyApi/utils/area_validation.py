@@ -1,6 +1,6 @@
 
 from typing import List
-from utils.models import Coordinates, GameArea
+from models.location import Coordinates, GameArea
 from math import radians, sin, cos, sqrt, atan2
 
 

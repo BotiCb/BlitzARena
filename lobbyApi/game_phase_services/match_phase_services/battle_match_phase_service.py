@@ -12,10 +12,17 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
 
     async def on_enter(self):
         """Start battle phase with 3-minute timer in the background"""
-        time_delta = timedelta(seconds=10)
+        time_delta = timedelta(seconds=90)
         self.ends_at = datetime.now() + time_delta
         # Start non-blocking countdown
         self._countdown_task = asyncio.create_task(self._run_countdown(time_delta))
+        for player in self.context.players:
+            player.gun.load_ammo(30)
+            await self.context.websockets.send_to_player(player.id, Message({"type": "gun_info", "data":  player.gun.to_dict()
+            }))
+            
+    def register_handlers(self):
+        self.context.websockets.register_handler("player_shoot", self.handle_player_shoot)
 
     async def _run_countdown(self, duration: timedelta):
         """Background task to handle phase duration"""
@@ -32,3 +39,20 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
         """Handle player movements during battle"""
         # Add battle-specific position logic here
         pass
+    
+    
+    async def handle_player_shoot(self, playerId: str, message: dict):
+        player = self.context.get_player(playerId)
+        if player.health_points <= 0:
+            raise Exception("Player is dead")
+        dmg = player.gun.shoot()
+        hit_player = self.context.get_player(message.get("hit_player_id"))
+        hit_player.take_damage(dmg)
+        
+        await self.context.websockets.send_to_player(playerId, Message({"type": "gun_info", "data":  player.gun.to_dict()}))
+        
+        
+    async def send_hp_info(self, player: Player):
+        await self.context.websockets.send_to_all(Message({"type": "hp_info", "data": {
+            "hp": player.health_points
+        }}))

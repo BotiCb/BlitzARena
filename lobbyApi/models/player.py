@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from utils.models import Coordinates
+from models.gun import Gun
+from models.location import Coordinates
 
         
 class Player:
@@ -13,6 +14,8 @@ class Player:
         self.training_photo_count = 0
         self.team = None
         self.coordinates = None
+        self.gun: Gun = None
+        self.health_points = 100
 
     def set_ready(self, ready: bool):
         """Set the ready status for the player."""
@@ -43,6 +46,19 @@ class Player:
     
     def set_coordinates(self, coordinates: Coordinates):
         self.coordinates=coordinates
+        
+    def revive(self):
+        self.health_points = 100
+        
+    def get_health_points(self):
+        return self.health_points
+    
+    
+    def take_hit(self, damage: int):
+        if self.health_points < damage:
+            self.health_points = 0
+            return
+        self.health_points -= damage
 
 
 

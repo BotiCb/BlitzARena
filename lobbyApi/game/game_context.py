@@ -1,7 +1,7 @@
 # game_context.py
 from typing import List
 from fastapi import HTTPException
-from utils.models import GameArea
+from models.location import GameArea
 from models.player import Player
 from services.websocket_service import WebSocketService
 

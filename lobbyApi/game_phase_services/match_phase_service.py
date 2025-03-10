@@ -5,6 +5,7 @@ from game.game_context import GameContext
 from game_phase_services.match_phase_services.waiting_match_phase_service import WaitingMatchPhaseService
 from game_phase_services.match_phase_services.match_context import MatchContext
 from game_phase_services.match_phase_services.battle_match_phase_service import BattleMatchPhaseService
+from models.gun_factory import GunFactory
 from models.message import Message
 
 
@@ -27,6 +28,7 @@ class MatchService(PhaseAbstractService):
         
         self.current_match_phase = "waiting-for-players"
         self.current_match_phase_service = self.match_phases_services[self.current_match_phase]
+        self.gun_factory = GunFactory()
         
     def on_enter(self):
         """Register lobby-specific WebSocket handlers."""
@@ -42,12 +44,16 @@ class MatchService(PhaseAbstractService):
 
             
     async def on_player_ready_to_phase(self, player_id):
+        player = self.context.get_player(player_id)
         await self.context.websockets.send_to_player(player_id, Message({"type": "match_phase_info", "data": {
             "current_round": self.current_round,
             "total_rounds": self.total_rounds,
             "current_phase": self.current_match_phase,
-            "ends_at": self.current_match_phase_service.ends_at.isoformat() if self.current_match_phase_service.ends_at else None
+            "ends_at": self.current_match_phase_service.ends_at.isoformat() if self.current_match_phase_service.ends_at else None,
+            "gun": player.gun.to_dict()
             }}))
+        player= self.context.get_player(player_id)
+        player.gun= self.gun_factory.create_gun('TestPistol')
         
         
     async def on_player_position(self, player_id: str, message: dict):

@@ -3,7 +3,7 @@ from datetime import datetime
 from game.game_context import GameContext
 from game_phase_services.match_phase_services.match_context import MatchContext
 from models.player import Player
-from utils.models import Coordinates
+from models.location import Coordinates
 
 
 class MatchPhaseAbstractService(ABC):

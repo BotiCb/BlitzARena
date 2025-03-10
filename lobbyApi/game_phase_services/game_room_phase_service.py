@@ -3,7 +3,7 @@ from typing import List
 from game.game_context import GameContext
 from game_phase_services.phase_abstract_service import PhaseAbstractService
 from utils.area_validation import validate_area
-from utils.models import GameArea, TeamBase
+from models.location import GameArea, TeamBase
 from models.player import Coordinates
 from models.message import Message
 
