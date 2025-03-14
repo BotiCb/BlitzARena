@@ -15,14 +15,17 @@ class Gun:
         self.damage_ratio = damage_ratio
         self.damage_dispersion = damage_dispersion
         
-        
+        7
     def reload(self):
         if self.is_reloading:
             ReloadInProgressError("Already reloading")
+        if self.clip_size == self.ammo_in_clip:
+            raise ReloadError("Clip is already full")
         self.is_reloading = True
         self.next_shot_at = datetime.now() + self.reload_time
         self.ammo_in_clip = self.clip_size if self.total_ammo >= self.clip_size else self.total_ammo
         self.total_ammo -= self.ammo_in_clip
+        self.is_reloading = False
     
     
     def shoot(self):

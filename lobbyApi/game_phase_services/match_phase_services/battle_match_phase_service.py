@@ -11,6 +11,7 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
         self._countdown_task = None  # To keep reference to the background task
 
     async def on_enter(self):
+        self.register_handlers()
         """Start battle phase with 3-minute timer in the background"""
         time_delta = timedelta(seconds=90)
         self.ends_at = datetime.now() + time_delta
@@ -23,6 +24,7 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
             
     def register_handlers(self):
         self.context.game_context.websockets.register_handler("player_shoot", self.handle_player_shoot)
+        self.context.game_context.websockets.register_handler("player_reload", self.handle_player_reload)
 
     async def _run_countdown(self, duration: timedelta):
         """Background task to handle phase duration"""
@@ -52,6 +54,11 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
             return
         hit_player = self.context.game_context.get_player(message.get("hit_player_id"))
         hit_player.take_damage(dmg)
+        
+    async def handle_player_reload(self, playerId: str, message: dict):
+        player = self.context.game_context.get_player(playerId)
+        player.gun.reload()
+        await self.context.game_context.websockets.send_to_player(playerId, Message({"type": "gun_info", "data":  player.gun.to_dict()}))
         
         
         

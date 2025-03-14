@@ -1,8 +1,4 @@
-import { MatchPhase } from "~/utils/types/types";
-import { AbstractCustomWebSocketService } from "./custom-websocket.abstract-service";
 import { HitPerson, WebSocketMessageType, WebSocketMsg } from "./websocket-types";
-import { Player } from "~/utils/models";
-import { DetectedPerson } from "~/utils/types/detection-types";
 import { WebSocketService } from "./websocket.service";
 
 export class GunHandlingWebSocketService {
@@ -35,6 +31,14 @@ export class GunHandlingWebSocketService {
             data: {
                 detectedPerson
             }
+        })
+
+    }
+
+
+    reload = () => {
+        this.websocketService.sendMessage({
+            type: WebSocketMessageType.RELOAD_GUN
         })
     }
 

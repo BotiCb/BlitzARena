@@ -11,13 +11,14 @@ import { useGunHandling } from '~/hooks/useGunHandling';
 const InMatchBattleView = () => {
 
   const { matchPhaseEndsAt } = useMatch();
-  const { shoot, isAbleToShoot, ammoInClip, totalAmmo } = useGunHandling();
   const { getHitPerson } = useDetection();
+  const  { gunHandling } = useMatch();
   return (
     <View  style={styles.container}>
      <SmallCountdownTimer endsAt={matchPhaseEndsAt}/>
-     <Text>{ammoInClip}/{totalAmmo}</Text>
-      <Button title='Shoot' onPress={() => shoot(getHitPerson())} disabled={!isAbleToShoot}/>
+     <Text style={{marginRight: 10, color: 'white'}}>{gunHandling.ammoInClip}/{gunHandling .totalAmmo}</Text>
+      <Button title='Shoot' onPress={() => gunHandling.shoot(getHitPerson())} disabled={!gunHandling.isAbleToShoot}/>
+      <Button title='Reload' onPress={() => gunHandling.reload()}/>
     </View>
   );
 };

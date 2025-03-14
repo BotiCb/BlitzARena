@@ -13,10 +13,18 @@ export const useGunHandling = () => {
 
   useEffect(() => {
     const updateShootingAbility = () => {
-      if (!nextShootAt) {
+      if (totalAmmo) {
         setIsAbleToShoot(false);
         return;
       }
+      if (!nextShootAt || isNaN(Date.parse(nextShootAt))) {
+        setIsAbleToShoot(false);
+        return;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
 
       const nextShotTime = new Date(nextShootAt);
       const now = new Date();
@@ -26,9 +34,11 @@ export const useGunHandling = () => {
       } else {
         setIsAbleToShoot(false);
         const delay = nextShotTime.getTime() - now.getTime();
-        timeoutRef.current = setTimeout(() => {
-          setIsAbleToShoot(true);
-        }, delay);
+        if (delay > 0) {
+          timeoutRef.current = setTimeout(() => {
+            setIsAbleToShoot(ammoInClip > 0);
+          }, delay);
+        }
       }
     };
 
@@ -39,7 +49,7 @@ export const useGunHandling = () => {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [nextShootAt]);
+  }, [nextShootAt, totalAmmo]);
 
   useEffect(() => {
     gunHandlingService.setNextShotAtHandlerFunction(setNextShootAt);
@@ -56,6 +66,7 @@ export const useGunHandling = () => {
     isAbleToShoot,
     nextShootAt,
     ammoInClip,
-    totalAmmo
+    totalAmmo,
+    reload: () => gunHandlingService.reload()
   };
 };

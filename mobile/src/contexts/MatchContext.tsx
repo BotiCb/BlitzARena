@@ -3,12 +3,22 @@ import { MatchWebSocketService } from '~/services/websocket/match-websocket.serv
 import { MatchPhase } from '~/utils/types/types';
 import useCoordinates from '~/hooks/useCoordinates';
 import React from 'react'; 
+import { HitPerson } from '~/services/websocket/websocket-types';
+import { useGunHandling } from '~/hooks/useGunHandling';
 
 type MatchContextType = {
   round: number;
   maxRounds: number;
   matchPhase: MatchPhase;
   matchPhaseEndsAt: string;
+  gunHandling: {
+      shoot: (detectedPerson: HitPerson | null) => void;
+      reload: () => void;
+      isAbleToShoot: boolean,
+      nextShootAt: string,
+      ammoInClip : number,
+      totalAmmo: number
+    };
 };
 
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
@@ -19,6 +29,7 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('initializing');
   const [matchPhaseEndsAt, setMatchPhaseEndsAt] = useState<string>('');
   const matchWebSocketService = MatchWebSocketService.getInstance();
+  const gunHandling = useGunHandling();
 
   const { location } = useCoordinates({
     keepRefreshing: true,
@@ -55,6 +66,7 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
     maxRounds,
     matchPhase,
     matchPhaseEndsAt,
+    gunHandling
   };
 
   return <MatchContext.Provider value={value}>{children}</MatchContext.Provider>;
