@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { MatchWebSocketService } from '~/services/websocket/match-websocket.service';
 import { MatchPhase } from '~/utils/types/types';
 import useCoordinates from '~/hooks/useCoordinates';
-import React from 'react'; 
+import React from 'react';
 import { HitPerson } from '~/services/websocket/websocket-types';
 import { useGunHandling } from '~/hooks/useGunHandling';
 
@@ -10,15 +10,15 @@ type MatchContextType = {
   round: number;
   maxRounds: number;
   matchPhase: MatchPhase;
-  matchPhaseEndsAt: string;
+  matchPhaseEndsAt: number | null;
   gunHandling: {
-      shoot: (detectedPerson: HitPerson | null) => void;
-      reload: () => void;
-      isAbleToShoot: boolean,
-      nextShootAt: string,
-      ammoInClip : number,
-      totalAmmo: number
-    };
+    shoot: (detectedPerson: HitPerson | null) => void;
+    reload: () => void;
+    isAbleToShoot: boolean,
+    nextShootAt: number | null,
+    ammoInClip: number,
+    totalAmmo: number
+  };
 };
 
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
@@ -27,7 +27,7 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
   const [round, setRound] = useState<number>(1);
   const [maxRounds, setMaxRounds] = useState<number>(10);
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('initializing');
-  const [matchPhaseEndsAt, setMatchPhaseEndsAt] = useState<string>('');
+  const [matchPhaseEndsAt, setMatchPhaseEndsAt] = useState<number | null>(null);
   const matchWebSocketService = MatchWebSocketService.getInstance();
   const gunHandling = useGunHandling();
 
@@ -65,8 +65,8 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
     round,
     maxRounds,
     matchPhase,
-    matchPhaseEndsAt,
-    gunHandling
+    gunHandling,
+    matchPhaseEndsAt
   };
 
   return <MatchContext.Provider value={value}>{children}</MatchContext.Provider>;

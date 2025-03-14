@@ -12,13 +12,13 @@ const InMatchBattleView = () => {
 
   const { matchPhaseEndsAt } = useMatch();
   const { getHitPerson } = useDetection();
-  const  { gunHandling } = useMatch();
+  const { gunHandling } = useMatch();
   return (
-    <View  style={styles.container}>
-     <SmallCountdownTimer endsAt={matchPhaseEndsAt}/>
-     <Text style={{marginRight: 10, color: 'white'}}>{gunHandling.ammoInClip}/{gunHandling .totalAmmo}</Text>
-      <Button title='Shoot' onPress={() => gunHandling.shoot(getHitPerson())} disabled={!gunHandling.isAbleToShoot}/>
-      <Button title='Reload' onPress={() => gunHandling.reload()}/>
+    <View style={styles.container}>
+      {matchPhaseEndsAt && <SmallCountdownTimer endsAt={matchPhaseEndsAt} />}
+      <Text style={{ marginRight: 10, color: 'white' }}>{gunHandling.ammoInClip}/{gunHandling.totalAmmo}</Text>
+      <Button title='Shoot' onPress={() => gunHandling.shoot(getHitPerson())} disabled={!gunHandling.isAbleToShoot} />
+      <Button title='Reload' onPress={() => gunHandling.reload()} />
     </View>
   );
 };
@@ -26,7 +26,7 @@ const InMatchBattleView = () => {
 export default InMatchBattleView;
 
 const styles = StyleSheet.create({
-  container : {
+  container: {
     display: 'flex',
     height: '100%',
     position: 'absolute',

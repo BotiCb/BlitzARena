@@ -5,7 +5,7 @@ import { DetectedPerson } from '~/utils/types/detection-types';
 
 export const useGunHandling = () => {
   const gunHandlingService = new GunHandlingWebSocketService();
-  const [nextShootAt, setNextShootAt] = useState<number>();
+  const [nextShootAt, setNextShootAt] = useState<number | null>(null);
   const [isAbleToShoot, setIsAbleToShoot] = useState<boolean>(false);
   const [ammoInClip, setAmmoInClip] = useState<number>(0);
   const [totalAmmo, setTotalAmmo] = useState<number>(0);

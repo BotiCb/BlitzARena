@@ -14,15 +14,15 @@ import { Player } from '~/utils/models';
 import { GamePhase, Model } from '~/utils/types/types';
 
 export class GameWebSocketService extends AbstractCustomWebSocketService {
-  private areYouHostHandlerFunction: (areYouHost: boolean) => void = () => {};
-  private gamePhaseHandlerFunction: (gamePhase: GamePhase) => void = () => {};
-  private modelHandlerFunction: (model: Model) => void = () => {};
-  private readyHandlerFunction: (isReady: boolean) => void = () => {};
+  private areYouHostHandlerFunction: (areYouHost: boolean) => void = () => { };
+  private gamePhaseHandlerFunction: (gamePhase: GamePhase) => void = () => { };
+  private modelHandlerFunction: (model: Model) => void = () => { };
+  private readyHandlerFunction: (isReady: boolean) => void = () => { };
 
-  private trainingProgressHandlerFunction: (trainingProgress: number) => void = () => {};
+  private trainingProgressHandlerFunction: (trainingProgress: number) => void = () => { };
 
   private navigator: StackNavigationProp<GameStackParamList> | null = null;
-  private pinghandlerFunction: (ping: number) => void = () => {};
+  private pinghandlerFunction: (ping: number) => void = () => { };
   private pingInterval: NodeJS.Timeout | null = null;
 
   setWebSocketEventListeners() {
@@ -41,6 +41,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     this.websocketService.onMessageType('player_status', this.setPlayerStatus);
 
     this.startPingInterval();
+    this.startClockSyncInterval();
   }
   private startPingInterval() {
     if (!this.pingInterval) {
@@ -57,6 +58,17 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
         });
       }, 1000);
     }
+  }
+
+  private startClockSyncInterval() {
+    setInterval(() => {
+      if (!this.websocketService.isConnected()) {
+        return;
+      }
+      GameWebSocketService.clockSyncService.sync();
+
+    }, 20000);
+
   }
   private handlePongEvent = (message: WebSocketMsg) => {
     const sentTimestamp = message.data.timestamp;

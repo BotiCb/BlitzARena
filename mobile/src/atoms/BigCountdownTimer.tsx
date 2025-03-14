@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text } from "react-native";
 
 export interface CountdownTimerProps {
-  endsAt: string;
+  endsAt: number;
 }
 
 export interface TimeRemaining {
@@ -13,21 +13,35 @@ export interface TimeRemaining {
 
 const BigCountdownTimer: React.FC<CountdownTimerProps> = ({ endsAt }) => {
   const [timeLeft, setTimeLeft] = useState<TimeRemaining>(getTimeRemaining(endsAt));
+  const isFirstRender = useRef(true);
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const scheduleUpdate = () => {
       const remaining = getTimeRemaining(endsAt);
       setTimeLeft(remaining);
+
       if (remaining.total <= 0) {
-        clearInterval(interval);
+        isFirstRender.current = true;
+        return;
       }
-    }, 1000);
-    
-    return () => clearInterval(interval);
+
+      const delay = isFirstRender.current ? remaining.total % 1000 : 1000;
+      isFirstRender.current = false;
+      timeoutRef.current = setTimeout(scheduleUpdate, delay);
+    };
+
+    scheduleUpdate();
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [endsAt]);
 
-  function getTimeRemaining(endsAt: string): TimeRemaining {
-    const total = new Date(endsAt).getTime() - new Date().getTime();
+  function getTimeRemaining(endsAt: number): TimeRemaining {
+    const total = endsAt - new Date().getTime();
     const seconds = Math.max(0, Math.floor(total / 1000));
     return { total, seconds };
   }

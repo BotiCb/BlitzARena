@@ -5,11 +5,10 @@ import { Player } from "~/utils/models";
 import { DetectedPerson } from "~/utils/types/detection-types";
 
 export class MatchWebSocketService extends AbstractCustomWebSocketService {
-    private currentRoundHandlerFunction: (round: number) => void = () => {};
-    private totalRoundsHandlerFunction: (round: number) => void = () => {};
-    private currentMatchPhaseHandlerFunction: (phase: MatchPhase) => void = () => {};
-    private timerHandlerFunction: (endsAt: string) => void = () => {};
-    private isAbleToShootHandlerFunction: (isAbleToShoot: boolean) => void = () => {};
+    private currentRoundHandlerFunction: (round: number) => void = () => { };
+    private totalRoundsHandlerFunction: (round: number) => void = () => { };
+    private currentMatchPhaseHandlerFunction: (phase: MatchPhase) => void = () => { };
+    private timerHandlerFunction: (endsAt: number | null) => void = () => { };
 
     setCurrentRoundHandlerFunction = (handler: (round: number) => void) => {
         this.currentRoundHandlerFunction = handler;
@@ -23,13 +22,10 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
         this.currentMatchPhaseHandlerFunction = handler;
     }
 
-    setTimerHandlerFunction = (handler: (endsAt: string) => void) => {
+    setTimerHandlerFunction = (handler: (endsAt: number | null) => void) => {
         this.timerHandlerFunction = handler;
     }
 
-    setIsAbleToShootHandlerFunction = (handler: (isAbleToShoot: boolean) => void) => {
-        this.isAbleToShootHandlerFunction = handler;
-    }
 
     setWebSocketEventListeners(): void {
         this.websocketService.onMessageType('match_phase_info', this.onPhaseInfo);
@@ -38,11 +34,13 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
 
     }
 
-    
+
 
     onPhaseInfo = (message: WebSocketMsg) => {
         const { currentRound, totalRounds, currentPhase, endsAt } = message.data;
-        this.timerHandlerFunction(endsAt || '');
+        if (endsAt) {
+            this.timerHandlerFunction(MatchWebSocketService.clockSyncService.serverTimeToClient(endsAt));
+        }
         this.currentRoundHandlerFunction(currentRound);
         this.totalRoundsHandlerFunction(totalRounds);
         this.currentMatchPhaseHandlerFunction(currentPhase);
@@ -51,21 +49,23 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
 
     onTimerEndsAt = (message: WebSocketMsg) => {
         const { endsAt } = message.data;
-        this.timerHandlerFunction(endsAt);
+        this.timerHandlerFunction(MatchWebSocketService.clockSyncService.serverTimeToClient(endsAt));
     }
 
     onMatchPhase = (message: WebSocketMsg) => {
-       const { currentRound, currentPhase, endsAt } = message.data;
-       this.timerHandlerFunction(endsAt || '');
-       this.currentRoundHandlerFunction(currentRound);
-       this.currentMatchPhaseHandlerFunction(currentPhase);
-       AbstractCustomWebSocketService.playersHandlerFunction((players: Player[]) => {
-           return players.map((player: Player) => ({ ...player, isReady: false }));
-       });
+        const { currentRound, currentPhase, endsAt } = message.data;
+        this.currentRoundHandlerFunction(currentRound);
+        this.currentMatchPhaseHandlerFunction(currentPhase);
+        AbstractCustomWebSocketService.playersHandlerFunction((players: Player[]) => {
+            return players.map((player: Player) => ({ ...player, isReady: false }));
+        });
+        if (endsAt) {
+            this.timerHandlerFunction(MatchWebSocketService.clockSyncService.serverTimeToClient(endsAt));
+        }
     }
 
     close(): void {
-        
+
     }
 
     shoot = (detecedPerson: DetectedPerson | null) => {
@@ -74,5 +74,5 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
             data: detecedPerson
         })
     }
-    
+
 }
