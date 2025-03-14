@@ -13,7 +13,7 @@ export const useGunHandling = () => {
 
   useEffect(() => {
     const updateShootingAbility = () => {
-      if (totalAmmo) {
+      if (ammoInClip === 0) {
         setIsAbleToShoot(false);
         return;
       }
@@ -49,7 +49,9 @@ export const useGunHandling = () => {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [nextShootAt, totalAmmo]);
+  }, [nextShootAt, totalAmmo, ammoInClip]);
+
+  useEffect(() => {console.log('isAbleToShoot', isAbleToShoot);}, [isAbleToShoot]);
 
   useEffect(() => {
     gunHandlingService.setNextShotAtHandlerFunction(setNextShootAt);
