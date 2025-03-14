@@ -253,7 +253,7 @@ class GameInstance:
         
     async def clock_sync(self, player_id: str, message: dict):
         client_sent = message.get("client_sent")
-        server_received = datetime.now().timestamp() * 1000
+        server_received = int(datetime.now().timestamp() * 1000)
         await self.websockets.send_to_player(
             player_id,
             Message({"type": "clock_sync", "data": {"client_sent": client_sent, "server_received": server_received}})

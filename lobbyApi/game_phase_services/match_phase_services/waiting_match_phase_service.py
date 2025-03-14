@@ -30,7 +30,7 @@ class WaitingMatchPhaseService(MatchPhaseAbstractService):
             return  # Ignore position changes during active countdown
 
         base_coords = self.get_player_team_base_coordinates(player, self.context.game_context.game_area)
-        is_player_in_base = are_coordinates_within_distance(player.coordinates, base_coords, 10)
+        is_player_in_base = are_coordinates_within_distance(player.coordinates, base_coords, 25)
         
         if is_player_in_base == player.is_ready:
             return
@@ -58,7 +58,7 @@ class WaitingMatchPhaseService(MatchPhaseAbstractService):
         await self.context.game_context.websockets.send_to_all(Message({
             "type": "start_countdown",
             "data": {
-                "ends_at": self.ends_at.isoformat()
+                "ends_at": int(self.ends_at.timestamp()) * 1000
             }
         }))
 

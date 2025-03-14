@@ -49,7 +49,7 @@ class MatchService(PhaseAbstractService):
             "current_round": self.current_round,
             "total_rounds": self.total_rounds,
             "current_phase": self.current_match_phase,
-            "ends_at": self.current_match_phase_service.ends_at.isoformat() if self.current_match_phase_service.ends_at else None,
+            "ends_at": int(self.current_match_phase_service.ends_at.timestamp())* 1000 if self.current_match_phase_service.ends_at else None,
             "gun": player.gun.to_dict() if player.gun else None
             }}))
         player= self.context.get_player(player_id)
@@ -75,7 +75,7 @@ class MatchService(PhaseAbstractService):
             Message({"type": "match_phase", "data": {
                 "current_round": self.current_round,
                 "current_phase": self.current_match_phase,
-                "ends_at": self.current_match_phase_service.ends_at.isoformat() if self.current_match_phase_service.ends_at else None}})
+                "ends_at": int(self.current_match_phase_service.ends_at.timestamp()) * 1000 if self.current_match_phase_service.ends_at else None}})
         )
         
     def increment_round(self):
