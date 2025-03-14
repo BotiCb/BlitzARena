@@ -24,6 +24,7 @@ export enum WebSocketMessageType {
   GAME_AREA_CHANGE = 'game_area_change',
   SHOOT = 'player_shoot',
   RELOAD_GUN = 'player_reload',
+  CLOCK_SYNC= 'clock_sync',
 }
 
 export type TrainingImage = {

@@ -14,71 +14,71 @@ class Gun:
         self.total_ammo = 0
         self.damage_ratio = damage_ratio
         self.damage_dispersion = damage_dispersion
-        
-        7
+
     def reload(self):
         if self.is_reloading:
-            ReloadInProgressError("Already reloading")
+            raise ReloadInProgressError("Already reloading")
+
         if self.clip_size == self.ammo_in_clip:
             raise ReloadError("Clip is already full")
+
+        if self.total_ammo == 0:
+            raise ReloadError("No ammo to reload")
+
         self.is_reloading = True
         self.next_shot_at = datetime.now() + self.reload_time
-        self.ammo_in_clip = self.clip_size if self.total_ammo >= self.clip_size else self.total_ammo
-        self.total_ammo -= self.ammo_in_clip
+
+        ammo_to_reload = min(self.total_ammo, self.clip_size - self.ammo_in_clip)
+        self.ammo_in_clip += ammo_to_reload
+        self.total_ammo -= ammo_to_reload
         self.is_reloading = False
-    
-    
+
+        print(f'Reloading completed. Ammo in clip: {self.ammo_in_clip}')
+
     def shoot(self):
         if self.is_reloading:
             raise ReloadError("Cannot shoot while reloading")
-        if self.next_shot_at and datetime.now() < self.next_shot_at:
+
+        if datetime.now() < self.next_shot_at:
             raise ShootingTooSoonError(f"Next shot available at {self.next_shot_at}")
+
         if self.ammo_in_clip == 0:
             raise NoAmmoError("No ammo in clip")
+
         self.ammo_in_clip -= 1
         self.next_shot_at = datetime.now() + self.inter_shot_delay
-        damage = self.damage_ratio + random.uniform(
-            -self.damage_dispersion,
-            self.damage_dispersion
-        )
-        damage = max(0, damage) 
+        damage = self.damage_ratio + random.uniform(-self.damage_dispersion, self.damage_dispersion)
+        damage = max(0, damage)  
+        print(f"Damage: {damage}, Waiting for next shot: {self.inter_shot_delay.total_seconds()} seconds")
         return round(damage, 1)
-    
+
     def load_ammo(self, ammo: int):
         self.total_ammo += ammo
-        
+
     def to_dict(self):
         return {
             "name": self.name,
             "ammo_in_clip": self.ammo_in_clip,
             "total_ammo": self.total_ammo,
-            "next_shot_at": self.next_shot_at.isoformat()
+            "next_shot_at": int(self.next_shot_at.timestamp()) * 1000
         }
-        
-        
-        
-        
-        
+
+
 class GunError(Exception):
-    """Base class for all gun-related errors."""
     pass
+
 
 class ReloadError(GunError):
-    """Raised when a gun operation is attempted during reloading."""
     pass
+
 
 class ShootingTooSoonError(GunError):
-    """Raised when trying to shoot before the inter-shot delay has passed."""
     pass
+
 
 class NoAmmoError(GunError):
-    """Raised when attempting to shoot with an empty clip."""
     pass
+
 
 class ReloadInProgressError(GunError):
-    """Raised when trying to reload while already reloading."""
-    pass
-
-class InvalidAmmoOperation(GunError):
-    """Raised for invalid ammo management operations."""
     pass

@@ -5,7 +5,7 @@ import { DetectedPerson } from '~/utils/types/detection-types';
 
 export const useGunHandling = () => {
   const gunHandlingService = new GunHandlingWebSocketService();
-  const [nextShootAt, setNextShootAt] = useState<string>('');
+  const [nextShootAt, setNextShootAt] = useState<number>();
   const [isAbleToShoot, setIsAbleToShoot] = useState<boolean>(false);
   const [ammoInClip, setAmmoInClip] = useState<number>(0);
   const [totalAmmo, setTotalAmmo] = useState<number>(0);
@@ -17,28 +17,24 @@ export const useGunHandling = () => {
         setIsAbleToShoot(false);
         return;
       }
-      if (!nextShootAt || isNaN(Date.parse(nextShootAt))) {
+      if (!nextShootAt || isNaN(nextShootAt)) {
         setIsAbleToShoot(false);
         return;
       }
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      
+      const now = Date.now();
+      const timeUntilShoot = nextShootAt - now;
 
-
-      const nextShotTime = new Date(nextShootAt);
-      const now = new Date();
-
-      if (now >= nextShotTime) {
+      if (timeUntilShoot <= 0) {
         setIsAbleToShoot(true);
       } else {
         setIsAbleToShoot(false);
-        const delay = nextShotTime.getTime() - now.getTime();
-        if (delay > 0) {
           timeoutRef.current = setTimeout(() => {
             setIsAbleToShoot(ammoInClip > 0);
-          }, delay);
-        }
+          }, timeUntilShoot);
       }
     };
 

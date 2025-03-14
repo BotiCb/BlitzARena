@@ -1,14 +1,15 @@
+import { ClockSyncService } from "../ClockSyncService";
 import { HitPerson, WebSocketMessageType, WebSocketMsg } from "./websocket-types";
 import { WebSocketService } from "./websocket.service";
 
 export class GunHandlingWebSocketService {
-    protected websocketService: WebSocketService = WebSocketService.getInstance();
-
+    private websocketService: WebSocketService = WebSocketService.getInstance();
+    private clockSyncService: ClockSyncService = ClockSyncService.getInstance();
     private ammoInClipHandlerFunction: (ammoInClip: number) => void = () => { };
     private totalAmmoHandlerFunction: (totalAmmo: number) => void = () => { };
-    private nextShotAtHandlerFunction: (nextShotAt: string) => void = () => { };
+    private nextShotAtHandlerFunction: (nextShotAt: number) => void = () => { };
 
-    setNextShotAtHandlerFunction = (handler: (nextShotAt: string) => void) => {
+    setNextShotAtHandlerFunction = (handler: (nextShotAt: number) => void) => {
         this.nextShotAtHandlerFunction = handler;
     }
 
@@ -46,7 +47,8 @@ export class GunHandlingWebSocketService {
     onGunInfo = (message: WebSocketMsg) => {
         const { name, ammoInClip, totalAmmo, nextShotAt } = message.data;
         const nextShotAtDate = new Date(nextShotAt);
-        console.log('onGunInfo', name, ammoInClip, totalAmmo,nextShotAt, nextShotAtDate.getTime() - Date.now());        this.nextShotAtHandlerFunction(nextShotAt);
+        console.log('onGunInfo', name, ammoInClip, totalAmmo,nextShotAt, nextShotAtDate.getTime() - Date.now());        
+        this.nextShotAtHandlerFunction(this.clockSyncService.serverTimeToClient(nextShotAtDate.getTime()));
         this.ammoInClipHandlerFunction(ammoInClip);
         this.totalAmmoHandlerFunction(totalAmmo);
     }

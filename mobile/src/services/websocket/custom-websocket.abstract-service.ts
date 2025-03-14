@@ -4,6 +4,7 @@ import { WebSocketMessageType } from './websocket-types';
 import { WebSocketService } from './websocket.service';
 
 import { Player } from '~/utils/models';
+import { ClockSyncService } from '../ClockSyncService';
 
 export abstract class AbstractCustomWebSocketService {
   protected websocketService: WebSocketService = WebSocketService.getInstance();
@@ -14,6 +15,8 @@ export abstract class AbstractCustomWebSocketService {
   protected static sessionId: string = '';
 
   private static instances: { [key: string]: AbstractCustomWebSocketService } = {};
+
+  protected static clockSyncService: ClockSyncService = ClockSyncService.getInstance();
 
   static getInstance<T extends AbstractCustomWebSocketService>(this: new () => T): T {
     if (!AbstractCustomWebSocketService.instances[this.name]) {

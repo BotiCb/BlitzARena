@@ -1,4 +1,5 @@
 # game_instance.py
+from datetime import datetime
 from typing import List, Dict
 from fastapi import WebSocket, HTTPException
 
@@ -55,6 +56,7 @@ class GameInstance:
         self.websockets.register_handler("set_host", self.new_host)
         self.websockets.register_handler("remove_player", self.remove_player)
         self.websockets.register_handler("ready_for_phase", self.on_player_ready_to_phase)
+        self.websockets.register_handler("clock_sync", self.clock_sync)
 
     def _initialize_phase_service(self):
         """Initialize the current phase service."""
@@ -249,4 +251,11 @@ class GameInstance:
     async def on_player_ready_to_phase(self, player_id: str, message: dict):
         await self.current_phase_service.on_player_ready_to_phase(player_id)
         
+    async def clock_sync(self, player_id: str, message: dict):
+        client_sent = message.get("client_sent")
+        server_received = datetime.now().timestamp() * 1000
+        await self.websockets.send_to_player(
+            player_id,
+            Message({"type": "clock_sync", "data": {"client_sent": client_sent, "server_received": server_received}})
+        )
         

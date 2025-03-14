@@ -117,6 +117,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       if (gameInfo.isModelTrained) {
         this.setupModel();
       }
+      GameWebSocketService.clockSyncService.sync();
     } catch (e) {
       console.log(e);
     }
@@ -229,6 +230,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
     });
     this.readyHandlerFunction(false);
     AbstractCustomWebSocketService.isPhaseInfosNeededHandlerFunction(true);
+    GameWebSocketService.clockSyncService.sync();
   };
 
   startNextGamePhase = () => {
