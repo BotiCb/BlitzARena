@@ -13,7 +13,7 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
     async def on_enter(self):
         self.register_handlers()
         """Start battle phase with 3-minute timer in the background"""
-        time_delta = timedelta(seconds=90)
+        time_delta = timedelta(seconds=180)
         self.ends_at = datetime.now() + time_delta
         # Start non-blocking countdown
         self._countdown_task = asyncio.create_task(self._run_countdown(time_delta))
@@ -44,11 +44,14 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
     
     
     async def handle_player_shoot(self, playerId: str, message: dict):
-        player = self.context.game_context.get_player(playerId)
-        if player.health_points <= 0:
-            raise Exception("Player is dead")
-        dmg = player.gun.shoot()
-        await self.context.game_context.websockets.send_to_player(playerId, Message({"type": "gun_info", "data":  player.gun.to_dict()}))
+        try:
+            player = self.context.game_context.get_player(playerId)
+            if player.health_points <= 0:
+                raise Exception("Player is dead")
+        
+            dmg = player.gun.shoot()
+        finally:
+            await self.context.game_context.websockets.send_to_player(playerId, Message({"type": "gun_info", "data":  player.gun.to_dict()}))
         hit_player_id = message.get("hit_player_id", None)
         if hit_player_id is None:
             return
@@ -56,9 +59,15 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
         hit_player.take_damage(dmg)
         
     async def handle_player_reload(self, playerId: str, message: dict):
-        player = self.context.game_context.get_player(playerId)
-        player.gun.reload()
-        await self.context.game_context.websockets.send_to_player(playerId, Message({"type": "gun_info", "data":  player.gun.to_dict()}))
+        try:
+            player = self.context.game_context.get_player(playerId)
+            
+            if player.health_points <= 0:
+                raise Exception("Player is dead")
+            
+            player.gun.reload()
+        finally:
+            await self.context.game_context.websockets.send_to_player(playerId, Message({"type": "gun_info", "data":  player.gun.to_dict()}))
         
         
         

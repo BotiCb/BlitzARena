@@ -27,7 +27,7 @@ class Gun:
 
         self.is_reloading = True
         self.next_shot_at = datetime.now() + self.reload_time
-
+        
         ammo_to_reload = min(self.total_ammo, self.clip_size - self.ammo_in_clip)
         self.ammo_in_clip += ammo_to_reload
         self.total_ammo -= ammo_to_reload
@@ -60,7 +60,8 @@ class Gun:
             "name": self.name,
             "ammo_in_clip": self.ammo_in_clip,
             "total_ammo": self.total_ammo,
-            "next_shot_at": int(self.next_shot_at.timestamp()) * 1000
+            "next_shot_at": int(self.next_shot_at.timestamp()*1000),
+            "created_at": int(datetime.now().timestamp()*1000)
         }
 
 
