@@ -83,7 +83,6 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
 
   useEffect(() => {
     if (model?.path) {
-      console.log('Loading model classifier:', delegate);
       loadTensorflowModel({
         url: "file://" + model.path,
       }).then((model) => {
@@ -99,9 +98,7 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
   );
 
   useEffect(() => {
-    console.warn('Loading model pose:', plugin);
     if (plugin.model) {
-      console.warn('Pose Model loaded');
       setPoseModel(plugin.model);
     }
   }, [plugin]);

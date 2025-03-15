@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { GunHandlingWebSocketService } from '~/services/websocket/gun-handling-websocket.service';
 import { HitPerson } from '~/services/websocket/websocket-types';
-import { DetectedPerson } from '~/utils/types/detection-types';
+import { Vibration } from 'react-native';
 
 export const useGunHandling = () => {
-  const gunHandlingService = new GunHandlingWebSocketService();
+  const gunHandlingService = GunHandlingWebSocketService.getInstance();
   const [nextShootAt, setNextShootAt] = useState<number | null>(null);
   const [isAbleToShoot, setIsAbleToShoot] = useState<boolean>(false);
   const [ammoInClip, setAmmoInClip] = useState<number>(0);
@@ -34,6 +34,7 @@ export const useGunHandling = () => {
         setIsAbleToShoot(false);
           timeoutRef.current = setTimeout(() => {
             setIsAbleToShoot(ammoInClip > 0);
+
           }, timeUntilShoot);
       }
     };
@@ -59,8 +60,13 @@ export const useGunHandling = () => {
     };
   }, []);
 
+  const handleShoot = (detectedPerson: HitPerson | null)  => {
+    Vibration.vibrate(50);
+    gunHandlingService.shoot(detectedPerson)
+  }
+
   return {
-    shoot: (detectedPerson: HitPerson | null) => gunHandlingService.shoot(detectedPerson),
+    shoot: handleShoot,
     isAbleToShoot,
     nextShootAt,
     ammoInClip,
