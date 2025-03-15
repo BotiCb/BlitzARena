@@ -1,3 +1,8 @@
+from typing import List
+
+from models.player import Player
+
+
 class MatchContext:
     def __init__(self, 
                  game_context, 
@@ -16,5 +21,12 @@ class MatchContext:
         for player in self.game_context.players:
             player.revive()
             
-    def is_all_players_eliminated(self):
-        return all(player.health_points == 0 for player in self.game_context.players)
+    def get_team_with_no_players_left(self):
+        for team in self.game_context.get_teams():
+            if len(self.get_alive_players_from_team(team)) == 0:
+                return team
+        return None
+    
+    def get_alive_players_from_team(self, team: str) -> List[Player]:
+        """Get alive players from the given team."""
+        return [player for player in self.game_context.get_players_in_team(team) if player.is_alive()]

@@ -50,7 +50,8 @@ class MatchService(PhaseAbstractService):
             "total_rounds": self.total_rounds,
             "current_phase": self.current_match_phase,
             "ends_at": int(self.current_match_phase_service.ends_at.timestamp())* 1000 if self.current_match_phase_service.ends_at else None,
-            "gun": player.gun.to_dict() if player.gun else None
+            "gun": player.gun.to_dict() if player.gun else None,
+            "hp": player.health_points if self.current_match_phase == "battle" else None
             }}))
         player= self.context.get_player(player_id)
         player.gun= self.gun_factory.create_gun('TestPistol')

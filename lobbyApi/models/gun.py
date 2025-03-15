@@ -50,7 +50,7 @@ class Gun:
         damage = self.damage_ratio + random.uniform(-self.damage_dispersion, self.damage_dispersion)
         damage = max(0, damage)  
         print(f"Damage: {damage}, Waiting for next shot: {self.inter_shot_delay.total_seconds()} seconds")
-        return round(damage, 1)
+        return int(damage)
 
     def load_ammo(self, ammo: int):
         self.total_ammo += ammo
@@ -60,9 +60,15 @@ class Gun:
             "name": self.name,
             "ammo_in_clip": self.ammo_in_clip,
             "total_ammo": self.total_ammo,
-            "next_shot_at": int(self.next_shot_at.timestamp()*1000),
+            "next_shot_at": int(self.next_shot_at.timestamp()*1000) if self.next_shot_at else None,
             "created_at": int(datetime.now().timestamp()*1000)
         }
+        
+    def reset(self):
+        self.total_ammo += self.ammo_in_clip
+        self.ammo_in_clip = 0
+        self.next_shot_at = None
+        self.is_reloading = False
 
 
 class GunError(Exception):

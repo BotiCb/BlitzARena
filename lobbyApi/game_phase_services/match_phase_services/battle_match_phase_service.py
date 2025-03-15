@@ -18,9 +18,11 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
         # Start non-blocking countdown
         self._countdown_task = asyncio.create_task(self._run_countdown(time_delta))
         for player in self.context.game_context.players:
+            player.gun.reset()
             player.gun.load_ammo(30)
             await self.context.game_context.websockets.send_to_player(player.id, Message({"type": "gun_info", "data":  player.gun.to_dict()
             }))
+            player.revive()
             
     def register_handlers(self):
         self.context.game_context.websockets.register_handler("player_shoot", self.handle_player_shoot)
@@ -46,32 +48,59 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
     async def handle_player_shoot(self, playerId: str, message: dict):
         try:
             player = self.context.game_context.get_player(playerId)
-            if player.health_points <= 0:
+            if player.is_alive() == False:
                 raise Exception("Player is dead")
         
-            dmg = player.gun.shoot()
+            dmg: int = player.gun.shoot()
+            hit_player_id = message.get("hit_player_id", None)
+            if hit_player_id is None:
+                return
+            hit_player = self.context.game_context.get_player(message.get("hit_player_id"))
+            await self.handle_player_hit(hit_player, dmg, player)
+            
         finally:
             await self.context.game_context.websockets.send_to_player(playerId, Message({"type": "gun_info", "data":  player.gun.to_dict()}))
-        hit_player_id = message.get("hit_player_id", None)
-        if hit_player_id is None:
-            return
-        hit_player = self.context.game_context.get_player(message.get("hit_player_id"))
-        hit_player.take_damage(dmg)
         
     async def handle_player_reload(self, playerId: str, message: dict):
         try:
             player = self.context.game_context.get_player(playerId)
             
-            if player.health_points <= 0:
+            if player.is_alive() == False:
                 raise Exception("Player is dead")
             
             player.gun.reload()
         finally:
             await self.context.game_context.websockets.send_to_player(playerId, Message({"type": "gun_info", "data":  player.gun.to_dict()}))
+    
+    async def  handle_player_hit(self, hit_player: Player, taken_dmg: int, shoot_player: Player):
+        if hit_player.is_alive() == False:
+            return
+        
+        if hit_player.id == shoot_player.id:
+            raise Exception("You can't hit yourself")
+        
+        if hit_player.get_team() == shoot_player.get_team():
+            raise Exception("You can't hit your teammate")
+        hit_player.take_hit(taken_dmg)
+        if hit_player.is_alive():
+            await self.send_hp_info(hit_player)
+            return
+            
+        await self.send_elimininated_info(hit_player, shoot_player)
+        lose_team = self.context.get_team_with_no_players_left()
+        if lose_team is not None:
+            print (f"Team {shoot_player.get_team()} wins the match")
+            await self.context.transition_to_match_phase("waiting-for-players")
         
         
         
     async def send_hp_info(self, player: Player):
-        await self.context.game_context.websockets.send_to_all(Message({"type": "hp_info", "data": {
+        await self.context.game_context.websockets.send_to_player(player.id, Message({"type": "hp_info", "data": {
             "hp": player.health_points
+        }}))
+        
+    async def send_elimininated_info(self, player: Player, eliminated_by: Player):
+        await self.context.game_context.websockets.send_to_all(Message({"type": "eliminated_info", "data": {
+            "eliminated_by": eliminated_by.id,
+            "eliminated_player": player.id
         }}))

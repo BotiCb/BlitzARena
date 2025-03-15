@@ -59,6 +59,9 @@ class Player:
             self.health_points = 0
             return
         self.health_points -= damage
+        
+    def is_alive(self):
+        return self.health_points > 0
 
 
 
