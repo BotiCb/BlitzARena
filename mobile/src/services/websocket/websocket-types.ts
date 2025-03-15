@@ -51,7 +51,7 @@ export type GameWSInfo = {
 
 
 export type HitPerson = {
-  playerId: string;
+  hitPlayerId: string;
   confidence: number;
   bodyPart: BODY_PART;
 };

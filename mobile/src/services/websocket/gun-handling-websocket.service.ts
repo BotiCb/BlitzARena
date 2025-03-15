@@ -45,7 +45,9 @@ export class GunHandlingWebSocketService {
         this.websocketService.sendMessage({
             type: WebSocketMessageType.SHOOT,
             data: {
-                detectedPerson
+                hitPlayerId: detectedPerson ? detectedPerson.hitPlayerId : null,
+                confidence: detectedPerson ? detectedPerson.confidence : null,
+                bodyPart: detectedPerson ? detectedPerson.bodyPart : null
             }
         })
 

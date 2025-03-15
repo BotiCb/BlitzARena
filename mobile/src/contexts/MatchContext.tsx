@@ -11,6 +11,7 @@ type MatchContextType = {
   maxRounds: number;
   matchPhase: MatchPhase;
   matchPhaseEndsAt: number | null;
+  healthPoints: number;
   gunHandling: {
     shoot: (detectedPerson: HitPerson | null) => void;
     reload: () => void;
@@ -29,6 +30,7 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('initializing');
   const [matchPhaseEndsAt, setMatchPhaseEndsAt] = useState<number | null>(null);
   const matchWebSocketService = MatchWebSocketService.getInstance();
+  const [healthPoints, setHealthPoints] = useState<number>(100);
   const gunHandling = useGunHandling();
 
   const { location } = useCoordinates({
@@ -54,6 +56,7 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
     matchWebSocketService.setTotalRoundsHandlerFunction(setMaxRounds);
     matchWebSocketService.setCurrentMatchPhaseHandlerFunction(setMatchPhase);
     matchWebSocketService.setTimerHandlerFunction(setMatchPhaseEndsAt);
+    matchWebSocketService.setHealthPointsHandlerFunction(setHealthPoints);
     matchWebSocketService.readyForPhase();
 
     return () => {
@@ -66,7 +69,8 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
     maxRounds,
     matchPhase,
     gunHandling,
-    matchPhaseEndsAt
+    matchPhaseEndsAt,
+    healthPoints
   };
 
   return <MatchContext.Provider value={value}>{children}</MatchContext.Provider>;

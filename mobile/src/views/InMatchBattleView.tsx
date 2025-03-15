@@ -10,13 +10,14 @@ import { useGunHandling } from '~/hooks/useGunHandling';
 
 const InMatchBattleView = () => {
 
-  const { matchPhaseEndsAt } = useMatch();
+  const { matchPhaseEndsAt, healthPoints } = useMatch();
   const { getHitPerson } = useDetection();
   const { gunHandling } = useMatch();
   return (
     <View style={styles.container}>
       {matchPhaseEndsAt && <SmallCountdownTimer endsAt={matchPhaseEndsAt} />}
       <Text style={{ marginRight: 10, color: 'white' }}>{gunHandling.ammoInClip}/{gunHandling.totalAmmo}</Text>
+      <Text style={{ marginRight: 10, color: 'white' }}>hp: {healthPoints}</Text>
       <Button title='Shoot' onPress={() => gunHandling.shoot(getHitPerson())} disabled={!gunHandling.isAbleToShoot} />
       <Button title='Reload' onPress={() => gunHandling.reload()} />
     </View>

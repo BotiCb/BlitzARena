@@ -115,7 +115,7 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
 
 
     return {
-      playerId: sessionID,
+      hitPlayerId: sessionID,
       bodyPart: detection.bodyPart as BODY_PART,
       confidence: Math.round(detection.classification.confidenceAdvantage * 100),
     };
