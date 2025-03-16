@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Platform } from 'react-native';
+import { View, Text, Platform, StyleSheet } from 'react-native';
 import { useTensorflowModel } from 'react-native-fast-tflite';
 import { useSharedValue } from 'react-native-worklets-core';
 
@@ -16,17 +16,26 @@ import InMatchBattleView from '~/views/InMatchBattleView';
 
 const InMatchScreen = () => {
   const cameraRef = useRef<any>(null);
-  const { classifyModel, poseModel, detections } = useDetection();
+  const { classifyModel, poseModel, detections, runModel } = useDetection();
   const { isPhaseInfosNeeded } = useGame();
   const { round, maxRounds, matchPhase } = useMatch();
+
+  useEffect(() => {
+    if(matchPhase === 'battle'){
+      runModel.value = true;
+    }
+    else{
+      runModel.value = false;
+    }
+  }, [matchPhase]);
 
   if (!classifyModel || !poseModel) {
     return <SplashScreen />;
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <CameraView ref={cameraRef} models={[poseModel, classifyModel]} detections={detections} />
+    <View style={styles.container}>
+      <CameraView ref={cameraRef} models={[poseModel, classifyModel]} detections={detections} runModel={runModel} />
 
 
       <Text style={{ color: 'white' }}>
@@ -40,3 +49,10 @@ const InMatchScreen = () => {
 };
 
 export default InMatchScreen;
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

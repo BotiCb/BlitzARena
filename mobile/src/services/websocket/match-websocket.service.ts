@@ -46,6 +46,10 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
         if (endsAt) {
             this.timerHandlerFunction(MatchWebSocketService.clockSyncService.serverTimeToClient(endsAt));
         }
+        else {
+            this.timerHandlerFunction(null);
+        }
+        
         this.currentRoundHandlerFunction(currentRound);
         this.totalRoundsHandlerFunction(totalRounds);
         this.currentMatchPhaseHandlerFunction(currentPhase);
@@ -64,11 +68,14 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
         const { currentRound, currentPhase, endsAt } = message.data;
         this.currentRoundHandlerFunction(currentRound);
         this.currentMatchPhaseHandlerFunction(currentPhase);
-        // AbstractCustomWebSocketService.playersHandlerFunction((players: Player[]) => {
-        //     return players.map((player: Player) => ({ ...player, isReady: false }));
-        // });
+        AbstractCustomWebSocketService.playersHandlerFunction((players: Player[]) => {
+            return players.map((player: Player) => ({ ...player, isReady: false }));
+        });
         if (endsAt) {
             this.timerHandlerFunction(MatchWebSocketService.clockSyncService.serverTimeToClient(endsAt));
+        }
+        else {
+            this.timerHandlerFunction(null);
         }
         this.healtPointsHandlerFunction(100);
     }

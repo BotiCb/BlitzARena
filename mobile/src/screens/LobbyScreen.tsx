@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Button } from 'react-native';
+import { View, Button, StyleSheet } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
 import SplashScreen from './SplashScreen';
@@ -25,7 +25,7 @@ export const LobbyScreen = () => {
     return <SplashScreen />;
   }
   return (
-    <View>
+    <View style={styles.container}>
       <QRCode value={'Game ID: ' + gameId} size={250} />
       <PlayerListComponent
         players={players}
@@ -41,3 +41,12 @@ export const LobbyScreen = () => {
     </View>
   );
 };
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

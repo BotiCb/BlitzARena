@@ -56,6 +56,8 @@ export function drawDetections(frame: DrawableFrame, detection: ObjectDetection,
     paint
   );
 
+  frame.drawCircle(frame.width / 2, frame.height / 2, 10, paint);
+
   // Draw keypoints
 
   if (detection.keypoints) {
@@ -134,15 +136,19 @@ export function InBattleSkiaFrameProcessor(
   model2: TensorflowModel,
   lastUpdateTime: ISharedValue<number>,
   detections: ISharedValue<Detection | null>,
+  runModel: ISharedValue<boolean>,
   paint: SkPaint
 ): DrawableFrameProcessor {
   return useSkiaFrameProcessor(
     (frame) => {
       'worklet';
       frame.render();
+      if (!runModel.value) {
+        return;
+      }
 
 
-      runAtTargetFps(15, () => {
+      runAtTargetFps(detections.value ? 7 : 3, () => {
         'worklet';
         const resized = resize(frame, {
           scale: {
@@ -156,51 +162,51 @@ export function InBattleSkiaFrameProcessor(
         });
         const start = Date.now();
         try {
-        const outputs = model.runSync([resized]);
-        
-        //console.log('pose time: ', Date.now() - start);
-        const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
-          outputs,
-          model.outputs[0].shape[2]
-        );
-        outputs.length = 0;
-        if (objDetection) {
-          const cropData = {
-            x: objDetection.boundingBox.x1 * frame.width,
-            y: objDetection.boundingBox.y2 * frame.height,
-            height: objDetection.boundingBox.w * frame.height,
-            width: objDetection.boundingBox.h * frame.width,
-          };
-          const resized3 = resize(frame, {
-            scale: {
-              width: model2.inputs[0].shape[1],
-              height: model2.inputs[0].shape[2],
-            },
-            pixelFormat: 'rgb',
-            rotation: '90deg',
-            dataType: 'float32',
-            crop: cropData,
-          });
+          const outputs = model.runSync([resized]);
 
-          const start = Date.now();
-          const outputs2 = model2.runSync([resized3]);
-          //console.log('class time: ', Date.now() - start);
-          const classification: Classification = decodeYoloClassifyOutput(outputs2[0]);
-
-          outputs2.length = 0;
-
+          //console.log('pose time: ', Date.now() - start);
+          const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
+            outputs,
+            model.outputs[0].shape[2]
+          );
+          outputs.length = 0;
           if (objDetection) {
-            detections.value = {
-              objectDetection: objDetection,
-              classification,
-              bodyPart: getHitBodyPartFromKeypoints(objDetection.keypoints),
+            const cropData = {
+              x: objDetection.boundingBox.x1 * frame.width,
+              y: objDetection.boundingBox.y2 * frame.height,
+              height: objDetection.boundingBox.w * frame.height,
+              width: objDetection.boundingBox.h * frame.width,
             };
+            const resized3 = resize(frame, {
+              scale: {
+                width: model2.inputs[0].shape[1],
+                height: model2.inputs[0].shape[2],
+              },
+              pixelFormat: 'rgb',
+              rotation: '90deg',
+              dataType: 'float32',
+              crop: cropData,
+            });
+
+            const start = Date.now();
+            const outputs2 = model2.runSync([resized3]);
+            //console.log('class time: ', Date.now() - start);
+            const classification: Classification = decodeYoloClassifyOutput(outputs2[0]);
+
+            outputs2.length = 0;
+
+            if (objDetection) {
+              detections.value = {
+                objectDetection: objDetection,
+                classification,
+                bodyPart: getHitBodyPartFromKeypoints(objDetection.keypoints),
+              };
+            }
+            lastUpdateTime.value = Date.now();
           }
-          lastUpdateTime.value = Date.now();
+        } catch (e) {
+          console.error(e);
         }
-      } catch (e) {
-        console.error(e);
-      }
       });
 
 
@@ -226,16 +232,19 @@ export function InBattleFrameProcessor(
   model2: TensorflowModel,
   lastUpdateTime: ISharedValue<number>,
   detections: ISharedValue<Detection | null>,
-  paint: SkPaint
+  runModel: ISharedValue<boolean>
 ): ReadonlyFrameProcessor {
   return useFrameProcessor(
     (frame) => {
       'worklet';
-      
 
+      if (!runModel.value) {
+        return;
+      }
 
-      runAtTargetFps(detections.value ? 5 : 3, () => {
+      runAtTargetFps(detections.value ? 7 : 3, () => {
         'worklet';
+        
         const resized = resize(frame, {
           scale: {
             width: model.inputs[0].shape[1],
@@ -248,7 +257,7 @@ export function InBattleFrameProcessor(
         });
         const start = performance.now();
         const outputs = model.runSync([resized]);
-        
+
         //console.log('pose time: ', performance.now() - start);
         const objDetection: ObjectDetection | null = decodeYoloPoseOutput(
           outputs,

@@ -20,7 +20,7 @@
 >
     <meta-data
     android:name="com.google.android.geo.API_KEY"
-    android:value="AIzaSyBwBW5G_54PjWXXanC_gQZxXrhmSN2N7CE" />
+    android:value="${GOOGLE_MAPS_API_KEY}" />
     <meta-data android:name="expo.modules.updates.ENABLED" android:value="false"/>
      <uses-native-library android:name="libOpenCL-pixel.so" android:required="false" />
   <uses-native-library android:name="libGLES_mali.so" android:required="false" />
