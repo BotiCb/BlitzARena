@@ -27,6 +27,7 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
     def register_handlers(self):
         self.context.game_context.websockets.register_handler("player_shoot", self.handle_player_shoot)
         self.context.game_context.websockets.register_handler("player_reload", self.handle_player_reload)
+        self._registered_handlers.extend(["player_shoot", "player_reload"])
 
     async def _run_countdown(self, duration: timedelta):
         """Background task to handle phase duration"""
@@ -38,6 +39,9 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
         if self._countdown_task and not self._countdown_task.done():
             self._countdown_task.cancel()
         self.ends_at = None
+        self._countdown_task = None
+        self._unregister_handlers()
+        
 
     async def handle_player_position_change(self, player: Player):
         """Handle player movements during battle"""

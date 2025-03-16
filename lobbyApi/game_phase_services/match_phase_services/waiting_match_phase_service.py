@@ -24,6 +24,7 @@ class WaitingMatchPhaseService(MatchPhaseAbstractService):
         if self._countdown_task and not self._countdown_task.done():
             self._countdown_task.cancel()
         self.ends_at = None
+        self._unregister_handlers()
 
     async def handle_player_position_change(self, player):
         if self._countdown_task and not self._countdown_task.done():
