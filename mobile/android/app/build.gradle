@@ -81,13 +81,15 @@ def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInRelea
 def jscFlavor = 'org.webkit:android-jsc:+'
 
 def localProperties = new Properties()
-def localPropertiesFile = rootProject.file("local.properties")
+def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
     localProperties.load(new FileInputStream(localPropertiesFile))
 }
-def apiKey = localProperties.getProperty("googlemaps_api.key")
-if (apiKey == null) {
-    throw new GradleException("API key not found. Add 'googlemaps_api.key' to local.properties.")
+
+def googleMapsApiKey = System.getenv('GOOGLE_MAPS_API_KEY') ?: localProperties.getProperty('googlemaps_api.key')
+
+if (googleMapsApiKey == null) {
+    throw new GradleException("API key not found. Add 'googlemaps_api.key' to local.properties OR set GOOGLE_MAPS_API_KEY environment variable.")
 }
 
 android {
@@ -103,7 +105,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0.0"
-        manifestPlaceholders = [GOOGLE_MAPS_API_KEY: localProperties.getProperty("googlemaps_api.key", "")]
+        manifestPlaceholders = [GOOGLE_MAPS_API_KEY: googleMapsApiKey]
     }
     signingConfigs {
         debug {
