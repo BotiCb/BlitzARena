@@ -18,6 +18,7 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
   private gamePhaseHandlerFunction: (gamePhase: GamePhase) => void = () => { };
   private modelHandlerFunction: (model: Model) => void = () => { };
   private readyHandlerFunction: (isReady: boolean) => void = () => { };
+  private errorMsgHandlerFunction: (message: string) => void = () => { };
 
   private trainingProgressHandlerFunction: (trainingProgress: number) => void = () => { };
 
@@ -101,6 +102,10 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
 
   setTrainingProgressHandlerFunction = (handler: (trainingProgress: number) => void) => {
     this.trainingProgressHandlerFunction = handler;
+  };
+
+  setErrorMsgHandlerFunction = (handler: (message: string) => void) => {
+    this.errorMsgHandlerFunction = handler;
   };
 
   handleGameInfoEvent = async (message: WebSocketMsg) => {
@@ -359,4 +364,10 @@ export class GameWebSocketService extends AbstractCustomWebSocketService {
       },
     });
   }
+
+
+  onError = (message: WebSocketMsg) => {
+    console.error("Error: message from server", "message");
+    this.errorMsgHandlerFunction(message.data);
+  };
 }

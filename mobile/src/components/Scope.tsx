@@ -17,7 +17,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
     position: 'absolute',
-    height: '100%',
+    alignContent: 'center',
+    justifyContent: 'center',
+    height: '110%',
     width: '100%',
   },
 });

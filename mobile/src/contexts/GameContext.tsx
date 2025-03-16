@@ -26,6 +26,7 @@ type GameContextType = {
   trainingProgress: number;
   ready: boolean;
   handleReadyPress: () => void;
+  errorMsg: string;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -46,6 +47,7 @@ export const GameProvider: React.FC<{
   const [model, setModel] = useState<Model | null>(null);
   const [ready, setReady] = useState<boolean>(false);
   const [trainingProgress, setTrainingProgress] = useState<number>(0);
+  const [errorMsg, setErrorMsg] = useState<string>('');
   const setPlayerAsHost = (playerId: string) => {
     if (!areYouHost) {
       return;
@@ -71,6 +73,18 @@ export const GameProvider: React.FC<{
     gameWebsocketService.setMyStatus(!ready);
   };
 
+  let timeoutId: NodeJS.Timeout | null  = null;
+  useEffect(() => {
+    if (timeoutId !== null) {
+    clearTimeout(timeoutId);
+  }
+  setErrorMsg(errorMsg);
+  timeoutId = setTimeout(() => {
+    setErrorMsg('');
+    timeoutId = null;
+  }, 5000);
+  }, [errorMsg]);
+
 
   useEffect(() => {
     gameWebsocketService.setNavigationHandler(navigation);
@@ -88,6 +102,7 @@ export const GameProvider: React.FC<{
     gameWebsocketService.setTrainingProgressHandlerFunction(setTrainingProgress);
     gameWebsocketService.setIsPhaseInfosNeededHandlerFunction(setIsPhaseInfosNeeded);
     gameWebsocketService.setReadyHandlerFunction(setReady);
+    gameWebsocketService.setErrorMsgHandlerFunction(setErrorMsg);
     gameWebsocketService.setWebSocketEventListeners();
     websocketService.connect(gameId, userSessionId);
 
@@ -114,6 +129,7 @@ export const GameProvider: React.FC<{
         trainingProgress,
         ready,
         handleReadyPress,
+        errorMsg,
       }}>
       {children}
     </GameContext.Provider>

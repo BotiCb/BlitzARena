@@ -25,10 +25,11 @@ const GameStack = () => {
 };
 
 const GameContent = () => {
-  const { gamePhase, ping } = useGame();
+  const { gamePhase, ping, errorMsg } = useGame();
   return (
     <>
-      <Text>{ping}</Text>
+      {/* <Text>{ping}</Text>
+      {errorMsg && <Text style={{ color: 'red' }}>{errorMsg}</Text>} */}
       {(() => {
         switch (gamePhase) {
           case 'lobby':

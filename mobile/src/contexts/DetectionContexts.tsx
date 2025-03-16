@@ -21,6 +21,7 @@ type DetectionContextType = {
   classifyModel: TensorflowModel | null;
   poseModel: TensorflowModel | null;
   getHitPerson: () => HitPerson | null;
+  runModel: ISharedValue<boolean>;
 };
 
 const DetectionContext = createContext<DetectionContextType>({} as DetectionContextType);
@@ -32,6 +33,7 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
   const delegate = Platform.OS === 'ios' ? 'core-ml' : undefined;
   const [detectedPerson, setDetectedPerson] = useState<DetectedPerson | null>(null);
   const detections = useSharedValue<Detection | null>(null);
+  const runModel = useSharedValue<boolean>(false);
   const playersMap = useMemo(() => new Map(players.map((p) => [p.sessionID, p])), [players]);
   const detectedPersonRef = useRef<DetectedPerson | null>(null);
 
@@ -127,7 +129,8 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
     detections,
     classifyModel,
     poseModel,
-    getHitPerson
+    getHitPerson,
+    runModel
   }
 
 

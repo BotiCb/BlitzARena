@@ -7,8 +7,9 @@ import { TensorflowModel, TensorflowPlugin } from 'react-native-fast-tflite';
 import { Camera, useCameraDevices, useCameraPermission } from 'react-native-vision-camera';
 import { ISharedValue, useSharedValue } from 'react-native-worklets-core';
 
-import { InBattleFrameProcessor } from '../services/frame-processing/frame-processors';
+import { InBattleFrameProcessor, InBattleSkiaFrameProcessor } from '../services/frame-processing/frame-processors';
 import { Detection } from '../utils/types/detection-types';
+import { Scope } from '~/components/Scope';
 
 function tensorToString(tensor: TensorflowModel['inputs'][number]): string {
   return `${tensor.dataType} [${tensor.shape}]`;
@@ -17,9 +18,10 @@ function tensorToString(tensor: TensorflowModel['inputs'][number]): string {
 interface CameraViewProps {
   models: TensorflowModel[];
   detections: ISharedValue<Detection | null>;
+  runModel: ISharedValue<boolean>;
 }
 
-const InMatchCameraView = forwardRef<any, CameraViewProps>(({ models, detections }, ref) => {
+const InMatchCameraView = forwardRef<any, CameraViewProps>(({ models, detections, runModel }, ref) => {
   const device = useCameraDevices()[0];
 
   const isFocused = useIsFocused();
@@ -70,15 +72,19 @@ const InMatchCameraView = forwardRef<any, CameraViewProps>(({ models, detections
     );
   }
 
-  return ( 
+  return (
+    <View style={styles.container}>
         <Camera
           style={StyleSheet.absoluteFill}
           device={device}
           isActive={isActive}
-          frameProcessor={InBattleFrameProcessor(model, model2, lastUpdateTime, detections, paint)}
+          frameProcessor={InBattleFrameProcessor(model, model2, lastUpdateTime, detections, runModel)}
           pixelFormat="yuv"
           outputOrientation="device"
         /> 
+        
+
+    </View>
   );
 });
 
@@ -87,10 +93,9 @@ export default InMatchCameraView;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
-    justifyContent: 'center',
-
-    alignItems: 'center',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
   },
 
   permissionContainer: {
@@ -108,4 +113,5 @@ const styles = StyleSheet.create({
 
     color: 'gray',
   },
+
 });

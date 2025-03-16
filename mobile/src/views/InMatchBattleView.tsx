@@ -2,6 +2,7 @@ import { Container } from '@shopify/react-native-skia/lib/typescript/src/rendere
 import React from 'react';
 import { View, Button, StyleSheet, Text } from 'react-native';
 import SmallCountdownTimer from '~/atoms/SmallCountdownTimer';
+import { Scope } from '~/components/Scope';
 import { useDetection } from '~/contexts/DetectionContexts';
 import { useGame } from '~/contexts/GameContext';
 import { useMatch } from '~/contexts/MatchContext';
@@ -15,6 +16,7 @@ const InMatchBattleView = () => {
   const { gunHandling } = useMatch();
   return (
     <View style={styles.container}>
+      <Scope />
       {matchPhaseEndsAt && <SmallCountdownTimer endsAt={matchPhaseEndsAt} />}
       <Text style={{ marginRight: 10, color: 'white' }}>{gunHandling.ammoInClip}/{gunHandling.totalAmmo}</Text>
       <Text style={{ marginRight: 10, color: 'white' }}>hp: {healthPoints}</Text>
@@ -35,6 +37,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-end',
     flexDirection: 'row',
-    padding: 20
+    paddingBottom: 100,
   },
 });
