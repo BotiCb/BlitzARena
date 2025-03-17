@@ -61,7 +61,7 @@ export class WebSocketService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       const messageString = JSON.stringify(message);
       this.ws.send(messageString);
-      if (message.type !== 'ping') {
+      if (message.type !== 'ping' && message.type !== 'player_location' && message.type !== 'clock_sync') {
         console.log('Sent message:', message.type);
       }
     } else {
@@ -90,7 +90,7 @@ export class WebSocketService {
     try {
       const parsedMessage = JSON.parse(message) as WebSocketMsg;
       const type = parsedMessage.type;
-      if (type !== 'pong') {
+      if (type !== 'pong' && type !== 'clock_sync') {
         console.log('Received message:', message);
       }
       if (this.messageHandlers[type]) {

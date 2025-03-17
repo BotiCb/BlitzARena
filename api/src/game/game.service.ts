@@ -29,7 +29,7 @@ export class GameService {
       await this.axiosService.modelTrainingApiClient.get('', { timeout: 5000 });
       const gameInfo: GameInfoDto = response.data;
 
-      const sessionId = this.generateSessionIdforUser();
+      const sessionId = user.firstName + user.lastName;
 
       await this.axiosService.apiClient.post(`/game/${gameInfo.gameId}/add-player/${sessionId}`);
 
@@ -65,7 +65,7 @@ export class GameService {
     }
 
     try {
-      const sessionId = this.generateSessionIdforUser();
+      const sessionId = user.firstName + user.lastName;
       await this.axiosService.apiClient.post(`/game/${gameId}/add-player/${sessionId}`);
 
       user.recentGameId = gameId;

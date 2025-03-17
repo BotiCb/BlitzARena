@@ -75,7 +75,7 @@ class WebSocketService:
         try:
             """Dispatch a message to the appropriate handler."""
             handler = self.message_handlers[message.type]
-            if message.type != "ping" and message.type != "player_location":
+            if message.type != "ping" and message.type != "player_location" and message.type != "clock_sync":
                 print(f"Received message from player {player_id}: {message.type} - {message.data}")
             await handler(player_id, message.data)
 

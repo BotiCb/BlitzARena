@@ -6,6 +6,7 @@ import { MODEL_TRAINING_ENDPOINTS } from '../restApi/Endpoints';
 import { apiClient } from '../restApi/RestApiService';
 
 import { TrainingPhase } from '~/utils/types/types';
+import { TRAINING_CAMERA_CONSTANTS } from '~/utils/constants/frame-processing-constans';
 
 export class ModelTrainingWebSocketService extends AbstractCustomWebSocketService {
   private remainingPhotoToSendCount: number = 0;
@@ -14,8 +15,9 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
   private currentTrainingPlayerHandlerFunction: (playerId: string) => void = () => { };
   private trainingGroupHandlerFunction: (playerIds: string[] | null) => void = () => { };
   private phaseHandlerFunction: (phase: TrainingPhase) => void = () => { };
-  private takePhotoFunction: () => Promise<TrainingImage> = () => Promise.resolve({ photoUri: '', detectedPlayer: '', photoSize: 0 });
+  private takePhotoFunction: () => Promise<string> = () => Promise.resolve('');
   private isTakePhotos: boolean = false;
+  private currentTrainingPlayer: string | null = null;
 
   setWebSocketEventListeners(): void {
     this.websocketService.onMessageType(
@@ -47,7 +49,7 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
   }
 
 
-  setTakePhotoFunction = (handler: () => Promise<TrainingImage>) => {
+  setTakePhotoFunction = (handler: () => Promise<string>) => {
     this.takePhotoFunction = handler;
   }
 
@@ -110,7 +112,15 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
 
   private async captureAndQueuePhoto() {
     try {
-      const trainingImage = await this.takePhotoFunction();
+      const photoUri = await this.takePhotoFunction();
+      if (this.currentTrainingPlayer === null) {
+        throw new Error('No current training player');
+      }
+      const trainingImage: TrainingImage = {
+        photoUri,
+        detectedPlayer: this.currentTrainingPlayer,
+        photoSize: TRAINING_CAMERA_CONSTANTS.OUTPUT_IMAGE_SIZE
+      }
       this.photoQueue.push(trainingImage); 
       this.remainingPhotoToSendCount--;
 
@@ -171,11 +181,13 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     const { nextPlayer, photosToCollect } = message.data;
     this.remainingPhotoToSendCount = photosToCollect;
     this.currentTrainingPlayerHandlerFunction(nextPlayer);
+    this.currentTrainingPlayer = nextPlayer;
     if (ModelTrainingWebSocketService.sessionId === nextPlayer) {
       this.phaseHandlerFunction('photos-from-you');
     } else {
       this.phaseHandlerFunction('take-photos');
     }
+    this.photoQueue = [];
   };
 
   onModelTrainingPhaseInfo = (message: WebSocketMsg) => {
@@ -183,6 +195,7 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     this.remainingPhotoToSendCount = photosToCollect;
     this.trainingGroupHandlerFunction(groupMembers);
     this.currentTrainingPlayerHandlerFunction(currentPlayer);
+    this.currentTrainingPlayer = currentPlayer;
     if (ModelTrainingWebSocketService.sessionId === currentPlayer) {
       this.phaseHandlerFunction('photos-from-you');
     } else {

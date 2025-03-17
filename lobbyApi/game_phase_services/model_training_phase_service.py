@@ -6,6 +6,7 @@ from game.game_context import GameContext
 from game_phase_services.phase_abstract_service import PhaseAbstractService
 
 
+from models.player import Player
 from utils.dto_convention_converter import convert_dict_to_camel_case
 from models.message import Message
 import asyncio
@@ -17,7 +18,7 @@ class ModelTrainingPhaseService(PhaseAbstractService):
 
     def __init__(self, context: GameContext):
         super().__init__(context)
-        self.max_photos_per_player = 10
+        self.max_photos_per_player = 20
         
         self.groups: Dict[int, List[str]] = {}
         self.httpx_service: HTTPXService = HTTPXService()
@@ -31,6 +32,8 @@ class ModelTrainingPhaseService(PhaseAbstractService):
         self.training_data_collected = []
         for player in self.context.players:
             player.reset_training_photo_count()
+        for group_id in self.groups:
+            self.reset_players_training_photo_to_total_for_group(group_id, self.context.get_player(self.get_player_from_group_with_not_finished_training(group_id)))
 
 
 
@@ -43,20 +46,30 @@ class ModelTrainingPhaseService(PhaseAbstractService):
 
     async def on_training_photo_sent(self, player_id: str, message: dict):
         try:
-            detected_player = message.get("detected_player")
-            if detected_player in self.training_data_collected:
+            detected_player_id = message.get("detected_player")
+            if detected_player_id in self.training_data_collected:
+                await self.context.websockets.send_to_player(player_id,  Message({"type": "training_ready_for_player", "data": {
+                        "player_ready": detected_player_id,
+                    }}))
+                await self.context.websockets.send_to_player(player_id, Message({"type": "next_training_player", "data": {
+                        "next_player": self.get_player_from_group_with_not_finished_training(self.get_players_group_id(detected_player_id)),
+                        "photos_to_collect": self.context.get_player(player_id).training_photo_left_to_take
+                }}))
                 return
+                
             
-            group_id = self.get_players_group_id(detected_player)
-            player_photo_count = self.context.get_player(detected_player).increment_training_photo_count()
+            group_id = self.get_players_group_id(detected_player_id)
+            detected_player= self.context.get_player(detected_player_id)
+            player_photo_count = detected_player.increment_training_photo_count()
 
-            print(f"Player {detected_player} has {player_photo_count} training photos")
+            print(f"Player {detected_player_id} has {player_photo_count} training photos")
             self.photo_count += 1
 
             photo_collecting_progresss = round(self.photo_count / (self.max_photos_per_player * len(self.context.players)) * 100)
             await self.context.websockets.send_to_all(
                 Message({"type": "photo_collecting_progress", "data": {"progress": photo_collecting_progresss}})
             )
+            self.context.get_player(player_id).training_photo_left_to_take -= 1
 
             if player_photo_count >= self.max_photos_per_player:
                 await self.assign_next_player_for_training(group_id, detected_player)
@@ -118,7 +131,7 @@ class ModelTrainingPhaseService(PhaseAbstractService):
                 "data": {
                     "group_members": self.groups[group_id],
                     "current_player": self.get_player_from_group_with_not_finished_training(group_id),
-                    "photos_to_collect": self.max_photos_per_player/(len(self.groups[group_id])-1),
+                    "photos_to_collect": self.context.get_player(player_id).training_photo_left_to_take,
                     "photo_collecting_progress": photo_collecting_progresss
                 }
             })
@@ -137,21 +150,24 @@ class ModelTrainingPhaseService(PhaseAbstractService):
                 return player_id
         return None
     
-    async def assign_next_player_for_training(self, group_id: int, detected_player: str):
-        self.training_data_collected.append(detected_player)
-        print(f"Training data collected for player {detected_player}, {len(self.training_data_collected)}/{len(self.context.players)} players collected")
-
+    async def assign_next_player_for_training(self, group_id: int, detected_player: Player):
+        if detected_player.training_photo_count >= self.max_photos_per_player:
+            self.training_data_collected.append(detected_player.id)
+            print(f"Training data collected for player {detected_player.id}, {len(self.training_data_collected)}/{len(self.context.players)} players collected")
+        else : 
+            print(f"Training skipped for player {detected_player.id}")
         await self.context.websockets.send_to_group(self.groups[group_id],
                     Message({"type": "training_ready_for_player", "data": {
-                        "player_ready": detected_player,
+                        "player_ready": detected_player.id,
                     }}))
         next_player = self.get_player_from_group_with_not_finished_training(group_id)
         print(f"Next player: {next_player}")
         if next_player:
+            self.reset_players_training_photo_to_total_for_group(group_id, self.context.get_player(next_player))
             await self.context.websockets.send_to_group(self.groups[group_id],
                 Message({"type": "next_training_player", "data": {
                 "next_player": next_player,
-                "photos_to_collect": self.max_photos_per_player/(len(self.groups[group_id])-1)
+                "photos_to_collect": (self.max_photos_per_player- self.context.get_player(next_player).training_photo_count)/(len(self.groups[group_id])-1),
             }}))
         else:
             print("All players finished training frpm group")
@@ -159,4 +175,13 @@ class ModelTrainingPhaseService(PhaseAbstractService):
                 Message({"type": "training_finished_for_group", "data": {}}))
         if len(self.context.players) == len(self.training_data_collected):
             await self.start_training()
+            
+            
+    def reset_players_training_photo_to_total_for_group(self, group_id: int, traninee: Player):
+        for player_id in self.groups[group_id]:
+                player = self.context.get_player(player_id)
+                if player.id == traninee.id:
+                    player.training_photo_left_to_take = 0
+                    continue
+                player.training_photo_left_to_take = (self.max_photos_per_player-traninee.training_photo_count)/(len(self.groups[group_id])-1)
             

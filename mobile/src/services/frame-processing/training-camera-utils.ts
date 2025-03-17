@@ -4,18 +4,13 @@ import React from 'react';
 import { Camera } from 'react-native-vision-camera';
 import { ISharedValue } from 'react-native-worklets-core';
 
-import { TrainingImage } from '../websocket/websocket-types';
-
-import { TRAINING_CAMERA_CONSTANTS } from '~/utils/constants/frame-processing-constans';
 import { ObjectDetection } from '~/utils/types/detection-types';
 
 export async function takeCroppedTrainingImage(
   camera: Camera,
   detections: ISharedValue<ObjectDetection | null>,
   lastUpdateTime: ISharedValue<number>,
-  playerId: string,
-  imageSize: number
-): Promise<TrainingImage> {
+): Promise<string> {
   let maxTryCount = 3;
   // while (Date.now() - lastUpdateTime.value > TRAINING_CAMERA_CONSTANTS.MAX_TAKE_PHOTO_TIME_DELTA) {
   //   await new Promise((resolve) => setTimeout(resolve, TRAINING_CAMERA_CONSTANTS.TAKE_PHOTO_DELAY));
@@ -63,10 +58,6 @@ export async function takeCroppedTrainingImage(
   }
   const croppedPhoto = await ImageEditor.cropImage('file://' + photo.path, cropOptions);
 
-  const trainingImage: TrainingImage = {
-    photoUri: croppedPhoto.uri,
-    detectedPlayer: playerId,
-    photoSize: imageSize,
-  };
-  return trainingImage;
+  
+  return croppedPhoto.uri;
 }

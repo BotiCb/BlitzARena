@@ -10,7 +10,6 @@ import { useSharedValue } from 'react-native-worklets-core';
 import { trainingFrameProcessor } from '~/services/frame-processing/frame-processors';
 import { takeCroppedTrainingImage } from '~/services/frame-processing/training-camera-utils';
 import { ModelTrainingWebSocketService } from '~/services/websocket/model-training.websocket.service';
-import { TrainingImage } from '~/services/websocket/websocket-types';
 import { TRAINING_CAMERA_CONSTANTS } from '~/utils/constants/frame-processing-constans';
 import { ObjectDetection } from '~/utils/types/detection-types';
 
@@ -56,7 +55,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   // ]);
 
 
-  const capturePhotos = async (): Promise<TrainingImage> => {
+  const capturePhotos = async (): Promise<string> => {
     if (!camera.current) {
       throw new Error('No camera');
     }
@@ -68,18 +67,16 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
       throw new Error('No detections');
     }
 
-    const trainingImage = await takeCroppedTrainingImage(
+    const photoUri = await takeCroppedTrainingImage(
       camera.current,
       detections,
       lastUpdateTime,
-      playerId,
-      TRAINING_CAMERA_CONSTANTS.OUTPUT_IMAGE_SIZE
     );
     const captureDuration = Date.now() - captureStart;
 
     console.log('Picture took in ms', captureDuration);
 
-    return trainingImage;
+    return photoUri;
   };
 
   const modeltrainingWebsokcetService = ModelTrainingWebSocketService.getInstance();

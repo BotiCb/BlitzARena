@@ -39,10 +39,10 @@ export class ClockSyncService {
     }
     else {
       const currentOffset = (serverReceived - clientSent) - latency;
-      console.warn('Current offset:', currentOffset + "ms");
+      //console.warn('Current offset:', currentOffset + "ms");
       this.offset = this.offset * (this.collectedOffsetCount - 1) / this.collectedOffsetCount + currentOffset / this.collectedOffsetCount;
     }
-    console.warn('Clock sync offset:', this.offset + "ms");
+    //console.warn('Clock sync offset:', this.offset + "ms");
   };
 
   public serverTimeToClient(serverTimestamp: number): number {
