@@ -8,7 +8,9 @@ export function fromPlayerWSInfoToPlayerModel(playerInfo: PlayerWSInfo): Player 
     playerInfo.playerId,
     playerInfo.isConnected,
     playerInfo.isHost,
-    playerInfo.team
+    playerInfo.team,
+    playerInfo.kills,
+    playerInfo.deaths
   );
 }
 

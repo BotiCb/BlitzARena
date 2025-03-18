@@ -2,6 +2,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Menu, Divider, Provider } from 'react-native-paper';
+import { useGame } from '~/contexts/GameContext';
 
 import { Player } from '~/utils/models';
 
@@ -23,7 +24,7 @@ export const PlayerInfo: React.FC<PlayerInfoProps> = ({
   color="black",
 }) => {
   const [menuVisible, setMenuVisible] = useState(false);
-
+  const { gamePhase } = useGame();
   return (
     <Provider>
       <View style={[styles.container, { borderColor: color }]}>
@@ -42,6 +43,7 @@ export const PlayerInfo: React.FC<PlayerInfoProps> = ({
 
         <Text style={[styles.text, { color }]} >{player.firstName + ' ' + player.lastName}</Text>
         {isYou && <Text style={[styles.text, { color }]}>(You)</Text>}
+        {gamePhase === 'match' && <Text style={[styles.text, { color }]}>{player.kills} / {player.deaths}</Text>}
 
         {player.isHost && <MaterialCommunityIcons name="crown" size={24} color="gold" />}
 

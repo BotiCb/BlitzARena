@@ -16,15 +16,25 @@ const InMatchBattleView = () => {
   const { gunHandling } = useMatch();
   return (
     <View style={styles.container}>
-      <Scope />
+      
       {matchPhaseEndsAt && <SmallCountdownTimer endsAt={matchPhaseEndsAt} />}
-      <Text style={{ marginRight: 10, color: 'white' }}>{gunHandling.ammoInClip}/{gunHandling.totalAmmo}</Text>
-      <Text style={{ marginRight: 10, color: 'white' }}>hp: {healthPoints}</Text>
-      <Button title='Shoot' onPress={() => gunHandling.shoot(getHitPerson())} disabled={!gunHandling.isAbleToShoot} />
-      <Button title='Reload' onPress={() => gunHandling.reload()} />
+      {healthPoints > 0 && <Scope/>}
+      {healthPoints ? (
+        <View>
+          <Text style={{ marginRight: 10, color: 'white' }}>{gunHandling.ammoInClip}/{gunHandling.totalAmmo}</Text>
+          <Text style={{ marginRight: 10, color: 'white' }}>hp: {healthPoints}</Text>
+          <Button title='Shoot' onPress={() => gunHandling.shoot(getHitPerson())} disabled={!gunHandling.isAbleToShoot} />
+          <Button title='Reload' onPress={() => gunHandling.reload()} />
+        </View>
+      )
+      :
+      (
+        <Text style={{ marginRight: 10, color: 'white' }}>You are eliminated</Text>
+      )}
     </View>
   );
 };
+
 
 export default InMatchBattleView;
 

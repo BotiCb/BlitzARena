@@ -38,6 +38,8 @@ export type PlayerWSInfo = {
   isConnected: boolean;
   isHost: boolean;
   team: TEAM | null;
+  kills: number;
+  deaths: number;
 };
 
 export type GameWSInfo = {

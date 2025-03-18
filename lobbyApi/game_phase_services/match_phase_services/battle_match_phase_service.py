@@ -59,8 +59,9 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
             hit_player_id = message.get("hit_player_id", None)
             if hit_player_id is None:
                 return
+            body_part = message.get("body_part", None)
             hit_player = self.context.game_context.get_player(message.get("hit_player_id"))
-            await self.handle_player_hit(hit_player, dmg, player)
+            await self.handle_player_hit(hit_player, dmg, player, body_part)
             
         finally:
             await self.context.game_context.websockets.send_to_player(playerId, Message({"type": "gun_info", "data":  player.gun.to_dict()}))
@@ -76,7 +77,7 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
         finally:
             await self.context.game_context.websockets.send_to_player(playerId, Message({"type": "gun_info", "data":  player.gun.to_dict()}))
     
-    async def  handle_player_hit(self, hit_player: Player, taken_dmg: int, shoot_player: Player):
+    async def  handle_player_hit(self, hit_player: Player, taken_dmg: int, shoot_player: Player, hit_body_part):
         if hit_player.is_alive() == False:
             return
         
@@ -85,15 +86,31 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
         
         if hit_player.get_team() == shoot_player.get_team():
             raise Exception("You can't hit your teammate")
+        match hit_body_part:
+            case "head":
+                taken_dmg *= 2
+            case "chest":
+                taken_dmg *= 1.5
+            case _:
+                taken_dmg *= 1
         hit_player.take_hit(taken_dmg)
         if hit_player.is_alive():
             await self.send_hp_info(hit_player)
             return
             
         await self.send_elimininated_info(hit_player, shoot_player)
+        hit_player.deaths += 1
+        shoot_player.kills += 1
         lose_team = self.context.get_team_with_no_players_left()
         if lose_team is not None:
-            print (f"Team {shoot_player.get_team()} wins the match")
+            winning_team = shoot_player.get_team()
+            print(f"Team {winning_team} wins the match")
+            self.context.increment_score(winning_team)
+            await self.context.game_context.websockets.send_to_all(Message({
+                "type": "winning_team",
+                "data": {"team": winning_team}
+            }))
+            await asyncio.sleep(5)
             await self.context.transition_to_match_phase("waiting-for-players")
         
         

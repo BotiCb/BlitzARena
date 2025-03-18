@@ -149,7 +149,7 @@ class ModelTrainingService:
             results = model.train(
                 data=f"{self.dataset_dir}/{game_id}",
                 imgsz=image_size,
-                epochs=10,
+                epochs=12,
                 batch=200,
                 workers=0,
                 device=0,

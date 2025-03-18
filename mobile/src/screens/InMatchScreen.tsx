@@ -18,7 +18,7 @@ const InMatchScreen = () => {
   const cameraRef = useRef<any>(null);
   const { classifyModel, poseModel, detections, runModel } = useDetection();
   const { isPhaseInfosNeeded } = useGame();
-  const { round, maxRounds, matchPhase } = useMatch();
+  const { round, maxRounds, matchPhase, score, winningTeam } = useMatch();
 
   useEffect(() => {
     if(matchPhase === 'battle'){
@@ -29,7 +29,7 @@ const InMatchScreen = () => {
     }
   }, [matchPhase]);
 
-  if (!classifyModel || !poseModel) {
+  if (!classifyModel || !poseModel || isPhaseInfosNeeded) {
     return <SplashScreen />;
   }
 
@@ -41,6 +41,8 @@ const InMatchScreen = () => {
       <Text style={{ color: 'white' }}>
         Round: {round} / {maxRounds} - {matchPhase}{' '}
       </Text>
+      {score && <Text style={{ color: 'white' }}> Score: {Object.keys(score).map((key) => `${key}: ${score[key]} `)} </Text>}
+      {winningTeam && <Text style={{ color: 'white', fontSize: 20 }}> Winner: {winningTeam} </Text>}
       {matchPhase === 'battle' && <InMatchBattleView />}
       {matchPhase === 'waiting-for-players' && <InMatchWaitingForPlayersView />}
 

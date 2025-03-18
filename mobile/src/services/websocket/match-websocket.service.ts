@@ -10,6 +10,9 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
     private currentMatchPhaseHandlerFunction: (phase: MatchPhase) => void = () => { };
     private timerHandlerFunction: (endsAt: number | null) => void = () => { };
     private healtPointsHandlerFunction: (healthPoints: number) => void = () => { };
+    private scoreHandlerFunction: (score: Record<string, number>) => void = () => { };
+    private winningTeamHandlerFunction: (team: string | null) => void = () => { };
+
 
     setCurrentRoundHandlerFunction = (handler: (round: number) => void) => {
         this.currentRoundHandlerFunction = handler;
@@ -31,6 +34,14 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
         this.healtPointsHandlerFunction = handler;
     }
 
+    setScoreHandlerFunction = (handler: (score: Record<string, number>) => void) => {
+        this.scoreHandlerFunction = handler;
+    }
+
+    setWinningTeamHandlerFunction = (handler: (team: string | null) => void) => {
+        this.winningTeamHandlerFunction = handler;
+    }
+
 
     setWebSocketEventListeners(): void {
         this.websocketService.onMessageType('match_phase_info', this.onPhaseInfo);
@@ -38,17 +49,20 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
         this.websocketService.onMessageType('match_phase', this.onMatchPhase);
         this.websocketService.onMessageType('hp_info', this.onHpInfo);
         this.websocketService.onMessageType('eliminated_info', this.onEliminatedInfo);
+        this.websocketService.onMessageType('winning_team', this.onWinningTeam);
 
     }
 
     onPhaseInfo = (message: WebSocketMsg) => {
-        const { currentRound, totalRounds, currentPhase, endsAt, hp } = message.data;
+        const { currentRound, totalRounds, currentPhase, endsAt, hp, scores } = message.data;
         if (endsAt) {
             this.timerHandlerFunction(MatchWebSocketService.clockSyncService.serverTimeToClient(endsAt));
         }
         else {
             this.timerHandlerFunction(null);
         }
+
+        this.scoreHandlerFunction(scores);
         
         this.currentRoundHandlerFunction(currentRound);
         this.totalRoundsHandlerFunction(totalRounds);
@@ -65,12 +79,15 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
     }
 
     onMatchPhase = (message: WebSocketMsg) => {
-        const { currentRound, currentPhase, endsAt } = message.data;
+        const { currentRound, currentPhase, endsAt, scores } = message.data;
         this.currentRoundHandlerFunction(currentRound);
         this.currentMatchPhaseHandlerFunction(currentPhase);
         AbstractCustomWebSocketService.playersHandlerFunction((players: Player[]) => {
             return players.map((player: Player) => ({ ...player, isReady: false }));
         });
+
+        this.scoreHandlerFunction(scores);
+        this.winningTeamHandlerFunction(null);
         if (endsAt) {
             this.timerHandlerFunction(MatchWebSocketService.clockSyncService.serverTimeToClient(endsAt));
         }
@@ -97,6 +114,22 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
         if(MatchWebSocketService.sessionId === eliminatedPlayer){
             this.healtPointsHandlerFunction(0);
         }
+        AbstractCustomWebSocketService.playersHandlerFunction((players: Player[]) => {
+            return players.map((player: Player) => {
+                if (player.sessionID === eliminatedPlayer) {
+                    return { ...player, deaths: player.deaths + 1 };
+                }
+                if (player.sessionID === eliminatedBy) {
+                    return { ...player, kills: player.kills + 1 };
+                }
+                return player;
+            });
+        });
+    }
+
+    onWinningTeam = (message: WebSocketMsg) => {
+        const { team } = message.data;
+        this.winningTeamHandlerFunction(team);
     }
 
 }

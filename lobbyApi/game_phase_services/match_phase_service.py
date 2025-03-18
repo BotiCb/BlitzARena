@@ -16,10 +16,12 @@ class MatchService(PhaseAbstractService):
         super().__init__(context)
         self.current_round = 1
         self.total_rounds = 10
+        self.scores: Dict[str, int] = {team: 0 for team in self.context.get_teams()}        
         self.match_context = MatchContext(game_context=context,
                                           transition_to_match_phase_callback=self.trainsition_to_match_phase,
                                           get_round_number_callback= lambda: self.current_round,
-                                          increment_round_callback=self.increment_round
+                                          increment_round_callback=self.increment_round,
+                                          increment_score_callback=self.increment_score
                                           )
         self.match_phases_services: Dict[str, MatchPhaseAbstractService] = {
             "waiting-for-players": WaitingMatchPhaseService(self.match_context),
@@ -51,7 +53,8 @@ class MatchService(PhaseAbstractService):
             "current_phase": self.current_match_phase,
             "ends_at": int(self.current_match_phase_service.ends_at.timestamp())* 1000 if self.current_match_phase_service.ends_at else None,
             "gun": player.gun.to_dict() if player.gun else None,
-            "hp": player.health_points if self.current_match_phase == "battle" else None
+            "hp": player.health_points if self.current_match_phase == "battle" else None,
+            "scores": self.scores
             }}))
         player= self.context.get_player(player_id)
         player.gun= self.gun_factory.create_gun('TestPistol')
@@ -64,6 +67,7 @@ class MatchService(PhaseAbstractService):
     async def trainsition_to_match_phase(self, phase: str):
         if self.current_match_phase_service:
             self.current_match_phase_service.on_exit()
+            
         self.current_match_phase = phase
         self.current_match_phase_service = self.match_phases_services.get(phase)
         
@@ -76,11 +80,16 @@ class MatchService(PhaseAbstractService):
             Message({"type": "match_phase", "data": {
                 "current_round": self.current_round,
                 "current_phase": self.current_match_phase,
-                "ends_at": int(self.current_match_phase_service.ends_at.timestamp()) * 1000 if self.current_match_phase_service.ends_at else None}})
+                "ends_at": int(self.current_match_phase_service.ends_at.timestamp()) * 1000 if self.current_match_phase_service.ends_at else None,
+                "scores": self.scores
+            }}) 
         )
         
     def increment_round(self):
         self.current_round += 1
+        
+    def increment_score(self, team: str):
+        self.scores[team] += 1
 
 
 

@@ -20,6 +20,8 @@ type MatchContextType = {
     ammoInClip: number,
     totalAmmo: number
   };
+  score: Record<string, number>;
+  winningTeam: string | null;
 };
 
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
@@ -31,6 +33,8 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
   const [matchPhaseEndsAt, setMatchPhaseEndsAt] = useState<number | null>(null);
   const matchWebSocketService = MatchWebSocketService.getInstance();
   const [healthPoints, setHealthPoints] = useState<number>(100);
+  const [score, setScore] = useState<Record<string, number>>({});
+  const [winningTeam, setWinningTeam] = useState<string | null>(null);
   const gunHandling = useGunHandling();
 
   const { location } = useCoordinates({
@@ -57,6 +61,9 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
     matchWebSocketService.setCurrentMatchPhaseHandlerFunction(setMatchPhase);
     matchWebSocketService.setTimerHandlerFunction(setMatchPhaseEndsAt);
     matchWebSocketService.setHealthPointsHandlerFunction(setHealthPoints);
+    matchWebSocketService.setWinningTeamHandlerFunction(setWinningTeam);
+    matchWebSocketService.setScoreHandlerFunction(setScore);
+
     matchWebSocketService.readyForPhase();
 
     return () => {
@@ -70,8 +77,23 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
     matchPhase,
     gunHandling,
     matchPhaseEndsAt,
-    healthPoints
+    healthPoints,
+    score,
+    winningTeam
   };
+
+  useEffect(() => {
+    if (score) {
+      console.log("score", score)
+    }
+  }, [score])
+
+
+  useEffect(() => {
+    if (winningTeam) {
+      console.log("winningTeam", winningTeam)
+    }
+  }, [winningTeam])
 
   return <MatchContext.Provider value={value}>{children}</MatchContext.Provider>;
 };

@@ -17,6 +17,8 @@ class Player:
         self.gun: Gun = None
         self.health_points = 100
         self.training_photo_left_to_take = 0
+        self.kills = 0
+        self.deaths = 0
 
     def set_ready(self, ready: bool):
         """Set the ready status for the player."""
