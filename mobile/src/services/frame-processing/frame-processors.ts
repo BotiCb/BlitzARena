@@ -22,6 +22,8 @@ import {
 import { BODY_PART, Classification, Detection, ObjectDetection } from '~/utils/types/detection-types';
 
 const { resize } = useResizePlugin.createResizePlugin();
+const { resize: resize2 } = useResizePlugin.createResizePlugin();
+
 
 export function drawDetections(frame: DrawableFrame, detection: ObjectDetection, paint: SkPaint) {
   'worklet';
@@ -169,7 +171,7 @@ export function InBattleSkiaFrameProcessor(
             outputs,
             model.outputs[0].shape[2]
           );
-          outputs.length = 0;
+
           if (objDetection) {
             const cropData = {
               x: objDetection.boundingBox.x1 * frame.width,
@@ -193,7 +195,6 @@ export function InBattleSkiaFrameProcessor(
             //console.log('class time: ', Date.now() - start);
             const classification: Classification = decodeYoloClassifyOutput(outputs2[0]);
 
-            outputs2.length = 0;
 
             if (objDetection) {
               detections.value = {
@@ -263,7 +264,7 @@ export function InBattleFrameProcessor(
           outputs,
           model.outputs[0].shape[2]
         );
-        outputs.length = 0;
+        
         if (!objDetection) {
           return;
         }
@@ -275,7 +276,7 @@ export function InBattleFrameProcessor(
             height: objDetection.boundingBox.w * frame.height,
             width: objDetection.boundingBox.h * frame.width,
           };
-          const resized3 = resize(frame, {
+          const resized3 = resize2(frame, {
             scale: {
               width: model2.inputs[0].shape[1],
               height: model2.inputs[0].shape[2],
@@ -291,7 +292,6 @@ export function InBattleFrameProcessor(
           //console.log('class time: ', performance.now() - start);
           const classification: Classification = decodeYoloClassifyOutput(outputs2[0]);
 
-          outputs2.length = 0;
 
           if (objDetection) {
             detections.value = {
@@ -313,6 +313,6 @@ export function InBattleFrameProcessor(
         detections.value = null;
       }
     },
-    [detections]
+    []
   );
 }

@@ -1,5 +1,5 @@
 import { YOLO_POSE_CONSTANTS } from '~/utils/constants/detection-constants';
-import { ObjectDetection, BoundingBox, Keypoints, Classification } from '~/utils/types/types';
+import { ObjectDetection, BoundingBox, Keypoints, Classification } from '~/utils/types/detection-types';
 
 // Keypoint names (you can expand or adjust these based on your model)
 
@@ -122,8 +122,6 @@ export function decodeYoloPoseOutput(
       keypoints,
     });
   }
-  outputTensor.length = 0;
-  // Apply NMS after decoding all detections
   return getClosestDetectionToCenter(nonMaximumSuppression(detections));
 }
 
@@ -148,7 +146,6 @@ export function decodeYoloClassifyOutput(array: any): Classification {
   }
 
   const confidenceAdvantage = maxValue - secondMaxValue;
-  array = null;
   return {
     id: maxIndex,
     confidenceAdvantage,
