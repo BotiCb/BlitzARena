@@ -24,7 +24,7 @@ class MatchContext:
             player.revive()
             
     def get_team_with_no_players_left(self):
-        for team in self.game_context.get_teams():
+        for team in self.game_context.teams:
             if len(self.get_alive_players_from_team(team)) == 0:
                 return team
         return None

@@ -67,7 +67,7 @@ class GameRoomService(PhaseAbstractService):
             return
         
         #check if none of the teams has 0 players, team contains thw name of the team, there are more teams not just 2
-        teams = self.context.get_teams()
+        teams = self.context.teams
         if any(len(self.context.get_players_in_team(team)) == 0 for team in teams):
             await self.context.websockets.send_to_player(
                 player_id,
@@ -101,7 +101,7 @@ class GameRoomService(PhaseAbstractService):
             )
             return
         
-        if team not in self.context.get_teams():
+        if team not in self.context.teams:
             await self.context.websockets.send_to_player(
                 player_id,
                 Message({"type": "error", "data": "Invalid team selection"})

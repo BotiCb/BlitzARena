@@ -79,7 +79,7 @@ class GameService:
 
         # Identify the player ID from the WebSocket connection
         player_id = None
-        for pid, conn in game.websockets.connections.items():
+        for pid, conn in game.context.websockets.connections.items():
             if conn == websocket:
                 player_id = pid
                 break

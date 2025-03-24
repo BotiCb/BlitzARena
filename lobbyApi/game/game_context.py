@@ -5,26 +5,24 @@ from models.location import GameArea
 from models.player import Player
 from services.websocket_service import WebSocketService
 
-class GameContext:
+class GameContext:        
     def __init__(
         self,
-        websockets: WebSocketService,
-        players: List[Player],
         transition_to_phase_callback: callable,
         get_current_phase: callable,
         get_game_id: callable,
         is_model_trained: callable,
-        get_teams: callable,
-        game_area: GameArea
     ):
-        self.websockets = websockets
-        self.players = players
+        self.websockets = WebSocketService()
         self._transition_to_phase = transition_to_phase_callback
         self._get_current_phase = get_current_phase
         self.get_game_id = get_game_id
         self._is_model_trained = is_model_trained
-        self.get_teams = get_teams
-        self.game_area = game_area
+        self.players: List[Player] = []
+        self.game_area : GameArea = None
+        self.teams = ['red', 'blue']
+
+
 
     def get_player(self, player_id: str) -> Player:
         for player in self.players:

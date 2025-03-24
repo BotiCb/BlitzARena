@@ -16,7 +16,7 @@ class MatchService(PhaseAbstractService):
         super().__init__(context)
         self.current_round = 1
         self.total_rounds = 10
-        self.scores: Dict[str, int] = {team: 0 for team in self.context.get_teams()}        
+        self.scores: Dict[str, int] = {team: 0 for team in self.context.teams}        
         self.match_context = MatchContext(game_context=context,
                                           transition_to_match_phase_callback=self.trainsition_to_match_phase,
                                           get_round_number_callback= lambda: self.current_round,
