@@ -24,4 +24,4 @@ import { UserModel, UserSchema } from 'src/shared/schemas/collections/user.schem
     ]),
   ],
 })
-export class CustomMongooseModule {}
+export class BlitzARenaMongooseModule {}

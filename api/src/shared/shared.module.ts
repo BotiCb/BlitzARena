@@ -1,12 +1,12 @@
-import { Logger, Module } from '@nestjs/common';
-import { CustomMongooseModule } from './modules/custom-mongoose/custom-mongoose.module';
+import { Module } from '@nestjs/common';
 import { EmailModule } from './modules/email/email.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { AxiosModule } from './modules/axios/axios.module';
 import { PersonDetectionModule } from './modules/person-detection/person-detection.module';
+import { BlitzARenaMongooseModule } from './modules/blitzARena-mongoose/blitzARena-mongoose.module';
 @Module({
-  imports: [CustomMongooseModule, FileUploadModule, EmailModule, AxiosModule, PersonDetectionModule],
+  imports: [BlitzARenaMongooseModule, FileUploadModule, EmailModule, AxiosModule, PersonDetectionModule],
   providers: [],
-  exports: [CustomMongooseModule, FileUploadModule, EmailModule, AxiosModule, PersonDetectionModule],
+  exports: [BlitzARenaMongooseModule, FileUploadModule, EmailModule, AxiosModule, PersonDetectionModule],
 })
 export class SharedModule {}
