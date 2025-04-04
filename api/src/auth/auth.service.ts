@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, HttpException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, HttpException, Logger } from '@nestjs/common';
 import { LoginRequestDto } from './dto/input/login-request.dto';
 import { CreateUserDto } from './dto/input/create-user.dto';
 import * as bcrypt from 'bcrypt';
@@ -13,10 +13,10 @@ import { config } from 'src/shared/config/config';
 
 @Injectable()
 export class AuthService {
+  private logger = new Logger(AuthService.name);
   constructor(
     @InjectModel(UserModel.name) public readonly userModel: Model<UserModel>,
     private jwtService: JwtService,
-    private userService: UsersService,
     private emailService: EmailService
   ) {}
 
@@ -44,6 +44,8 @@ export class AuthService {
     user.lastLogin = new Date();
     await user.save();
 
+    this.logger.log(`User ${user.email} logged in`);
+
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
@@ -67,6 +69,8 @@ export class AuthService {
 
     user.lastLogin = new Date();
     await user.save();
+
+    this.logger.log(`Refreshed access token for user ${user.email}`);
 
     return {
       access_token: newAccessToken,
@@ -100,5 +104,7 @@ export class AuthService {
 
     createdUser.lastLogin = new Date();
     await createdUser.save();
+
+    this.logger.log(`User ${email} created`);
   }
 }

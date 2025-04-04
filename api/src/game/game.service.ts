@@ -16,9 +16,9 @@ import { TfliteModelDto } from './dto/output/tflite-model.dto';
 
 @Injectable()
 export class GameService {
+  private logger = new Logger(GameService.name);
   constructor(
     @InjectModel(GameModel.name) private readonly gameModel: Model<GameModel>,
-    private readonly logger: Logger,
     private readonly axiosService: AxiosService,
     private readonly fileUploadService: FileUploadService
   ) {}
@@ -45,9 +45,11 @@ export class GameService {
       user.recentSessionId = sessionId;
       await user.save();
 
+      this.logger.log(`Game created with ID: ${gameInfo.gameId} by user: ${user._id}`);
+
       return { gameId: gameInfo.gameId, sessionId };
     } catch (error) {
-      console.log(error.message);
+      this.logger.error('Error creating game', error.message);
       throw new HttpException('The game could not be created', 503);
     }
   }
@@ -79,6 +81,8 @@ export class GameService {
       } as PlayerSessionModel);
       await game.save();
 
+      this.logger.log(`User ${user._id} joined game ${gameId}`);
+
       return { sessionId };
     } catch (error) {
       if (error.response?.status === 403) {
@@ -89,7 +93,6 @@ export class GameService {
         throw new HttpException('Game not found', 404);
       }
 
-      this.logger.error(error.message);
       throw new HttpException('The game could not be joined', 503);
     }
   }
@@ -103,6 +106,8 @@ export class GameService {
       user.recentGameId = null;
       user.recentSessionId = null;
       await user.save();
+
+      this.logger.log(`User ${user._id} exited from game ${game.gameId}`);
     } catch (error) {
       this.logger.error(error.message);
       throw new HttpException('Error exiting the game', 503);
@@ -157,6 +162,8 @@ export class GameService {
     //   await game.trainingSession.save();
     // }
     await game.save();
+
+    this.logger.log(`Game ${gameId} closed`);
   }
 
   async updatePlayerConnectionStatus(gameId: string, userSessionId: string, connection: PlayerConnectionState) {
