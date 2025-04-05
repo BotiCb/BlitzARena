@@ -9,7 +9,7 @@ import { GameModel } from 'src/shared/schemas/collections/game.schema';
 import { TrainingSessionModel } from 'src/shared/schemas/collections/training-session.schema';
 import { TrainingResultsDto } from './dto/input/training-result.dto';
 import { FileUploadService } from 'src/shared/modules/file-upload/file-upload.service';
-import { PersonDetectionService } from 'src/shared/modules/person-detection/person-detecton.service';
+import { PersonDetectionService } from 'src/person-detection/person-detecton.service';
 
 @Injectable()
 export class ModelTrainingService {
@@ -23,7 +23,6 @@ export class ModelTrainingService {
   ) {}
 
   async sendTrainingPhoto(file: Express.Multer.File, game: GameModel, playerId: string, photoSize: number) {
-    
     if (!game.players.find((p) => p.sessionId === playerId)) {
       throw new HttpException('Player is not in the game', 400);
     }
@@ -35,8 +34,6 @@ export class ModelTrainingService {
       game.trainingSession = trainingSession;
       await game.save();
     }
-
-
 
     if (game.trainingSession.photoSize !== photoSize) {
       console.error('Photo size does not match ' + game.trainingSession.photoSize + ' ' + photoSize);
@@ -57,9 +54,9 @@ export class ModelTrainingService {
       resizedImageBuffer = await image.resize(photoSize, photoSize, { fit: 'fill' }).toBuffer();
     }
 
-    if(!await this.personDetectionService.detectPerson(await image.toBuffer())) {
+    if (!(await this.personDetectionService.detectPerson(await image.toBuffer()))) {
       throw new HttpException('No person detected in the image', 499);
-    }    
+    }
 
     const formData = new FormData();
     formData.append('file', resizedImageBuffer, {
@@ -75,8 +72,7 @@ export class ModelTrainingService {
         },
       }
     );
- 
-}
+  }
 
   async sendStartTrainingSignal(gameId: string, numClasses: number, numImagesPerClass: number) {
     try {

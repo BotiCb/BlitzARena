@@ -11,7 +11,7 @@ import { isObjectId } from 'src/shared/utils/mapper';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DetailedUserProfileDto, InGameUserInfoDto } from './dto/output/detailed-user-profile';
 import { EmailService } from 'src/shared/modules/email/email.service';
-import { UserRole } from 'src/shared/decorators/roles.decorator';
+import { PlayerInGameRole, UserRole } from 'src/shared/decorators/roles.decorator';
 @ApiTags('users')
 @ApiBearerAuth()
 @Controller('users')
@@ -64,7 +64,7 @@ export class UsersController {
     return this.usersService.updateUser(user, dto, file);
   }
 
-  @UserRole()
+  @PlayerInGameRole()
   @Get('ingameinfo/:gameId')
   async getInGameUserInfos(
     @CurrentUser() user: UserModel,
