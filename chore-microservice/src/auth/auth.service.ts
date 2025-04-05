@@ -37,7 +37,8 @@ export class AuthService {
       secret: config.get('auth.refreshTokenSecret'),
     });
 
-    const hashedRefreshToken = refreshToken;
+    const salt = await bcrypt.genSalt(10);
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, salt);
     user.refreshTokenHash = hashedRefreshToken;
 
     user.lastLogin = new Date();

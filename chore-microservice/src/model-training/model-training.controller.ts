@@ -1,7 +1,7 @@
 import { Body, Controller, HttpException, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { TrainingPhotoDto } from './dto/input/training-photo.dto';
-import { ServiceApiRole, UserInGameRole, UserRole } from 'src/shared/decorators/roles.decorator';
+import { PlayerInGameRole, ServiceApiRole,  } from 'src/shared/decorators/roles.decorator';
 import { CurrentGame } from 'src/shared/decorators/current-game.decorator';
 import { ModelTrainingService } from './model-training.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -14,7 +14,7 @@ import { GameModel } from 'src/shared/schemas/collections/game.schema';
 export class ModelTrainingController {
   constructor(private readonly modelTrainingService: ModelTrainingService) {}
 
-  @UserInGameRole()
+  @PlayerInGameRole()
   @Post('upload-photo')
   @UseInterceptors(FileInterceptor('file'))
   async uploadPhoto(
