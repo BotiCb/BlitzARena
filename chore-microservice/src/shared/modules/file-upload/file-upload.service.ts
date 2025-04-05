@@ -6,11 +6,11 @@ import { extname } from 'path';
 export class FileUploadService {
   constructor(private readonly firebaseService: FirebaseService) {}
 
-  private async uploadFile(file: Express.Multer.File, folder, privateRead: boolean = false): Promise<string> {
+  private async uploadFile(file: Express.Multer.File, folderName: string, privateRead: boolean = false): Promise<string> {
     const storage = this.firebaseService.getStorageInstance();
     const bucket = storage.bucket();
     const extension = extname(file.originalname);
-    const fileName = `${folder}/${Date.now()}${extension}`;
+    const fileName = `${folderName}/${Date.now()}${extension}`;
     const fileUpload = bucket.file(fileName);
     const privacy = privateRead ? 'private' : 'publicRead';
     const stream = fileUpload.createWriteStream({

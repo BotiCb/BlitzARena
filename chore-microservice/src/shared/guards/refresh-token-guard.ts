@@ -31,7 +31,7 @@ export class RefreshTokenGuard implements CanActivate {
       if (!user.refreshTokenHash) {
         throw new UnauthorizedException('Invalid refresh token');
       }
-      const isMatch = token == user.refreshTokenHash;
+      const isMatch = bcrypt.compareSync(token, user.refreshTokenHash);
       if (!isMatch) {
         throw new UnauthorizedException('Invalid refresh token');
       }

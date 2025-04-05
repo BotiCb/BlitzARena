@@ -10,6 +10,4 @@ export const UserRole = () => applyDecorators(UseGuards(JwtGuard));
 export function ServiceApiRole(serviceName: ServiceApiName) {
   return applyDecorators(UseGuards(ServiceApiGuard(serviceName)));
 }
-export const UserInGameRole = () => applyDecorators(UseGuards(JwtGuard, PlayerInGameGuard));
-
 export const PlayerInGameRole = () => applyDecorators(UseGuards(JwtGuard, PlayerInGameGuard));

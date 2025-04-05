@@ -26,8 +26,8 @@ export class AuthController {
 
   @UseGuards(RefreshTokenGuard)
   @Post('refresh-token')
-  async refresh(@CurrentUser() user: UserModel, @CurrentToken() refreshToken: string) {
-    return this.authService.refreshAccessToken(refreshToken, user);
+  async refresh(@CurrentUser() user: UserModel) {
+    return this.authService.refreshAccessToken(user);
   }
 
   @HttpCode(200)

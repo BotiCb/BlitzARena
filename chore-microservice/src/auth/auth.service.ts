@@ -7,7 +7,6 @@ import { AccessTokenDto } from './dto/output/access-token.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserModel } from 'src/shared/schemas/collections/user.schema';
-import { UsersService } from 'src/users/users.service';
 import { EmailService } from 'src/shared/modules/email/email.service';
 import { config } from 'src/shared/config/config';
 
@@ -52,7 +51,7 @@ export class AuthService {
     };
   }
 
-  async refreshAccessToken(refreshToken: string, user: UserModel): Promise<AccessTokenDto> {
+  async refreshAccessToken(user: UserModel): Promise<AccessTokenDto> {
     const payload = { email: user.email, id: user._id.toString() };
 
     // Generate a new access token
@@ -64,7 +63,10 @@ export class AuthService {
     const newRefreshToken = await this.jwtService.signAsync(payload, {
       secret: config.get('auth.refreshTokenSecret'),
     });
-    const hashedRefreshToken = newRefreshToken;
+    const saltRounds = 10;
+    const salt = await bcrypt.genSalt(saltRounds);
+
+    const hashedRefreshToken = await bcrypt.hash(newRefreshToken, salt);
     user.refreshTokenHash = hashedRefreshToken;
 
     user.lastLogin = new Date();
