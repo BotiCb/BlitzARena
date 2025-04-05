@@ -16,7 +16,6 @@ import { UserModel, UserSchema } from 'src/shared/schemas/collections/user.schem
     ]),
   ],
   exports: [
-    MongooseModule.forRoot(config.get('db.url')),
     MongooseModule.forFeature([{ name: UserModel.name, schema: UserSchema, collection: 'User' }]),
     MongooseModule.forFeature([{ name: GameModel.name, schema: GameSchema, collection: 'Game' }]),
     MongooseModule.forFeature([

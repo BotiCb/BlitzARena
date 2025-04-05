@@ -1,4 +1,4 @@
-export type ServiceApiName = 'lobbyApi' | 'modelTrainerApi';
+export type ServiceApiName = 'gameSessionMicroService' | 'modelTrainerMicroService';
 
 export enum PlayerConnectionState {
     PENDING = 'pending',

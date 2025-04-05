@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Start NestJS (api)",
+      "label": "Start Chore Microservice",
       "type": "shell",
-      "command": "cd api ; yarn start:dev",
+      "command": "cd chore-microservice ; yarn start:dev",
       "problemMatcher": [],
       "options": {
         "shell": {
@@ -34,9 +34,9 @@
       }
     },
     {
-      "label": "Start Model Trainer API",
+      "label": "Start Model Trainer Microservice",
       "type": "shell",
-      "command": "cd modelTrainerApi ; .\\venv\\Scripts\\Activate ; uvicorn main:app --port 7000 --reload",
+      "command": "cd model-trainer-microservice ; .\\venv\\Scripts\\Activate ; uvicorn main:app --port 7000 --reload",
       "problemMatcher": [],
       "options": {
         "shell": {
@@ -46,13 +46,13 @@
       },
       "presentation": {
         "panel": "new",
-        "group": "ModelTrainerApi"
+        "group": "ModelTrainerMicroservice"
       }
     },
     {
-      "label": "Start Lobby API",
+      "label": "Start Game Session Microservice",
       "type": "shell",
-      "command": "cd lobbyApi ; .\\venv\\Scripts\\Activate ; uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
+      "command": "cd game-session-microservice ; .\\venv\\Scripts\\Activate ; uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
       "problemMatcher": [],
       "options": {
         "shell": {
@@ -62,16 +62,16 @@
       },
       "presentation": {
         "panel": "new",
-        "group": "LobbyApi"
+        "group": "Game Session Microservice"
       }
     },
     {
       "label": "Start All Projects",
       "dependsOn": [
-        "Start NestJS (api)",
+        "Start Chore Microservice",
         "Start Mobile (Expo)",
-        "Start Model Trainer API",
-        "Start Lobby API"
+        "Start Model Trainer Microservice",
+        "Game Session Microservice"
       ],
       "dependsOrder": "parallel",
       "presentation": {

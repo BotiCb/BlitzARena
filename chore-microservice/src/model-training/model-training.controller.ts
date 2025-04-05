@@ -28,38 +28,38 @@ export class ModelTrainingController {
     return await this.modelTrainingService.sendTrainingPhoto(file, game, dto.playerId, parseInt(dto.photoSize));
   }
 
-  @ServiceApiRole('lobbyApi')
+  @ServiceApiRole('gameSessionMicroService')
   @Post('start-training')
   async startTraining(@Param('gameId') gameId: string, @Body() input: TrainingRequestDto) {
     return await this.modelTrainingService.sendStartTrainingSignal(gameId, input.numClasses, input.numImagesPerClass);
   }
 
-  @ServiceApiRole('modelTrainerApi')
+  @ServiceApiRole('modelTrainerMicroService')
   @Post('training-ended')
   async trainingEnded(@Param('gameId') gameId: string) {
     return await this.modelTrainingService.trainingReady(gameId);
   }
 
-  @ServiceApiRole('modelTrainerApi')
+  @ServiceApiRole('modelTrainerMicroService')
   @Post('training-error')
   async trainingEndedWithError(@Param('gameId') gameId: string, @Body() body: TrainingErrorDto) {
     console.log(body);
     return await this.modelTrainingService.trainingError(gameId, body.errorMessage);
   }
 
-  @ServiceApiRole('modelTrainerApi')
+  @ServiceApiRole('modelTrainerMicroService')
   @Post('training-progress/:progress')
   async trainingProgress(@Param('gameId') gameId: string, @Param('progress') progress: number) {
     return await this.modelTrainingService.trainingProgress(gameId, progress);
   }
 
-  @ServiceApiRole('modelTrainerApi')
+  @ServiceApiRole('modelTrainerMicroService')
   @Post('statistics')
   async trainingStatistics(@Param('gameId') gameId: string, @Body() body: TrainingResultsDto) {
     return this.modelTrainingService.saveStatistics(gameId, body);
   }
 
-  @ServiceApiRole('modelTrainerApi')
+  @ServiceApiRole('modelTrainerMicroService')
   @Post('/upload-tflite-model')
   @UseInterceptors(FileInterceptor('file'))
   async uploadTfLiteModel(@Param('gameId') gameId: string, @UploadedFile() file: Express.Multer.File) {

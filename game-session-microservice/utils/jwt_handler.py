@@ -11,7 +11,7 @@ security = HTTPBearer()
 def create_jwt(expires_delta: timedelta = timedelta(seconds=15)):
 
     expire = datetime.utcnow() + expires_delta
-    return jwt.encode({"exp": expire, "service": "lobbyApi"}, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return jwt.encode({"exp": expire, "service": "gameSessionMicroService"}, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 
 # Verify JWT Token
