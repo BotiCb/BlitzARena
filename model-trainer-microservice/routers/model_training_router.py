@@ -8,7 +8,7 @@ from utils.jwt_handler import verify_jwt
 router = APIRouter()
 
 @router.post("/{game_id}/start-training/{image_size}")
-async def upload_training_photo(
+async def start_training(
     game_id: str,
     image_size: int,
     model_training_service: ModelTrainingService = Depends(get_model_training_service),

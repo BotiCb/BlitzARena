@@ -141,16 +141,63 @@ class ModelTrainingService:
                 timeout=30.0
             )
             response.raise_for_status()
+            
+    def get_optimal_batch_size(self, image_size, target_memory_fraction=0.5, max_total_fraction=0.5):
+        """
+        Determines the optimal batch size based on available free GPU memory,
+        considering both current allocations and system reserves.
+        """
+        if not torch.cuda.is_available():
+            return 32  # Default batch size for CPU
+
+        device = torch.cuda.current_device()
+        
+        # Clear GPU cache for accurate memory measurement
+        torch.cuda.empty_cache()
+        
+        # Get memory statistics
+        total_memory = torch.cuda.get_device_properties(device).total_memory
+        allocated_memory = torch.cuda.memory_allocated(device)
+        free_memory = total_memory - allocated_memory
+
+        # Calculate safe memory limits
+        max_target_memory = int(total_memory * max_total_fraction)
+        desired_target_memory = int(free_memory * target_memory_fraction)
+        target_memory = min(desired_target_memory, max_target_memory)
+
+        print(f"Memory Status: {allocated_memory/(1024**3):.2f}GB used, "
+            f"{free_memory/(1024**3):.2f}GB free, "
+            f"Target: {target_memory/(1024**3):.2f}GB")
+
+        # Calculate memory requirements with safety buffer
+        bytes_per_pixel = 4  # float32
+        channels = 3
+        memory_multiplier = 8  # Adjusted based on YOLO architecture requirements
+        
+        memory_per_image = (image_size ** 2) * channels * bytes_per_pixel * memory_multiplier
+        if memory_per_image == 0:
+            return 32  # Fallback for invalid calculations
+
+        # Calculate theoretical batch size
+        batch_size = int(target_memory // memory_per_image)
+        print(f"Batch size before constraints: {batch_size}")
+        # Apply practical constraints
+        batch_size = max(min(batch_size, 512), 8)  # More conservative limits
+        
+        print(f"Calculated batch size: {batch_size} "
+            f"(Image size: {image_size}, Multiplier: {memory_multiplier}x)")
+        return batch_size
 
     def _train_model_sync(self, model, game_id: str, image_size: int, abort_event: threading.Event) -> str:
         try:
             os.makedirs(f"models/{game_id}", exist_ok=True)
-
+            optimal_batch_size = self.get_optimal_batch_size(image_size)
+            print(f"Optimal batch size: {optimal_batch_size}")
             results = model.train(
                 data=f"{self.dataset_dir}/{game_id}",
                 imgsz=image_size,
                 epochs=12,
-                batch=200,
+                batch=optimal_batch_size,
                 workers=0,
                 device=0,
                 project=f"models/{game_id}",
