@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Button, StyleSheet } from 'react-native';
+import { View, Button, StyleSheet, ImageBackground } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
 import SplashScreen from './SplashScreen';
@@ -25,8 +25,12 @@ export const LobbyScreen = () => {
     return <SplashScreen />;
   }
   return (
+    <ImageBackground
+    source={require('../../assets/ui/background.png')} // Make sure the image path is correct
+    style={{ flex: 1 }}
+    resizeMode="cover">
     <View style={styles.container}>
-      <QRCode value={'Game ID: ' + gameId} size={250} />
+      <QRCode value={'Game ID: ' + gameId} size={250} logoBackgroundColor='transparent' color='#4bb0c2'/>
       <PlayerListComponent
         players={players}
         areYouHost={areYouHost}
@@ -39,12 +43,15 @@ export const LobbyScreen = () => {
         <Button title="Start Game" onPress={onStartNextGamePhase} />
       )}
     </View>
+
+    </ImageBackground>
   );
 };
 
 
 const styles = StyleSheet.create({
   container: {
+    paddingVertical: 35,
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

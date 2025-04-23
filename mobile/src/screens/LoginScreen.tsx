@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, ImageBackground } from 'react-native';
 
 import { AuthStackParamList } from '~/navigation/types';
 import AuthService from '~/services/AuthService';
@@ -44,29 +44,34 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Button
-        title={loading ? 'Logging in...' : 'Login'}
-        onPress={handleLogin}
-        disabled={loading}
-      />
-      <Button title="Register" onPress={() => navigation.navigate('RegisterScreen')} />
-    </View>
+    <ImageBackground
+      source={require('../../assets/ui/background.png')} // Make sure the image path is correct
+      style={{ flex: 1 }}
+      resizeMode="cover">
+      <View style={styles.container}>
+        <Text style={styles.title}>Login</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        <Button
+          title={loading ? 'Logging in...' : 'Login'}
+          onPress={handleLogin}
+          disabled={loading}
+        />
+        <Button title="Register" onPress={() => navigation.navigate('RegisterScreen')} />
+      </View>
+    </ImageBackground>
   );
 };
 
@@ -78,6 +83,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
+    backgroundColor: 'transparent',
   },
   title: {
     fontSize: 24,

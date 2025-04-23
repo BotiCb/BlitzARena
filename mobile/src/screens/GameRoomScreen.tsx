@@ -10,6 +10,7 @@ import { TeamSelectorComponent } from '~/components/TeamSelectorComponent';
 import { useGame } from '~/contexts/GameContext';
 import { useGameRoom } from '~/hooks/useGameRoom';
 import { TEAM } from '~/utils/types/types';
+import { ProgressBar } from '~/atoms/ProgressBar';
 
 export const GamerRoomScreen = () => {
   const {
@@ -38,7 +39,7 @@ export const GamerRoomScreen = () => {
   }
   return (
     <ScrollView>
-      {trainingProgress !== null && <Text>Training Progress: {trainingProgress}</Text>}
+      {trainingProgress !== null && <ProgressBar progress={trainingProgress} label="Training" />}
       <TeamSelectorComponent handleTeamSelection={handleTeamSelection} />
       <Text>No team</Text>
       <PlayerListComponent

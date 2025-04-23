@@ -8,6 +8,7 @@ import { RootStackParamList } from './types';
 
 import { useAuth } from '~/contexts/AuthContext';
 import SplashScreen from '~/screens/SplashScreen';
+import { ImageBackground } from 'react-native';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -20,13 +21,14 @@ const RootNavigation = () => {
 
   return (
     <NavigationContainer>
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        {isLoggedIn ? (
-          <RootStack.Screen name="AppStack" component={AppStack} />
-        ) : (
-          <RootStack.Screen name="AuthStack" component={AuthStackNavigation} />
-        )}
-      </RootStack.Navigator>
+      
+        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+          {isLoggedIn ? (
+            <RootStack.Screen name="AppStack" component={AppStack} />
+          ) : (
+            <RootStack.Screen name="AuthStack" component={AuthStackNavigation} />
+          )}
+        </RootStack.Navigator>
     </NavigationContainer>
   );
 };

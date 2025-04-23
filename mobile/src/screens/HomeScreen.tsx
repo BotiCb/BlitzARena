@@ -1,6 +1,6 @@
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { View, Button, Text, StyleSheet } from 'react-native';
+import { View, Button, Text, StyleSheet, ImageBackground } from 'react-native';
 import AuthService from 'src/services/AuthService';
 
 import { useAuth } from '~/contexts/AuthContext';
@@ -25,13 +25,18 @@ const HomeScreen = () => {
   };
 
   return (
-    <View>
-      <Text style={styles.title}>{userInfo?.email}</Text>
-      <Button title="Logout" onPress={handleLogout} />
-      <Button title="GetProfile" onPress={handleGetProfile} />
-      <Button title="Create Game" onPress={() => navigation.navigate('CreateGame')} />
-      <Button title="Join Game" onPress={() => navigation.navigate('JoinGame')} />
-    </View>
+    <ImageBackground
+      source={require('../../assets/ui/homescreen_original.png')} // Make sure the image path is correct
+      style={{ flex: 1 }}
+      resizeMode="stretch">
+      <View>
+        <Text style={styles.title}>{userInfo?.email}</Text>
+        <Button title="Logout" onPress={handleLogout} />
+        <Button title="GetProfile" onPress={handleGetProfile} />
+        <Button title="Create Game" onPress={() => navigation.navigate('CreateGame')} />
+        <Button title="Join Game" onPress={() => navigation.navigate('JoinGame')} />
+      </View>
+    </ImageBackground>
   );
 };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 
 import { PlayerInfo } from '~/atoms/PlayerInfo';
 import { Player } from '~/utils/models';
@@ -22,7 +22,7 @@ export const PlayerListComponent: React.FC<PlayerListComponentProps> = ({
   color,
 }) => {
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {players.map((player) => (
         <View key={player.sessionID} style={styles.row}>
           <PlayerInfo
@@ -31,27 +31,20 @@ export const PlayerListComponent: React.FC<PlayerListComponentProps> = ({
             onSetAsHost={() => onSetAsHost(player.sessionID)}
             onRemovePlayer={() => onRemovePlayer(player.sessionID)}
             isYou={player.sessionID === yourSessionId}
-            color={color}
           />
         </View>
       ))}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'column',
     padding: 10,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12, // Increased vertical padding
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+
     width: '100%',
-    justifyContent: 'space-between', // Ensures no overlap
-    minHeight: 70,
+    justifyContent: 'space-between', 
   },
 });

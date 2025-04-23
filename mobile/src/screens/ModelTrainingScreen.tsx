@@ -9,6 +9,7 @@ import { PhotosFromYouView } from '~/views/PhotosFromYouView';
 import TrainingCameraView from '~/views/TraingCameraView';
 import { TrainingReadyForGroupView } from '~/views/TrainingReadyForGroupView';
 import { useDetection } from '~/contexts/DetectionContexts';
+import { ProgressBar } from '~/atoms/ProgressBar';
 
 const ModelTrainingScreen = () => {
   const {
@@ -34,7 +35,7 @@ const ModelTrainingScreen = () => {
       {trainingGroup?.map((player) => (
         <Text key={player.sessionID}>{player.firstName + ' ' + player.lastName}</Text>
       ))}
-      <Text>Progress: {progress}</Text>
+      <ProgressBar  progress={progress} label='Collecting Data' />
       <Text>Player: {trainingPlayer?.firstName + ' ' + trainingPlayer?.lastName}</Text>
       {(() => {
         switch (phase) {

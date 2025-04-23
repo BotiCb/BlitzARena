@@ -12,7 +12,6 @@ interface PlayerInfoProps {
   isYou: boolean;
   onSetAsHost: () => void;
   onRemovePlayer: () => void;
-  color?: string;
 }
 
 export const PlayerInfo: React.FC<PlayerInfoProps> = ({
@@ -21,85 +20,93 @@ export const PlayerInfo: React.FC<PlayerInfoProps> = ({
   onSetAsHost,
   onRemovePlayer,
   isYou,
-  color="black",
 }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const { gamePhase } = useGame();
+
   return (
-    <Provider>
-      <View style={[styles.container, { borderColor: color }]}>
-        {!player.isConnected && (
-          <MaterialCommunityIcons name="power-plug-off" size={24} color={color} />
-        )}
+    <View style={styles.container}>
+      <Image
+        style={styles.image}
+        source={
+          player.photoUrl
+            ? { uri: player.photoUrl }
+            : require('../../assets/user/plain_profile_picture.jpg')
+        }
+      />
 
-        <Image
-          style={styles.image}
-          source={
-            player.photoUrl
-              ? { uri: player.photoUrl }
-              : require('../../assets/user/plain_profile_picture.jpg')
-          }
-        />
+      <Text style={[styles.text, { paddingLeft: 75 }]}>
+        {player.firstName + ' ' + player.lastName}
+      </Text>
+      {isYou && <Text style={styles.text}>(You)</Text>}
+      {gamePhase === 'match' && (
+        <Text style={styles.text}>
+          {player.kills} / {player.deaths}
+        </Text>
+      )}
 
-        <Text style={[styles.text, { color }]} >{player.firstName + ' ' + player.lastName}</Text>
-        {isYou && <Text style={[styles.text, { color }]}>(You)</Text>}
-        {gamePhase === 'match' && <Text style={[styles.text, { color }]}>{player.kills} / {player.deaths}</Text>}
+      {player.isHost && <MaterialCommunityIcons name="crown" size={24} color="gold" />}
 
-        {player.isHost && <MaterialCommunityIcons name="crown" size={24} color="gold" />}
+      {player.isReady ? (
+        <Ionicons name="checkmark-circle" size={24} color="#33bea8" />
+      ) : (
+        <Ionicons name="checkmark-circle-outline" size={24} />
+      )}
+      {!player.isConnected && <MaterialCommunityIcons name="power-plug-off" size={24} />}
 
-        {player.isReady ? (
-          <Ionicons name="checkmark-circle" size={24} color="green" />
-        ) : (
-          <Ionicons name="checkmark-circle-outline" size={24} color={color} />
-        )}
-
-        {areYouHost && !isYou && (
-          <View style={styles.menuContainer}>
-            <Menu
-              visible={menuVisible}
-              onDismiss={() => setMenuVisible(false)}
-              anchor={
-                <TouchableOpacity
-                  onPress={() => setMenuVisible(!menuVisible)}
-                  style={styles.menuButton}>
-                  <MaterialCommunityIcons name="dots-vertical" size={24} color={color} />
-                </TouchableOpacity>
-              }>
-              <Menu.Item onPress={onRemovePlayer} title="Remove Player" />
-              <Divider />
-              <Menu.Item onPress={onSetAsHost} title="Set as Host" />
-            </Menu>
-          </View>
-        )}
-      </View>
-    </Provider>
+      {areYouHost && !isYou && (
+        <View style={styles.menuContainer}>
+          <Menu
+            visible={menuVisible}
+            onDismiss={() => setMenuVisible(false)}
+            anchor={
+              <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                <MaterialCommunityIcons 
+                  name="dots-vertical" 
+                  size={24} 
+                  style={styles.menuButton} 
+                />
+              </TouchableOpacity>
+            }
+            style={styles.menuStyle} 
+          >
+            <Menu.Item onPress={onRemovePlayer} title="Remove Player" />
+            <Divider />
+            <Menu.Item onPress={onSetAsHost} title="Set as Host" />
+          </Menu>
+        </View>
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    borderWidth: 1,
-    paddingVertical: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
     paddingHorizontal: 10,
     position: 'relative',
-    minHeight: 50,
-  },
+    minHeight: 70,
+    backgroundColor: '#d2d7d9',
+    borderRadius: 10,
+    marginVertical: 5,},
   image: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginHorizontal: 10,
-    flexShrink: 0, // Ensure it doesn't shrink
+    width: 74,
+    height: 74,
+    borderRadius: 100,
+    marginHorizontal: 7,
+    borderWidth: 1.5,
+    borderColor: '#4bb0c2',
+    position: 'absolute',
   },
   text: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 5,
-    height: 'auto',
+    fontFamily: 'Poppins_500Medium_Italic',
+    fontSize: 26,
+    color: '#30687d',
+    letterSpacing: -1.1,
+      justifyContent: 'center',
   },
   menuContainer: {
     position: 'relative',
@@ -107,5 +114,10 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     padding: 10,
+    color: '#30687d',
+  },
+  menuStyle: {
+    marginTop: 40, // Adjust this value based on your layout
+    marginRight: 10,
   },
 });
