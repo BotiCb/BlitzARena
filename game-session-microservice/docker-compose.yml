@@ -1,0 +1,7 @@
+services:
+  game-session-microservice:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "0.0.0.0:7000:7000"
