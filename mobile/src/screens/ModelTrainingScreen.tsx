@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 
 import SplashScreen from './SplashScreen';
 
@@ -10,6 +10,8 @@ import TrainingCameraView from '~/views/TraingCameraView';
 import { TrainingReadyForGroupView } from '~/views/TrainingReadyForGroupView';
 import { useDetection } from '~/contexts/DetectionContexts';
 import { ProgressBar } from '~/atoms/ProgressBar';
+import { PlayerInfo } from '~/atoms/PlayerInfo';
+import { PlayerListComponent } from '~/components/PlayerListComponent';
 
 const ModelTrainingScreen = () => {
   const {
@@ -18,25 +20,31 @@ const ModelTrainingScreen = () => {
     progress,
     phase,
     takePhotos,
-    handleTakephotosStateChange
+    handleTakephotosStateChange,
   } = useTraining();
   const { poseModel } = useDetection();
 
-  const { isPhaseInfosNeeded } = useGame();
+  const { isPhaseInfosNeeded, userSessionId, players } = useGame();
 
   if (isPhaseInfosNeeded || !poseModel) {
     return <SplashScreen />;
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <Text>Training Group</Text>
-      <Text> {phase}</Text>
-      {trainingGroup?.map((player) => (
-        <Text key={player.sessionID}>{player.firstName + ' ' + player.lastName}</Text>
-      ))}
-      <ProgressBar  progress={progress} label='Collecting Data' />
-      <Text>Player: {trainingPlayer?.firstName + ' ' + trainingPlayer?.lastName}</Text>
+    <View style={styles.container}>
+      {/* {trainingGroup && (
+      //  <PlayerListComponent 
+      //  players={players.filter((player) => trainingGroup?.some((p) => p.sessionID === player.sessionID))}
+      //   areYouHost={false}
+      //   onSetAsHost={() => {}}
+      //   yourSessionId={userSessionId}
+      //   onRemovePlayer={() => {}}
+      //  />
+
+        
+      // )} */}
+      <ProgressBar progress={progress} label="Collecting Data" />
+
       {(() => {
         switch (phase) {
           case 'photos-from-you':
@@ -56,8 +64,26 @@ const ModelTrainingScreen = () => {
             return <SplashScreen />;
         }
       })()}
+
+      {trainingPlayer && (
+        <View style={{ padding: 10, paddingBottom: 70 }}>
+          <PlayerInfo
+            player={trainingPlayer}
+            areYouHost={false}
+            isYou={userSessionId === trainingPlayer.sessionID}
+            onSetAsHost={() => {}}
+            onRemovePlayer={() => {}}
+          />
+        </View>
+      )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 export default ModelTrainingScreen;

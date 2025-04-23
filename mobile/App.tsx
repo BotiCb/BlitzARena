@@ -6,8 +6,10 @@ import { AuthProvider } from '~/contexts/AuthContext';
 import RootNavigation from '~/navigation/RootNavigation';
 import SystemNavigationBar from 'react-native-system-navigation-bar';
 import { ImageBackground, Platform, StatusBar } from 'react-native';
-import { useFonts, Poppins_500Medium_Italic } from '@expo-google-fonts/poppins';
+import { useFonts, Poppins_500Medium_Italic,  Poppins_500Medium } from '@expo-google-fonts/poppins';
 import { Provider as PaperProvider } from 'react-native-paper';
+import * as Font from 'expo-font';
+
 
 export default function App() {
   const { hasPermission, requestPermission } = useCameraPermission();
@@ -16,8 +18,10 @@ export default function App() {
   }
 
   const [fontsLoaded] = useFonts({
-    Poppins_500Medium_Italic,
+    Poppins_500Medium_Italic, Poppins_500Medium, 'Orbitron-Regular' : require('./assets/ui/fonts/Orbitron/static/Orbitron-SemiBold.ttf'),
+
   });
+
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -30,7 +34,7 @@ export default function App() {
 
   return (
     <ImageBackground
-      source={require('./assets/ui/background.png')}
+      source={require('./assets/ui/backgrounds/background.png')}
       style={{ flex: 1 }}
       resizeMode="cover">
       <AuthProvider>

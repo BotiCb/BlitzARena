@@ -24,6 +24,12 @@ export const PlayerInfo: React.FC<PlayerInfoProps> = ({
   const [menuVisible, setMenuVisible] = useState(false);
   const { gamePhase } = useGame();
 
+  const playerName = player.firstName && player.lastName
+    ? (player.firstName + ' ' + player.lastName).length > 10
+      ? (player.firstName + ' ' + player.lastName).slice(0, 10) + '...'
+      : player.firstName + ' ' + player.lastName
+    : 'Connecting...';
+
   return (
     <View style={styles.container}>
       <Image
@@ -36,7 +42,7 @@ export const PlayerInfo: React.FC<PlayerInfoProps> = ({
       />
 
       <Text style={[styles.text, { paddingLeft: 75 }]}>
-        {player.firstName + ' ' + player.lastName}
+        {playerName}
       </Text>
       {isYou && <Text style={styles.text}>(You)</Text>}
       {gamePhase === 'match' && (
@@ -85,13 +91,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
+    width: '98%',
     paddingHorizontal: 10,
     position: 'relative',
     minHeight: 70,
     backgroundColor: '#d2d7d9',
     borderRadius: 10,
-    marginVertical: 5,},
+    marginVertical: 5,
+    marginHorizontal: 'auto',
+  },
   image: {
     width: 74,
     height: 74,

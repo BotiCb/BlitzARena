@@ -1,7 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
-import { View, Text, Button } from 'react-native';
+import { View, Text, Button, ImageBackground } from 'react-native';
+import { NeonButton } from '~/atoms/NeonButton';
 
 import { AppStackParamList } from '~/navigation/types';
 import { GAME_ENDPOINTS } from '~/services/restApi/Endpoints';
@@ -46,18 +47,23 @@ const GameSetupScreen = () => {
     }
   };
   return (
-    <View>
-      <Text>GameSetupScreen</Text>
-      <Button title="Back to home" onPress={() => navigation.pop()} />
-      <Text> Max players: {maxPlayers}</Text>
+    <ImageBackground
+      source={require('../../assets/ui/backgrounds/background.png')} // Make sure the image path is correct
+      style={{ flex: 1 }}
+      resizeMode="stretch">
       <View>
-        <Button title="+1" onPress={() => handleMaxPlayersChange(1)} />
-        <Button title="-1" onPress={() => handleMaxPlayersChange(-1)} />
+        <Text>GameSetupScreen</Text>
+        <NeonButton title="Back to home" onPress={() => navigation.pop()} />
+        <Text> Max players: {maxPlayers}</Text>
+        <View>
+          <NeonButton title="+1" onPress={() => handleMaxPlayersChange(1)} />
+          <NeonButton title="-1" onPress={() => handleMaxPlayersChange(-1)} />
+        </View>
+        <NeonButton title="Create Game" onPress={handleCreateGame} />
+        {isLoading && <Text>Creating game...</Text>}
+        {error && <Text>{error}</Text>}
       </View>
-      <Button title="Create Game" onPress={handleCreateGame} />
-      {isLoading && <Text>Creating game...</Text>}
-      {error && <Text>{error}</Text>}
-    </View>
+    </ImageBackground>
   );
 };
 

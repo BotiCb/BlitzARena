@@ -7,14 +7,15 @@ import { apiClient } from '../restApi/RestApiService';
 
 import { TrainingPhase } from '~/utils/types/types';
 import { TRAINING_CAMERA_CONSTANTS } from '~/utils/constants/frame-processing-constans';
+import { Player } from '~/utils/models';
 
 export class ModelTrainingWebSocketService extends AbstractCustomWebSocketService {
   private remainingPhotoToSendCount: number = 0;
-  private isTakingPhotosHandlerFunction: (takePhotos: boolean) => void = () => { };
-  private photoCollectingProgressHandlerFunction: (progress: number) => void = () => { };
-  private currentTrainingPlayerHandlerFunction: (playerId: string) => void = () => { };
-  private trainingGroupHandlerFunction: (playerIds: string[] | null) => void = () => { };
-  private phaseHandlerFunction: (phase: TrainingPhase) => void = () => { };
+  private isTakingPhotosHandlerFunction: (takePhotos: boolean) => void = () => {};
+  private photoCollectingProgressHandlerFunction: (progress: number) => void = () => {};
+  private currentTrainingPlayerHandlerFunction: (playerId: string) => void = () => {};
+  private trainingGroupHandlerFunction: (playerIds: string[] | null) => void = () => {};
+  private phaseHandlerFunction: (phase: TrainingPhase) => void = () => {};
   private takePhotoFunction: () => Promise<string> = () => Promise.resolve('');
   private isTakePhotos: boolean = false;
   private currentTrainingPlayer: string | null = null;
@@ -46,12 +47,11 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
 
   setIsTakeingPhotos = (isTakePhotos: boolean) => {
     this.isTakePhotos = isTakePhotos;
-  }
-
+  };
 
   setTakePhotoFunction = (handler: () => Promise<string>) => {
     this.takePhotoFunction = handler;
-  }
+  };
 
   setCurrentTrainingPlayerHandlerFunction = (handler: (playerId: string) => void) => {
     this.currentTrainingPlayerHandlerFunction = handler;
@@ -70,8 +70,17 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     this.photoCollectingProgressHandlerFunction = handler;
   }
 
-  trainingReadyForPlayerEventListener = () => {
+  trainingReadyForPlayerEventListener = (message: WebSocketMsg) => {
+    const { playerReady } = message.data;
     this.isTakingPhotosHandlerFunction(false);
+    AbstractCustomWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
+      return prevPlayers.map((player: Player) => {
+        if (player.sessionID === playerReady) {
+          return { ...player, isReady: true };
+        }
+        return player;
+      });
+    });
   };
 
   private photosInparalelCount: number = 0;
@@ -91,7 +100,12 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
 
       while (this.remainingPhotoToSendCount > 0 && this.isTakePhotos) {
         if (capturePromises.length < this.maxConcurrentCaptures) {
-          console.log('Capturing photo, remaining:', this.remainingPhotoToSendCount, capturePromises.length, this.photoQueue.length);
+          console.log(
+            'Capturing photo, remaining:',
+            this.remainingPhotoToSendCount,
+            capturePromises.length,
+            this.photoQueue.length
+          );
           const capturePromise = this.captureAndQueuePhoto();
           capturePromises.push(capturePromise);
           capturePromise.finally(() => {
@@ -100,10 +114,10 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
           });
         }
 
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
-      await Promise.all(capturePromises); 
+      await Promise.all(capturePromises);
       this.isTakingPhotosHandlerFunction(false);
     };
 
@@ -119,9 +133,9 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
       const trainingImage: TrainingImage = {
         photoUri,
         detectedPlayer: this.currentTrainingPlayer,
-        photoSize: TRAINING_CAMERA_CONSTANTS.OUTPUT_IMAGE_SIZE
-      }
-      this.photoQueue.push(trainingImage); 
+        photoSize: TRAINING_CAMERA_CONSTANTS.OUTPUT_IMAGE_SIZE,
+      };
+      this.photoQueue.push(trainingImage);
       this.remainingPhotoToSendCount--;
 
       if (!this.isUploading) {
@@ -167,12 +181,10 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
         type: WebSocketMessageType.TRAINING_PHOTO_SENT,
         data: { detectedPlayer: trainingImage.detectedPlayer },
       });
-
     } catch (error) {
       console.error('Error uploading photo:', error);
       this.remainingPhotoToSendCount++;
-    }
-    finally{
+    } finally {
       await RNFS.unlink(trainingImage.photoUri);
     }
   }
@@ -208,6 +220,11 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
 
   onTrainingFinishedForGroup = (message: WebSocketMsg) => {
     this.phaseHandlerFunction('training-ready-for-group');
+    AbstractCustomWebSocketService.playersHandlerFunction((prevPlayers: Player[]) => {
+      return prevPlayers.map((player: Player) => {
+        return { ...player, isReady: true };
+      });
+    });
   };
   close(): void {
     this.websocketService.offMessageType('training_ready_for_player');

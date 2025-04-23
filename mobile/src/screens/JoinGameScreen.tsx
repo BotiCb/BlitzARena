@@ -4,6 +4,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
 import { Camera, Code, useCameraDevices, useCodeScanner } from 'react-native-vision-camera';
+import { NeonButton } from '~/atoms/NeonButton';
 
 import { AppStackParamList } from '~/navigation/types';
 import { GAME_ENDPOINTS } from '~/services/restApi/Endpoints';
@@ -73,7 +74,9 @@ export const JoinGameScreen = () => {
   return (
     <View style={styles.container}>
       <Camera device={device} isActive={isActive} style={styles.camera} codeScanner={codeScanner} />
-      <Button title="Join to previous game" onPress={handleJoinPreviousGame} />
+      <View style={{ marginTop: 100 }}>
+        <NeonButton title="Join to previous game" onPress={handleJoinPreviousGame} />
+      </View>
       <Text>{error}</Text>
     </View>
   );
@@ -81,12 +84,19 @@ export const JoinGameScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
   },
   camera: {
     flex: 1,
-    width: '100%',
+
+    justifyContent: 'center',
+
+    alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
     height: '100%',
+    width: '100%',
+    zIndex: -1,
   },
 });

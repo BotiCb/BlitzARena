@@ -6,6 +6,7 @@ import { View, Text, StyleSheet, Button } from 'react-native';
 import { TensorflowModel, TensorflowPlugin } from 'react-native-fast-tflite';
 import { Camera, useCameraDevices, useCameraPermission } from 'react-native-vision-camera';
 import { useSharedValue } from 'react-native-worklets-core';
+import { NeonButton } from '~/atoms/NeonButton';
 
 import { trainingFrameProcessor } from '~/services/frame-processing/frame-processors';
 import { takeCroppedTrainingImage } from '~/services/frame-processing/training-camera-utils';
@@ -123,7 +124,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
         frameProcessor={trainingFrameProcessor(model, lastUpdateTime, detections, paint)}
       />
       {!takePhotos ? (
-        <Button title="Take Photos" onPress={() => handleTakePhotos(true)} />
+        <NeonButton title="Take Photos" onPress={() => handleTakePhotos(true)} />
       ) : (
         <Button title="Stop taking photos" onPress={() => handleTakePhotos(false)} />
       )}
@@ -140,6 +141,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
 
     alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: '100%',
+    width: '100%',
+    zIndex: -1,
   },
 
   permissionContainer: {

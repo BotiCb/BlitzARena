@@ -16,15 +16,23 @@ export const useTraining = () => {
   const [phase, setPhase] = useState<TrainingPhase>('initializing');
   const modelTrainingWebsocketService = ModelTrainingWebSocketService.getInstance();
   const handleTrainingPlayer = (playerId: string | null) => {
-    setTrainingPlayer(players.find((player) => player.sessionID === playerId) || null);
+    setTrainingPlayer(
+      (() => {
+        const foundPlayer = players.find((player) => player.sessionID === playerId);
+        return foundPlayer ? { ...foundPlayer, isReady: false } : null;
+      })()
+    );
   };
 
   const handleTrainingGroup = (playerIds: string[] | null) => {
     setTrainingGroup(
-      playerIds ? players.filter((player) => playerIds.includes(player.sessionID)) : null
+      playerIds
+        ? players
+            .filter((player) => playerIds.includes(player.sessionID))
+            .map((player) => ({ ...player, isReady: false }))
+        : null
     );
   };
-
 
   const handleTakephotosStateChange = (takePhotos: boolean) => {
     setTakePhotos(takePhotos);
@@ -32,7 +40,7 @@ export const useTraining = () => {
     if (takePhotos) {
       modelTrainingWebsocketService.takePhotos();
     }
-  }
+  };
 
   useEffect(() => {
     modelTrainingWebsocketService.setIsTakingPhotosHandlerFunction(handleTakephotosStateChange);
@@ -54,6 +62,6 @@ export const useTraining = () => {
     trainingGroup,
     progress,
     takePhotos,
-    handleTakephotosStateChange
+    handleTakephotosStateChange,
   };
 };

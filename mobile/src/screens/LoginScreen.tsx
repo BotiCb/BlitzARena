@@ -45,7 +45,7 @@ const LoginScreen = () => {
 
   return (
     <ImageBackground
-      source={require('../../assets/ui/background.png')} // Make sure the image path is correct
+      source={require('../../assets/ui/backgrounds/background.png')} // Make sure the image path is correct
       style={{ flex: 1 }}
       resizeMode="cover">
       <View style={styles.container}>

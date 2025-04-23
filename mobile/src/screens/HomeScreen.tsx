@@ -2,6 +2,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Button, Text, StyleSheet, ImageBackground } from 'react-native';
 import AuthService from 'src/services/AuthService';
+import { NeonButton } from '~/atoms/NeonButton';
 
 import { useAuth } from '~/contexts/AuthContext';
 import { AppStackParamList } from '~/navigation/types';
@@ -26,15 +27,14 @@ const HomeScreen = () => {
 
   return (
     <ImageBackground
-      source={require('../../assets/ui/homescreen_original.png')} // Make sure the image path is correct
+      source={require('../../assets/ui/backgrounds/homescreen_original.png')} // Make sure the image path is correct
       style={{ flex: 1 }}
       resizeMode="stretch">
       <View>
-        <Text style={styles.title}>{userInfo?.email}</Text>
-        <Button title="Logout" onPress={handleLogout} />
-        <Button title="GetProfile" onPress={handleGetProfile} />
-        <Button title="Create Game" onPress={() => navigation.navigate('CreateGame')} />
-        <Button title="Join Game" onPress={() => navigation.navigate('JoinGame')} />
+        <NeonButton title="Logout" onPress={handleLogout} />
+        <NeonButton title="GetProfile" onPress={handleGetProfile} />
+        <NeonButton title="Host Game" onPress={() => navigation.navigate('CreateGame')} />
+        <NeonButton title="Join Game" onPress={() => navigation.navigate('JoinGame')} />
       </View>
     </ImageBackground>
   );

@@ -7,6 +7,7 @@ import SplashScreen from './SplashScreen';
 import { PlayerListComponent } from '~/components/PlayerListComponent';
 import { useGame } from '~/contexts/GameContext';
 import { useLobby } from '~/hooks/useLobby';
+import { NeonButton } from '~/atoms/NeonButton';
 
 export const LobbyScreen = () => {
   const {
@@ -26,7 +27,7 @@ export const LobbyScreen = () => {
   }
   return (
     <ImageBackground
-    source={require('../../assets/ui/background.png')} // Make sure the image path is correct
+    source={require('../../assets/ui/backgrounds/background.png')} // Make sure the image path is correct
     style={{ flex: 1 }}
     resizeMode="cover">
     <View style={styles.container}>
@@ -38,9 +39,9 @@ export const LobbyScreen = () => {
         yourSessionId={userSessionId}
         onRemovePlayer={onRemovePlayer}
       />
-      <Button onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />
+      <NeonButton onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />
       {isEveryOneReady && areYouHost && (
-        <Button title="Start Game" onPress={onStartNextGamePhase} />
+        <NeonButton title="Start Game" onPress={onStartNextGamePhase} />
       )}
     </View>
 
