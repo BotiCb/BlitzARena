@@ -11,6 +11,7 @@ import { useGame } from '~/contexts/GameContext';
 import { useGameRoom } from '~/hooks/useGameRoom';
 import { TEAM } from '~/utils/types/types';
 import { ProgressBar } from '~/atoms/ProgressBar';
+import { NeonButton } from '~/atoms/NeonButton';
 
 export const GamerRoomScreen = () => {
   const {
@@ -65,9 +66,9 @@ export const GamerRoomScreen = () => {
         yourSessionId={userSessionId}
         onRemovePlayer={onRemovePlayer}
       />
-      {model && <Button onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />}
+      {model && <NeonButton onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />}
       {isEveryOneReady && areYouHost && (
-        <Button title="Start Game" onPress={onStartNextGamePhase} />
+        <NeonButton title="Start Game" onPress={onStartNextGamePhase} />
       )}
       <MapComponent
         gameArea={gameArea}

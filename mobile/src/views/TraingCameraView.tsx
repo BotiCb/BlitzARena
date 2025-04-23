@@ -126,7 +126,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
       {!takePhotos ? (
         <NeonButton title="Take Photos" onPress={() => handleTakePhotos(true)} />
       ) : (
-        <Button title="Stop taking photos" onPress={() => handleTakePhotos(false)} />
+        <NeonButton title="Stop taking photos" onPress={() => handleTakePhotos(false)} />
       )}
     </View>
   );

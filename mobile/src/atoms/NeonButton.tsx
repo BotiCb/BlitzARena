@@ -4,11 +4,12 @@ import { TouchableOpacity, Text, StyleSheet, GestureResponderEvent } from 'react
 interface NeonButtonProps {
   title: string;
   onPress: (event: GestureResponderEvent) => void;
+  disabled?: boolean;
 }
 
-export const NeonButton: React.FC<NeonButtonProps> = ({ title, onPress }) => {
+export const NeonButton: React.FC<NeonButtonProps> = ({ title, onPress, disabled= false }) => {
   return (
-    <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.8} disabled={disabled}>
       <Text style={styles.text}>{title.toUpperCase()}</Text>
     </TouchableOpacity>
   );

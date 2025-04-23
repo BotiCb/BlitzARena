@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, ImageBackground } from 'react-native';
+import { NeonButton } from '~/atoms/NeonButton';
 
 import { AuthStackParamList } from '~/navigation/types';
 import AuthService from '~/services/AuthService';
@@ -64,12 +65,12 @@ const LoginScreen = () => {
           secureTextEntry
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <Button
+        <NeonButton
           title={loading ? 'Logging in...' : 'Login'}
           onPress={handleLogin}
           disabled={loading}
         />
-        <Button title="Register" onPress={() => navigation.navigate('RegisterScreen')} />
+        <NeonButton title="Register" onPress={() => navigation.navigate('RegisterScreen')} />
       </View>
     </ImageBackground>
   );

@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, ImageBackground } from 'react-native';
+import { NeonButton } from '~/atoms/NeonButton';
 
 import { AuthStackParamList } from '~/navigation/types';
 import { RegisterRequestDto } from '~/services/restApi/dto/request.dto';
@@ -96,7 +97,7 @@ const RegisterScreen = () => {
           onPress={handleRegister}
           disabled={loading}
         />
-        <Button title="Login" onPress={() => navigation.navigate('LoginScreen')} />
+        <NeonButton title="Login" onPress={() => navigation.navigate('LoginScreen')} />
       </View>
     </ImageBackground>
   );
