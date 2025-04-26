@@ -9,7 +9,7 @@ import { PhotosFromYouView } from '~/views/PhotosFromYouView';
 import TrainingCameraView from '~/views/TraingCameraView';
 import { TrainingReadyForGroupView } from '~/views/TrainingReadyForGroupView';
 import { useDetection } from '~/contexts/DetectionContexts';
-import { ProgressBar } from '~/atoms/ProgressBar';
+import { ProgressBar } from '~/components/ProgressBar';
 import { PlayerInfo } from '~/atoms/PlayerInfo';
 import { PlayerListComponent } from '~/components/PlayerListComponent';
 import NeonText from '~/atoms/NeonText';
@@ -34,23 +34,22 @@ const ModelTrainingScreen = () => {
   return (
     <ImageBackground
       source={require('../../assets/ui/backgrounds/background.png')} // Make sure the image path is correct
-      style={{ flex: 1}}
+      style={{ flex: 1 }}
       resizeMode="cover">
       <View style={styles.container}>
-      {progress > 0 && <ProgressBar progress={progress} />}
+        {progress > 0 && <ProgressBar progress={progress} />}
 
         {trainingGroup && (
-       <PlayerListComponent 
-       players={players.filter((player) => trainingGroup?.some((p) => p.sessionID === player.sessionID))}
-        areYouHost={false}
-        onSetAsHost={() => {}}
-        yourSessionId={userSessionId}
-        onRemovePlayer={() => {}}
-       />
-
-        
-      )}
-        
+          <PlayerListComponent
+            players={players.filter((player) =>
+              trainingGroup?.some((p) => p.sessionID === player.sessionID)
+            )}
+            areYouHost={false}
+            onSetAsHost={() => {}}
+            yourSessionId={userSessionId}
+            onRemovePlayer={() => {}}
+          />
+        )}
 
         {(() => {
           switch (phase) {

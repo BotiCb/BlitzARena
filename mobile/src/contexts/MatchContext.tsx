@@ -18,7 +18,8 @@ type MatchContextType = {
     isAbleToShoot: boolean,
     nextShootAt: number | null,
     ammoInClip: number,
-    totalAmmo: number
+    totalAmmo: number,
+    isReloading: boolean,
   };
   score: Record<string, number>;
   winningTeam: string | null;

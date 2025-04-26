@@ -20,6 +20,7 @@ export class GunHandlingWebSocketService {
     private ammoInClipHandlerFunction: (ammoInClip: number) => void = () => { };
     private totalAmmoHandlerFunction: (totalAmmo: number) => void = () => { };
     private nextShotAtHandlerFunction: (nextShotAt: number | null) => void = () => { };
+    private isReloadingHandlerFunction: (isReloading: boolean) => void = () => { };
      private lastShootTimeStamp : number = 0
 
     setNextShotAtHandlerFunction = (handler: (nextShotAt: number | null) => void) => {
@@ -32,6 +33,10 @@ export class GunHandlingWebSocketService {
 
     setTotalAmmoHandlerFunction = (handler: (totalAmmo: number) => void) => {
         this.totalAmmoHandlerFunction = handler;
+    }
+
+    setIsReloadingHandlerFunction = (handler: (isReloading: boolean) => void) => {
+        this.isReloadingHandlerFunction = handler;
     }
 
     setWebSocketEventListeners(): void {
@@ -59,6 +64,7 @@ export class GunHandlingWebSocketService {
         this.websocketService.sendMessage({
             type: WebSocketMessageType.RELOAD_GUN
         })
+        this.isReloadingHandlerFunction(true);
     }
 
 

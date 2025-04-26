@@ -9,6 +9,7 @@ export const useGunHandling = () => {
   const [isAbleToShoot, setIsAbleToShoot] = useState<boolean>(false);
   const [ammoInClip, setAmmoInClip] = useState<number>(0);
   const [totalAmmo, setTotalAmmo] = useState<number>(0);
+  const [isReloading, setIsReloading] = useState<boolean>(false);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export const useGunHandling = () => {
 
       if (timeUntilShoot <= 0) {
         setIsAbleToShoot(true);
+        setIsReloading(false);
       } else {
         setIsAbleToShoot(false);
           timeoutRef.current = setTimeout(() => {
@@ -48,7 +50,6 @@ export const useGunHandling = () => {
     };
   }, [nextShootAt, totalAmmo, ammoInClip]);
 
-  useEffect(() => {console.log('isAbleToShoot', isAbleToShoot);}, [isAbleToShoot]);
 
   useEffect(() => {
     gunHandlingService.setNextShotAtHandlerFunction(setNextShootAt);
@@ -71,6 +72,7 @@ export const useGunHandling = () => {
     nextShootAt,
     ammoInClip,
     totalAmmo,
+    isReloading,
     reload: () => gunHandlingService.reload()
   };
 };

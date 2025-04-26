@@ -12,6 +12,7 @@ import { apiClient } from '~/services/restApi/RestApiService';
 import { JoinGameResponseDto } from '~/services/restApi/dto/response.dto';
 import { AsyncStore } from '~/services/storage/AsyncStorage';
 import { NeonButton } from '~/components/NeonButton';
+import { Scope } from '~/components/Scope';
 
 export const JoinGameScreen = () => {
   const device = useCameraDevices()[0];
@@ -75,11 +76,9 @@ export const JoinGameScreen = () => {
   return (
     <View style={styles.container}>
       <Camera device={device} isActive={isActive} style={styles.camera} codeScanner={codeScanner} />
-      <NeonText>
-        Scan the QR code to join a game
-      </NeonText>
+      <NeonText>Scan the QR code to join a game</NeonText>
       <View style={{ marginTop: '135%' }}>
-        <NeonButton title="Join to previous game" onPress={handleJoinPreviousGame}/>
+        <NeonButton title="Join to previous game" onPress={handleJoinPreviousGame} />
       </View>
       <NeonText style={{ color: 'red' }}>{error}</NeonText>
     </View>

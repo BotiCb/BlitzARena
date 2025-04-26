@@ -41,8 +41,13 @@ const SmallCountdownTimer: React.FC<CountdownTimerProps> = ({ endsAt }) => {
 
   return (
     <View style={{ padding: 20, borderRadius: 10 }}>
-      <NeonText style={{ color: "white", fontSize: 24 }}>
-        {timeLeft.minutes}:{timeLeft.seconds}
+      <NeonText
+      style={{
+        color: timeLeft.minutes === 0 && Number(timeLeft.seconds) < 10 ? "red" : "white",
+        fontSize: 24,
+      }}
+      >
+      {timeLeft.minutes}:{timeLeft.seconds}
       </NeonText>
     </View>
   );

@@ -10,7 +10,7 @@ import { TeamSelectorComponent } from '~/components/TeamSelectorComponent';
 import { useGame } from '~/contexts/GameContext';
 import { useGameRoom } from '~/hooks/useGameRoom';
 import { TEAM } from '~/utils/types/types';
-import { ProgressBar } from '~/atoms/ProgressBar';
+import { ProgressBar } from '~/components/ProgressBar';
 import { NeonButton } from '~/components/NeonButton';
 import NeonText from '~/atoms/NeonText';
 
