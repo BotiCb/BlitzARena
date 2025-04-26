@@ -5,6 +5,7 @@ import { ReloadButton } from '~/atoms/ReloadButton';
 import { HitPerson } from '~/services/websocket/websocket-types';
 import NeonText from '~/atoms/NeonText';
 import { useMatch } from '~/contexts/MatchContext';
+import { useDetection } from '~/contexts/DetectionContexts';
 
 export interface BottomInMatchBarProps {
   healthPoints: number;
@@ -21,38 +22,51 @@ export interface BottomInMatchBarProps {
 
 export const InMatchHud = ({ healthPoints, gunHandling }: BottomInMatchBarProps) => {
   const { score, round, maxRounds } = useMatch();
+  const { detectedPlayer } = useDetection();
 
   return (
     <>
-      {/* Top Bar - Score & Round */}
-      {score && (
-        <View style={styles.topContainer}>
-          <NeonText style={styles.roundText}>
-            Round {round} of {maxRounds}
-          </NeonText>
-          <View style={styles.scoreContainer}>
-            {Object.entries(score).map(([team, points], index) => (
-              <React.Fragment key={team}>
-                <NeonText style={{ color: team }}>{points}</NeonText>
-                {index < Object.keys(score).length - 1 && (
-                  <NeonText style={styles.colon}> : </NeonText>
-                )}
-              </React.Fragment>
-            ))}
+      {/* Top Section */}
+      <View style={styles.topSection}>
+        {/* Score & Round Row */}
+        {score && (
+          <View style={styles.scoreRoundContainer}>
+            <NeonText style={styles.roundText}>
+              Round {round} of {maxRounds}
+            </NeonText>
+            <View style={styles.scoreContainer}>
+              {Object.entries(score).map(([team, points], index) => (
+                <React.Fragment key={team}>
+                  <NeonText style={{ color: team }}>{points}</NeonText>
+                  {index < Object.keys(score).length - 1 && (
+                    <NeonText style={styles.colon}> : </NeonText>
+                  )}
+                </React.Fragment>
+              ))}
+            </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {/* Bottom Bar - Health & Reload */}
+        {/* Detected Player Info */}
+        {detectedPlayer && (
+          <View style={styles.playerInfoContainer}>
+            <NeonText style={styles.playerName}>
+              {detectedPlayer.firstName} {detectedPlayer.lastName}
+              {detectedPlayer.isEliminated && (
+                <NeonText style={styles.eliminatedIndicator}> X</NeonText>
+              )}
+            </NeonText>
+          </View>
+        )}
+      </View>
+
+      {/* Bottom Section */}
       <View style={styles.bottomContainer}>
-        {/* Left Side - Health Progress */}
-        <ProgressBar 
-          progress={healthPoints} 
-          style={styles.healthBar}
-        />
+        {/* Health Progress Bar */}
+        <ProgressBar progress={healthPoints} style={styles.healthBar} />
 
-        {/* Right Side - Reload & Ammo */}
-        <View style={styles.reloadContainer}>
+        {/* Reload & Ammo Section */}
+        <View style={styles.reloadSection}>
           <ReloadButton
             onClick={() => gunHandling.reload()}
             date={gunHandling.nextShootAt}
@@ -74,48 +88,71 @@ export const InMatchHud = ({ healthPoints, gunHandling }: BottomInMatchBarProps)
 };
 
 const styles = StyleSheet.create({
-  topContainer: {
+  topSection: {
     position: 'absolute',
-    top: 10,
-    left: 20,
-    right: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    top: 40,
+    left: 0,
+    right: 0,
     alignItems: 'center',
   },
-  bottomContainer: {
-    position: 'absolute',
-    bottom: 40,
-    left: 20,
-    right: 20,
+  scoreRoundContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    width: '90%',
+    marginBottom: 15,
   },
   scoreContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 15,
   },
   roundText: {
-    color: '#fff',
-    fontSize: 18,
+    color: '#ffffff',
+    fontSize: 20,
+    textShadowColor: '#ffffff',
+    textShadowRadius: 10,
   },
   colon: {
-    color: '#fff',
-    fontSize: 18,
+    color: '#ffffff',
+    fontSize: 20,
+  },
+  playerInfoContainer: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  playerName: {
+    fontSize: 28,
+    color: '#ffffff',
+    textShadowColor: '#ffffff',
+    textShadowRadius: 10,
+  },
+  eliminatedIndicator: {
+    color: '#ff0000',
+    fontSize: 32,
+    textShadowColor: '#ff0000',
+    textShadowRadius: 15,
+  },
+  bottomContainer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    paddingHorizontal: 30,
   },
   healthBar: {
     width: 200,
-    height: 12,
-    borderRadius: 6,
+    height: 15,
+    borderRadius: 8,
   },
-  reloadContainer: {
+  reloadSection: {
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   ammoText: {
-    fontSize: 20,
+    fontSize: 22,
     textAlign: 'center',
     includeFontPadding: false,
   },

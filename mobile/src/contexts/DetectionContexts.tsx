@@ -16,7 +16,7 @@ import { Platform } from 'react-native';
 import { HitPerson } from '~/services/websocket/websocket-types';
 
 type DetectionContextType = {
-  detectedPerson: DetectedPerson | null;
+  detectedPlayer: Player | null;
   detections: ISharedValue<Detection | null>;
   classifyModel: TensorflowModel | null;
   poseModel: TensorflowModel | null;
@@ -31,62 +31,49 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
   const [poseModel, setPoseModel] = useState<TensorflowModel | null>(null);
   const { model, players } = useGame();
   const delegate = Platform.OS === 'ios' ? 'core-ml' : undefined;
-  const [detectedPerson, setDetectedPerson] = useState<DetectedPerson | null>(null);
+  const [detectedPlayer, setDetectedPlayer] = useState<Player | null>(null);
   const detections = useSharedValue<Detection | null>(null);
   const runModel = useSharedValue<boolean>(false);
-  const playersMap = useMemo(() => new Map(players.map((p) => [p.sessionID, p])), [players]);
-  const detectedPersonRef = useRef<DetectedPerson | null>(null);
 
-  // const detectionHandler = useCallback(() => {
-  //   //console.log('detections', detections.value);
-  //   if (!detections.value) {
-  //     if (detectedPersonRef.current) {
-  //       detectedPersonRef.current = null;
-  //       setDetectedPerson(null);
-  //     }
-  //     return;
-  //   }
+  useEffect(() => {
+    const updateDetectedPerson = () => {
+      if (detections.value && detections.value.bodyPart !== BODY_PART.NOTHING) {
+        if (detectedPlayer?.sessionID !== model?.mapperArray[detections.value.classification.id]) {
+          const player = players.find(
+            (player) =>
+              player.sessionID === model?.mapperArray[detections.value?.classification.id ?? 0]
+          );
+          if (player && player.sessionID !== detectedPlayer?.sessionID) {
+            setDetectedPlayer(player);
+          } else {
+            setDetectedPlayer(null);
+          }
+        }
+      } else {
+      
+          setDetectedPlayer(null);
+        
+      }
+    };
 
-  //   const currentDetection = detections.value;
-  //   const sessionID = model?.mapperArray[currentDetection.classification.id ?? 0];
-  //   const player = sessionID ? playersMap.get(sessionID) : null;
+    // update it in every 300 ms
+    const interval = setInterval(() => {
+      updateDetectedPerson();
+    }, 100);
 
-  //   if (!player) {
-  //     if (detectedPersonRef.current) {
-  //       detectedPersonRef.current = null;
-  //       setDetectedPerson(null);
-  //     }
-  //     return;
-  //   }
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
-  //   const newDetection: DetectedPerson = {
-  //     player,
-  //     bodyPart: currentDetection.bodyPart as BODY_PART,
-  //     confidence: Math.round(currentDetection.classification.confidenceAdvantage * 100),
-  //   };
-
-  //   if (
-  //     !detectedPersonRef.current ||
-  //     detectedPersonRef.current.player.sessionID !== newDetection.player.sessionID ||
-  //     detectedPersonRef.current.bodyPart !== newDetection.bodyPart
-  //   ) {
-  //     detectedPersonRef.current = newDetection;
-  //     console.log('New detection', newDetection);
-  //     setDetectedPerson(newDetection);
-  //   }
-  // }, [playersMap, model?.mapperArray]);
-
-  // useEffect(() => {
-  //   const interval = setInterval(detectionHandler, 200);
-  //   return () => clearInterval(interval);
-  // }, [detectionHandler]);
-
-
+  useEffect(() => {
+    console.log(detectedPlayer);
+  }, [detectedPlayer]);
 
   useEffect(() => {
     if (model?.path) {
       loadTensorflowModel({
-        url: "file://" + model.path,
+        url: 'file://' + model.path,
       }).then((model) => {
         console.warn('Classify Model loaded');
         setClassifyModel(model);
@@ -105,7 +92,6 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [plugin]);
 
-
   const getHitPerson = (): HitPerson | null => {
     const detection = detections.value;
 
@@ -115,31 +101,23 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
 
     const sessionID = model?.mapperArray[detection.classification.id ?? 0] as string;
 
-
     return {
       hitPlayerId: sessionID,
       bodyPart: detection.bodyPart as BODY_PART,
       confidence: Math.round(detection.classification.confidenceAdvantage * 100),
     };
-  }
+  };
 
-  const value =
-  {
-    detectedPerson,
+  const value = {
+    detectedPlayer,
     detections,
     classifyModel,
     poseModel,
     getHitPerson,
-    runModel
-  }
+    runModel,
+  };
 
-
-  return (
-    <DetectionContext.Provider value={value}>
-      {children}
-    </DetectionContext.Provider>
-  );
-
+  return <DetectionContext.Provider value={value}>{children}</DetectionContext.Provider>;
 };
 
 export const useDetection = () => useContext(DetectionContext);

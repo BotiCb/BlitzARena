@@ -22,13 +22,23 @@ const InMatchBattleView = () => {
         gunHandling.isReloading || !gunHandling.isAbleToShoot || gunHandling.ammoInClip === 0
       }>
       <View style={styles.container}>
+     
 
         {matchPhaseEndsAt && <SmallCountdownTimer endsAt={matchPhaseEndsAt} />}
         {healthPoints > 0 && <Scope />}
         {healthPoints > 0 ? (
           <InMatchHud healthPoints={healthPoints} gunHandling={gunHandling} />
         ) : (
-          <NeonText style={{ marginRight: 10, color: 'white', height: '100%', justifyContent: 'center', position: 'absolute' }}>You are eliminated</NeonText>
+          <NeonText
+            style={{
+              marginRight: 10,
+              color: 'white',
+              height: '100%',
+              justifyContent: 'center',
+              position: 'absolute',
+            }}>
+            You are eliminated
+          </NeonText>
         )}
       </View>
     </TouchableWithoutFeedback>

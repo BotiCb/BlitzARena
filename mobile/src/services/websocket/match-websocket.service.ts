@@ -83,7 +83,7 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
         this.currentRoundHandlerFunction(currentRound);
         this.currentMatchPhaseHandlerFunction(currentPhase);
         AbstractCustomWebSocketService.playersHandlerFunction((players: Player[]) => {
-            return players.map((player: Player) => ({ ...player, isReady: false }));
+            return players.map((player: Player) => ({ ...player, isReady: false, isEliminated: false }));
         });
 
         this.scoreHandlerFunction(scores);
@@ -117,7 +117,7 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
         AbstractCustomWebSocketService.playersHandlerFunction((players: Player[]) => {
             return players.map((player: Player) => {
                 if (player.sessionID === eliminatedPlayer) {
-                    return { ...player, deaths: player.deaths + 1 };
+                    return { ...player, deaths: player.deaths + 1, isEliminated: true };
                 }
                 if (player.sessionID === eliminatedBy) {
                     return { ...player, kills: player.kills + 1 };
