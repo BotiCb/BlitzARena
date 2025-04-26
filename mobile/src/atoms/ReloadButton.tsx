@@ -12,8 +12,7 @@ export interface ReloadProgressButtonProps {
 
 export const ReloadButton = ({ date, onClick, isReloading }: ReloadProgressButtonProps) => {
     const [progress, setProgress] = useState(0);
-    const [startTime, setStartTime] = useState<number>(0);
-    const [totalDuration, setTotalDuration] = useState<number>(0);
+
 
     useEffect(() => {
         if (!date) return;
@@ -22,8 +21,6 @@ export const ReloadButton = ({ date, onClick, isReloading }: ReloadProgressButto
         const newStartTime = now;
         const newTotalDuration = date - now;
 
-        setStartTime(newStartTime);
-        setTotalDuration(newTotalDuration);
 
         const updateProgress = () => {
             const currentTime = Date.now();
@@ -33,12 +30,14 @@ export const ReloadButton = ({ date, onClick, isReloading }: ReloadProgressButto
             if (newProgress >= 1 || currentTime >= date) {
                 newProgress = 1;
                 clearInterval(interval);
+                setProgress(0);
+                return;
             }
 
             setProgress(newProgress);
         };
 
-        const interval = setInterval(updateProgress, 50);
+        const interval = setInterval(updateProgress, 20);
         updateProgress(); // Initial update
 
         return () => clearInterval(interval);

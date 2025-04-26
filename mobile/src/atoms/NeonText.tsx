@@ -15,7 +15,7 @@ const NeonText = ({ neonColor = '#87fbff', style, children, ...props }: NeonText
           fontFamily: 'Orbitron-Regular',
           fontSize: 32,
           color: neonColor,
-          textShadowColor: neonColor,
+          textShadowColor: style?.color || neonColor,
           textShadowOffset: { width: 0, height: 0 },
           textShadowRadius: 8,
           textAlign: 'center',

@@ -19,7 +19,7 @@ const InMatchScreen = () => {
   const cameraRef = useRef<any>(null);
   const { classifyModel, poseModel, detections, runModel } = useDetection();
   const { isPhaseInfosNeeded } = useGame();
-  const { round, maxRounds, matchPhase, score, winningTeam } = useMatch();
+  const { matchPhase, winningTeam } = useMatch();
 
   useEffect(() => {
     if(matchPhase === 'battle'){
@@ -36,14 +36,10 @@ const InMatchScreen = () => {
 
   return (
     <View style={styles.container}>
-      <CameraView ref={cameraRef} models={[poseModel, classifyModel]} detections={detections} runModel={runModel} />
+      <CameraView ref={cameraRef} models={[poseModel, classifyModel]} detections={detections} runModel={runModel}  />
 
 
-      <NeonText style={{ color: 'white' }}>
-        Round: {round} / {maxRounds}
-      </NeonText>
-      {score && <NeonText style={{ color: 'white' }}> Score: {Object.keys(score).map((key) => `${key}: ${score[key]} `)} </NeonText>}
-      {winningTeam && <NeonText style={{ color: 'white', fontSize: 20 }}> Winner: {winningTeam} </NeonText>}
+      {winningTeam && <NeonText style={{ color: winningTeam, fontSize: 40, justifyContent: 'center', paddingTop: 190 }}> Winner: {winningTeam} </NeonText>}
       {matchPhase === 'battle' && <InMatchBattleView />}
       {matchPhase === 'waiting-for-players' && <InMatchWaitingForPlayersView />}
 

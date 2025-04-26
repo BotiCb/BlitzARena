@@ -2,12 +2,15 @@ import { useAppState } from '@react-native-community/hooks';
 import { useIsFocused } from '@react-navigation/native';
 import { Skia } from '@shopify/react-native-skia';
 import React, { forwardRef, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableWithoutFeedback } from 'react-native';
 import { TensorflowModel, TensorflowPlugin } from 'react-native-fast-tflite';
 import { Camera, useCameraDevices, useCameraPermission } from 'react-native-vision-camera';
 import { ISharedValue, useSharedValue } from 'react-native-worklets-core';
 
-import { InBattleFrameProcessor, InBattleSkiaFrameProcessor } from '../services/frame-processing/frame-processors';
+import {
+  InBattleFrameProcessor,
+  InBattleSkiaFrameProcessor,
+} from '../services/frame-processing/frame-processors';
 import { Detection } from '../utils/types/detection-types';
 import { Scope } from '~/components/Scope';
 
@@ -21,72 +24,75 @@ interface CameraViewProps {
   runModel: ISharedValue<boolean>;
 }
 
-const InMatchCameraView = forwardRef<any, CameraViewProps>(({ models, detections, runModel }, ref) => {
-  const device = useCameraDevices()[0];
+const InMatchCameraView = forwardRef<any, CameraViewProps>(
+  ({ models, detections, runModel }, ref) => {
+    const device = useCameraDevices()[0];
 
-  const isFocused = useIsFocused();
-  const appState = useAppState();
+    const isFocused = useIsFocused();
+    const appState = useAppState();
 
-  const isActive = isFocused && appState === 'active';
+    const isActive = isFocused && appState === 'active';
 
-  const { hasPermission, requestPermission } = useCameraPermission();
-  if (!hasPermission) {
-    requestPermission();
-  }
- const model = models[0];
- const model2 = models[1];
-  useEffect(() => {
-    
+    const { hasPermission, requestPermission } = useCameraPermission();
+    if (!hasPermission) {
+      requestPermission();
+    }
+    const model = models[0];
+    const model2 = models[1];
+    useEffect(() => {
+      if (model == null) return;
 
-    if (model == null) return;
+      console.log(
+        `Model: ${model.inputs.map(tensorToString)} -> ${model.outputs.map(tensorToString)}`
+      );
+    }, [model]);
 
-    console.log(
-      `Model: ${model.inputs.map(tensorToString)} -> ${model.outputs.map(tensorToString)}`
-    );
-  }, [model]);
+    useEffect(() => {
+      if (model2 == null) return;
 
-  useEffect(() => {
+      console.log(
+        `Model2: ${model2.inputs.map(tensorToString)} -> ${model2.outputs.map(tensorToString)}`
+      );
+    }, [model2]);
 
-    if (model2 == null) return;
+    const paint = Skia.Paint();
+    paint.setColor(Skia.Color('red'));
+    paint.setStrokeWidth(6);
 
-    console.log(
-      `Model2: ${model2.inputs.map(tensorToString)} -> ${model2.outputs.map(tensorToString)}`
-    );
-  }, [model2]);
+    const lastUpdateTime = useSharedValue<number>(Date.now());
 
-  const paint = Skia.Paint();
-  paint.setColor(Skia.Color('red'));
-  paint.setStrokeWidth(6);
+    useEffect(() => {
+      console.log('Camera Component rendered');
+    }, []);
 
-  const lastUpdateTime = useSharedValue<number>(Date.now());
+    if (!device || !hasPermission) {
+      return (
+        <View style={styles.permissionContainer}>
+          <Text style={styles.permissionText}>Camera permission is required.</Text>
+        </View>
+      );
+    }
 
-  useEffect(() => {
-    console.log('Camera Component rendered');
-  }, []);
-
-  if (!device || !hasPermission) {
     return (
-      <View style={styles.permissionContainer}>
-        <Text style={styles.permissionText}>Camera permission is required.</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
+      <View style={styles.container}>
         <Camera
           style={StyleSheet.absoluteFill}
           device={device}
           isActive={isActive}
-          frameProcessor={InBattleFrameProcessor(model, model2, lastUpdateTime, detections, runModel)}
+          frameProcessor={InBattleFrameProcessor(
+            model,
+            model2,
+            lastUpdateTime,
+            detections,
+            runModel
+          )}
           pixelFormat="yuv"
           outputOrientation="device"
-        /> 
-        
-
-    </View>
-  );
-});
+        />
+      </View>
+    );
+  }
+);
 
 export default InMatchCameraView;
 
@@ -113,5 +119,4 @@ const styles = StyleSheet.create({
 
     color: 'gray',
   },
-
 });

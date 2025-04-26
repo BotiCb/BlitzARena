@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text } from "react-native";
+import NeonText from "./NeonText";
 
 export interface CountdownTimerProps {
   endsAt: number;
@@ -47,10 +48,10 @@ const BigCountdownTimer: React.FC<CountdownTimerProps> = ({ endsAt }) => {
   }
 
   return (
-    <View style={{ padding: 20, backgroundColor: "black", borderRadius: 10 }}>
-      <Text style={{ color: "white", fontSize: 24 }}>
-        {timeLeft.seconds}
-      </Text>
+    <View style={{ alignItems: "center", justifyContent: "center", width: "100%", position: "relative" }}>
+      <NeonText style={{ color: "white", fontSize: timeLeft.seconds === 0 ? 85 : 150 }}>
+        {timeLeft.seconds === 0 ? "Battle!" : timeLeft.seconds}
+      </NeonText>
     </View>
   );
 };

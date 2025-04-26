@@ -1,6 +1,7 @@
 import * as Progress from 'react-native-progress';
 import { View, Text, StyleSheet } from 'react-native';
 import React, { useEffect } from 'react';
+import NeonText from '~/atoms/NeonText';
 
 export interface ProgressBarProps {
   progress: number;
@@ -11,7 +12,7 @@ export interface ProgressBarProps {
 export const ProgressBar: React.FC<ProgressBarProps> = ({ progress, label, style }) => {
   return (
     <View style={[styles.container, style]}>
-      <Text style={styles.labelText}>{label ? label.toUpperCase() : 'PROGRESS'}</Text>
+      <NeonText style={styles.labelText}>{label && label.toUpperCase() }</NeonText>
       <View style={styles.progressContainer}>
         <Progress.Bar
           progress={progress / 100}
@@ -22,9 +23,9 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ progress, label, style
           borderWidth={0}
           unfilledColor="#b3b3b1"
         />
-        <Text style={[styles.progressText, progress > 80 ? { color: 'rgba(200, 196, 192, 1)' } : {}]}>
+        <NeonText style={[styles.progressText, { color: 'white' }]}>
           {Math.round(progress)}%
-        </Text>
+        </NeonText>
       </View>
     </View>
   );
@@ -50,16 +51,12 @@ const styles = StyleSheet.create({
   },
   progressText: {
     position: 'absolute',
-    left: '78%',
-    color: '#4bb0c2',
-    fontFamily: 'Poppins_600SemiBold',
+    left: '71%',
+
     fontSize: 20,
   },
   labelText: {
-    color: '#4bb0c2',
-    fontFamily: 'Poppins',
     fontSize: 20,
     marginBottom: 2,
-    textAlign: 'center',
   },
 });
