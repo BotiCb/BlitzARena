@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Text } from 'react-native';
+import { Button, ImageBackground, Text } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import SplashScreen from './SplashScreen';
@@ -11,7 +11,8 @@ import { useGame } from '~/contexts/GameContext';
 import { useGameRoom } from '~/hooks/useGameRoom';
 import { TEAM } from '~/utils/types/types';
 import { ProgressBar } from '~/atoms/ProgressBar';
-import { NeonButton } from '~/atoms/NeonButton';
+import { NeonButton } from '~/components/NeonButton';
+import NeonText from '~/atoms/NeonText';
 
 export const GamerRoomScreen = () => {
   const {
@@ -39,42 +40,57 @@ export const GamerRoomScreen = () => {
     return <SplashScreen />;
   }
   return (
-    <ScrollView>
-      {trainingProgress !== null && <ProgressBar progress={trainingProgress} label="Training" />}
-      <TeamSelectorComponent handleTeamSelection={handleTeamSelection} />
-      <Text>No team</Text>
-      <PlayerListComponent
-        players={players.filter((player) => !player.team)}
-        areYouHost={areYouHost}
-        onSetAsHost={setPlayerAsHost}
-        yourSessionId={userSessionId}
-        onRemovePlayer={onRemovePlayer}
-      />
-      <Text>Red team</Text>
-      <PlayerListComponent
-        players={players.filter((player) => player.team === TEAM.RED)}
-        areYouHost={areYouHost}
-        onSetAsHost={setPlayerAsHost}
-        yourSessionId={userSessionId}
-        onRemovePlayer={onRemovePlayer}
-      />
-      <Text>Blue team</Text>
-      <PlayerListComponent
-        players={players.filter((player) => player.team === TEAM.BLUE)}
-        areYouHost={areYouHost}
-        onSetAsHost={setPlayerAsHost}
-        yourSessionId={userSessionId}
-        onRemovePlayer={onRemovePlayer}
-      />
-      {model && <NeonButton onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />}
-      {isEveryOneReady && areYouHost && (
-        <NeonButton title="Start Game" onPress={onStartNextGamePhase} />
+    <ImageBackground
+      source={require('../../assets/ui/backgrounds/background.png')} // Make sure the image path is correct
+      style={{ flex: 1 }}
+      resizeMode="cover">
+      <ScrollView>
+        {trainingProgress !== null && <ProgressBar progress={trainingProgress} label="Training" />}
+        <TeamSelectorComponent handleTeamSelection={handleTeamSelection} />
+
+        {players.some((player) => player.team === TEAM.RED) && (
+          <>
+            <NeonText style={{ color: 'red' }}>Red team</NeonText>
+            <PlayerListComponent
+              players={players.filter((player) => player.team === TEAM.RED)}
+              areYouHost={areYouHost}
+              onSetAsHost={setPlayerAsHost}
+              yourSessionId={userSessionId}
+              onRemovePlayer={onRemovePlayer}
+            />
+          </>
+        )}
+
+        {players.some((player) => player.team === TEAM.BLUE) && (
+          <>
+            <NeonText style={{ color: 'blue' }}>Blue team</NeonText>
+            <PlayerListComponent
+              players={players.filter((player) => player.team === TEAM.BLUE)}
+              areYouHost={areYouHost}
+              onSetAsHost={setPlayerAsHost}
+              yourSessionId={userSessionId}
+              onRemovePlayer={onRemovePlayer}
+            />
+          </>
+        )}
+
+        <MapComponent
+          gameArea={gameArea}
+          readonly={!areYouHost}
+          onGameAreaChange={onGameAreaChange}
+        />
+      </ScrollView>
+      {players.some((player) => player.sessionID === userSessionId && player.team) && (
+        <>
+          {model && <NeonButton onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />}
+          {isEveryOneReady &&
+            areYouHost &&
+            players.some((player) => player.team === TEAM.RED) &&
+            players.some((player) => player.team === TEAM.BLUE) && (
+              <NeonButton title="Start Game" onPress={onStartNextGamePhase} />
+            )}
+        </>
       )}
-      <MapComponent
-        gameArea={gameArea}
-        readonly={!areYouHost}
-        onGameAreaChange={onGameAreaChange}
-      />
-    </ScrollView>
+    </ImageBackground>
   );
 };

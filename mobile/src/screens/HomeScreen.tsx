@@ -2,7 +2,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Button, Text, StyleSheet, ImageBackground } from 'react-native';
 import AuthService from 'src/services/AuthService';
-import { NeonButton } from '~/atoms/NeonButton';
+import { NeonButton } from '~/components/NeonButton';
 
 import { useAuth } from '~/contexts/AuthContext';
 import { AppStackParamList } from '~/navigation/types';

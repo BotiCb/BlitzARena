@@ -2,7 +2,8 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, ImageBackground } from 'react-native';
-import { NeonButton } from '~/atoms/NeonButton';
+import NeonText from '~/atoms/NeonText';
+import { NeonButton } from '~/components/NeonButton';
 
 import { AuthStackParamList } from '~/navigation/types';
 import AuthService from '~/services/AuthService';
@@ -50,7 +51,7 @@ const LoginScreen = () => {
       style={{ flex: 1 }}
       resizeMode="cover">
       <View style={styles.container}>
-        <Text style={styles.title}>Login</Text>
+        <NeonText style={styles.title}>Login</NeonText>
         <TextInput
           style={styles.input}
           placeholder="Username"
@@ -64,7 +65,7 @@ const LoginScreen = () => {
           onChangeText={setPassword}
           secureTextEntry
         />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <NeonText style={styles.error}>{error}</NeonText> : null}
         <NeonButton
           title={loading ? 'Logging in...' : 'Login'}
           onPress={handleLogin}

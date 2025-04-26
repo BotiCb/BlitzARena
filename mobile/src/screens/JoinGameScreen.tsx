@@ -4,13 +4,14 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
 import { Camera, Code, useCameraDevices, useCodeScanner } from 'react-native-vision-camera';
-import { NeonButton } from '~/atoms/NeonButton';
+import NeonText from '~/atoms/NeonText';
 
 import { AppStackParamList } from '~/navigation/types';
 import { GAME_ENDPOINTS } from '~/services/restApi/Endpoints';
 import { apiClient } from '~/services/restApi/RestApiService';
 import { JoinGameResponseDto } from '~/services/restApi/dto/response.dto';
 import { AsyncStore } from '~/services/storage/AsyncStorage';
+import { NeonButton } from '~/components/NeonButton';
 
 export const JoinGameScreen = () => {
   const device = useCameraDevices()[0];
@@ -74,10 +75,13 @@ export const JoinGameScreen = () => {
   return (
     <View style={styles.container}>
       <Camera device={device} isActive={isActive} style={styles.camera} codeScanner={codeScanner} />
-      <View style={{ marginTop: 100 }}>
-        <NeonButton title="Join to previous game" onPress={handleJoinPreviousGame} />
+      <NeonText>
+        Scan the QR code to join a game
+      </NeonText>
+      <View style={{ marginTop: '135%' }}>
+        <NeonButton title="Join to previous game" onPress={handleJoinPreviousGame}/>
       </View>
-      <Text>{error}</Text>
+      <NeonText style={{ color: 'red' }}>{error}</NeonText>
     </View>
   );
 };

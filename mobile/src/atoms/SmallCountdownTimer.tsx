@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { CountdownTimerProps, TimeRemaining } from "./BigCountdownTimer";
+import NeonText from "./NeonText";
 
 const SmallCountdownTimer: React.FC<CountdownTimerProps> = ({ endsAt }) => {
   const [timeLeft, setTimeLeft] = useState<TimeRemaining>(getTimeRemaining(endsAt));
@@ -39,10 +40,10 @@ const SmallCountdownTimer: React.FC<CountdownTimerProps> = ({ endsAt }) => {
   }
 
   return (
-    <View style={{ padding: 20, backgroundColor: "black", borderRadius: 10 }}>
-      <Text style={{ color: "white", fontSize: 24 }}>
+    <View style={{ padding: 20, borderRadius: 10 }}>
+      <NeonText style={{ color: "white", fontSize: 24 }}>
         {timeLeft.minutes}:{timeLeft.seconds}
-      </Text>
+      </NeonText>
     </View>
   );
 };

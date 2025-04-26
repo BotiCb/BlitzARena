@@ -6,7 +6,7 @@ import { View, Text, StyleSheet, Button } from 'react-native';
 import { TensorflowModel, TensorflowPlugin } from 'react-native-fast-tflite';
 import { Camera, useCameraDevices, useCameraPermission } from 'react-native-vision-camera';
 import { useSharedValue } from 'react-native-worklets-core';
-import { NeonButton } from '~/atoms/NeonButton';
+import { NeonButton } from '~/components/NeonButton';
 
 import { trainingFrameProcessor } from '~/services/frame-processing/frame-processors';
 import { takeCroppedTrainingImage } from '~/services/frame-processing/training-camera-utils';
@@ -45,7 +45,6 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
     }
   }, [hasPermission, requestPermission]);
 
-
   // const format = useCameraFormat(device, [
   //   {
   //     videoResolution: {
@@ -54,7 +53,6 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   //     },
   //   },
   // ]);
-
 
   const capturePhotos = async (): Promise<string> => {
     if (!camera.current) {
@@ -68,11 +66,7 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
       throw new Error('No detections');
     }
 
-    const photoUri = await takeCroppedTrainingImage(
-      camera.current,
-      detections,
-      lastUpdateTime,
-    );
+    const photoUri = await takeCroppedTrainingImage(camera.current, detections, lastUpdateTime);
     const captureDuration = Date.now() - captureStart;
 
     console.log('Picture took in ms', captureDuration);
@@ -83,16 +77,14 @@ const TrainingCameraView: React.FC<TrainingCameraViewProps> = ({
   const modeltrainingWebsokcetService = ModelTrainingWebSocketService.getInstance();
 
   useEffect(() => {
-    modeltrainingWebsokcetService.setTakePhotoFunction(capturePhotos)
-  }, [])
-
+    modeltrainingWebsokcetService.setTakePhotoFunction(capturePhotos);
+  }, []);
 
   const paint = Skia.Paint();
   paint.setColor(Skia.Color(TRAINING_CAMERA_CONSTANTS.PAINT_COLOR));
   paint.setStrokeWidth(TRAINING_CAMERA_CONSTANTS.PAINT_STROKE_WIDTH);
 
   useEffect(() => {
-
     if (model == null) return;
 
     console.log(
@@ -146,7 +138,7 @@ const styles = StyleSheet.create({
     left: 0,
     height: '100%',
     width: '100%',
-    zIndex: -1,
+    zIndex: 0,
   },
 
   permissionContainer: {

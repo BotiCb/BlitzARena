@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ImageBackground } from 'react-native';
 
 import SplashScreen from './SplashScreen';
 
@@ -12,6 +12,7 @@ import { useDetection } from '~/contexts/DetectionContexts';
 import { ProgressBar } from '~/atoms/ProgressBar';
 import { PlayerInfo } from '~/atoms/PlayerInfo';
 import { PlayerListComponent } from '~/components/PlayerListComponent';
+import NeonText from '~/atoms/NeonText';
 
 const ModelTrainingScreen = () => {
   const {
@@ -31,52 +32,59 @@ const ModelTrainingScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
-      {/* {trainingGroup && (
-      //  <PlayerListComponent 
-      //  players={players.filter((player) => trainingGroup?.some((p) => p.sessionID === player.sessionID))}
-      //   areYouHost={false}
-      //   onSetAsHost={() => {}}
-      //   yourSessionId={userSessionId}
-      //   onRemovePlayer={() => {}}
-      //  />
+    <ImageBackground
+      source={require('../../assets/ui/backgrounds/background.png')} // Make sure the image path is correct
+      style={{ flex: 1}}
+      resizeMode="cover">
+      <View style={styles.container}>
+      {progress > 0 && <ProgressBar progress={progress} />}
+
+        {trainingGroup && (
+       <PlayerListComponent 
+       players={players.filter((player) => trainingGroup?.some((p) => p.sessionID === player.sessionID))}
+        areYouHost={false}
+        onSetAsHost={() => {}}
+        yourSessionId={userSessionId}
+        onRemovePlayer={() => {}}
+       />
 
         
-      // )} */}
-      <ProgressBar progress={progress} label="Collecting Data" />
-
-      {(() => {
-        switch (phase) {
-          case 'photos-from-you':
-            return <PhotosFromYouView />;
-          case 'take-photos':
-            return (
-              <TrainingCameraView
-                playerId={trainingPlayer?.sessionID || ''}
-                model={poseModel}
-                takePhotos={takePhotos}
-                handleTakePhotos={handleTakephotosStateChange}
-              />
-            );
-          case 'training-ready-for-group':
-            return <TrainingReadyForGroupView />;
-          default:
-            return <SplashScreen />;
-        }
-      })()}
-
-      {trainingPlayer && (
-        <View style={{ padding: 10, paddingBottom: 70 }}>
-          <PlayerInfo
-            player={trainingPlayer}
-            areYouHost={false}
-            isYou={userSessionId === trainingPlayer.sessionID}
-            onSetAsHost={() => {}}
-            onRemovePlayer={() => {}}
-          />
-        </View>
       )}
-    </View>
+        
+
+        {(() => {
+          switch (phase) {
+            case 'photos-from-you':
+              return <PhotosFromYouView />;
+            case 'take-photos':
+              return (
+                <TrainingCameraView
+                  playerId={trainingPlayer?.sessionID || ''}
+                  model={poseModel}
+                  takePhotos={takePhotos}
+                  handleTakePhotos={handleTakephotosStateChange}
+                />
+              );
+            case 'training-ready-for-group':
+              return <TrainingReadyForGroupView />;
+            default:
+              return <SplashScreen />;
+          }
+        })()}
+        {trainingPlayer && (
+          <View style={{ padding: 10, paddingBottom: 70 }}>
+            <NeonText>Current player:</NeonText>
+            <PlayerInfo
+              player={trainingPlayer}
+              areYouHost={false}
+              isYou={userSessionId === trainingPlayer.sessionID}
+              onSetAsHost={() => {}}
+              onRemovePlayer={() => {}}
+            />
+          </View>
+        )}
+      </View>
+    </ImageBackground>
   );
 };
 

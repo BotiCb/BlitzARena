@@ -5,11 +5,12 @@ import React, { useEffect } from 'react';
 export interface ProgressBarProps {
   progress: number;
   label?: string;
+  style?: any;
 }
 
-export const ProgressBar: React.FC<ProgressBarProps> = ({ progress, label }) => {
+export const ProgressBar: React.FC<ProgressBarProps> = ({ progress, label, style }) => {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <Text style={styles.labelText}>{label ? label.toUpperCase() : 'PROGRESS'}</Text>
       <View style={styles.progressContainer}>
         <Progress.Bar

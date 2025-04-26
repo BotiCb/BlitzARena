@@ -16,11 +16,7 @@ export interface MapComponentProps {
 }
 
 export const MapComponent = ({ gameArea, readonly, onGameAreaChange }: MapComponentProps) => {
-  const { location: userLocation } = useCoordinates({
-    accuracy: 5,
-    timeInterval: 0, 
-    distanceInterval: 0,
-  });
+  const { location: userLocation } = useCoordinates();
 
   const [isDragging, setIsDragging] = useState(false);
 
@@ -52,7 +48,7 @@ export const MapComponent = ({ gameArea, readonly, onGameAreaChange }: MapCompon
   };
 
   return (
-    <View style={[styles.container, { borderWidth: 2, borderColor: 'red' }]}>
+    <View style={[styles.container]}>
       {gameArea && userLocation && gameArea.edges.length === 4 && (
         <MapView
           style={styles.map}
@@ -120,11 +116,17 @@ export const MapComponent = ({ gameArea, readonly, onGameAreaChange }: MapCompon
     </View>
   );
 };
+const neonColor = '#87fbff';
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 10,
     height: 'auto',
+    backgroundColor: 'transparent',
+    borderColor: neonColor,
+    borderWidth: 3,
+    borderRadius: 5,
+    shadowColor: neonColor,
+    elevation: 0.5,
   },
   map: {
     height: 500,

@@ -1,6 +1,7 @@
 import { Container } from '@shopify/react-native-skia/lib/typescript/src/renderer/Container';
 import React from 'react';
 import { View, Button, StyleSheet, Text } from 'react-native';
+import { ProgressBar } from '~/atoms/ProgressBar';
 import SmallCountdownTimer from '~/atoms/SmallCountdownTimer';
 import { Scope } from '~/components/Scope';
 import { useDetection } from '~/contexts/DetectionContexts';
@@ -22,7 +23,7 @@ const InMatchBattleView = () => {
       {healthPoints ? (
         <View>
           <Text style={{ marginRight: 10, color: 'white' }}>{gunHandling.ammoInClip}/{gunHandling.totalAmmo}</Text>
-          <Text style={{ marginRight: 10, color: 'white' }}>hp: {healthPoints}</Text>
+          <ProgressBar progress={healthPoints} />
           <Button title='Shoot' onPress={() => gunHandling.shoot(getHitPerson())} disabled={!gunHandling.isAbleToShoot} />
           <Button title='Reload' onPress={() => gunHandling.reload()} />
         </View>

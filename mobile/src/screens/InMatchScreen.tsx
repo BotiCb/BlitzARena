@@ -13,6 +13,7 @@ import SplashScreen from './SplashScreen';
 import { useDetection } from '~/contexts/DetectionContexts';
 import { InMatchWaitingForPlayersView } from '~/views/InMatchWaitingForPlayersView';
 import InMatchBattleView from '~/views/InMatchBattleView';
+import NeonText from '~/atoms/NeonText';
 
 const InMatchScreen = () => {
   const cameraRef = useRef<any>(null);
@@ -38,11 +39,11 @@ const InMatchScreen = () => {
       <CameraView ref={cameraRef} models={[poseModel, classifyModel]} detections={detections} runModel={runModel} />
 
 
-      <Text style={{ color: 'white' }}>
-        Round: {round} / {maxRounds} - {matchPhase}{' '}
-      </Text>
-      {score && <Text style={{ color: 'white' }}> Score: {Object.keys(score).map((key) => `${key}: ${score[key]} `)} </Text>}
-      {winningTeam && <Text style={{ color: 'white', fontSize: 20 }}> Winner: {winningTeam} </Text>}
+      <NeonText style={{ color: 'white' }}>
+        Round: {round} / {maxRounds}
+      </NeonText>
+      {score && <NeonText style={{ color: 'white' }}> Score: {Object.keys(score).map((key) => `${key}: ${score[key]} `)} </NeonText>}
+      {winningTeam && <NeonText style={{ color: 'white', fontSize: 20 }}> Winner: {winningTeam} </NeonText>}
       {matchPhase === 'battle' && <InMatchBattleView />}
       {matchPhase === 'waiting-for-players' && <InMatchWaitingForPlayersView />}
 

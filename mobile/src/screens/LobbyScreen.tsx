@@ -7,7 +7,7 @@ import SplashScreen from './SplashScreen';
 import { PlayerListComponent } from '~/components/PlayerListComponent';
 import { useGame } from '~/contexts/GameContext';
 import { useLobby } from '~/hooks/useLobby';
-import { NeonButton } from '~/atoms/NeonButton';
+import { NeonButton } from '~/components/NeonButton';
 
 export const LobbyScreen = () => {
   const {
@@ -27,28 +27,31 @@ export const LobbyScreen = () => {
   }
   return (
     <ImageBackground
-    source={require('../../assets/ui/backgrounds/background.png')} // Make sure the image path is correct
-    style={{ flex: 1 }}
-    resizeMode="cover">
-    <View style={styles.container}>
-      <QRCode value={'Game ID: ' + gameId} size={250} logoBackgroundColor='transparent' color='#4bb0c2'/>
-      <PlayerListComponent
-        players={players}
-        areYouHost={areYouHost}
-        onSetAsHost={setPlayerAsHost}
-        yourSessionId={userSessionId}
-        onRemovePlayer={onRemovePlayer}
-      />
-      <NeonButton onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />
-      {isEveryOneReady && areYouHost && (
-        <NeonButton title="Start Game" onPress={onStartNextGamePhase} />
-      )}
-    </View>
-
+      source={require('../../assets/ui/backgrounds/background.png')} // Make sure the image path is correct
+      style={{ flex: 1 }}
+      resizeMode="cover">
+      <View style={styles.container}>
+        <QRCode
+          value={'Game ID: ' + gameId}
+          size={250}
+          logoBackgroundColor="transparent"
+          color="#4bb0c2"
+        />
+        <PlayerListComponent
+          players={players}
+          areYouHost={areYouHost}
+          onSetAsHost={setPlayerAsHost}
+          yourSessionId={userSessionId}
+          onRemovePlayer={onRemovePlayer}
+        />
+        <NeonButton onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />
+        {isEveryOneReady && areYouHost && (
+          <NeonButton title="Start Game" onPress={onStartNextGamePhase} />
+        )}
+      </View>
     </ImageBackground>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

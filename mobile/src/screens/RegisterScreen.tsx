@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, ImageBackground } from 'react-native';
-import { NeonButton } from '~/atoms/NeonButton';
+import { NeonButton } from '~/components/NeonButton';
 
 import { AuthStackParamList } from '~/navigation/types';
 import { RegisterRequestDto } from '~/services/restApi/dto/request.dto';
