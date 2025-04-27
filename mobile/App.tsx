@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import 'react-native-gesture-handler';
 import { useCameraPermission } from 'react-native-vision-camera';
+import { useKeepAwake } from 'expo-keep-awake';
+
 
 import { AuthProvider } from '~/contexts/AuthContext';
 import RootNavigation from '~/navigation/RootNavigation';
@@ -22,14 +24,15 @@ export default function App() {
 
   });
 
+  useKeepAwake();
 
   useEffect(() => {
-    if (Platform.OS === 'android') {
-      SystemNavigationBar.immersive();
-      SystemNavigationBar.setNavigationColor('transparent');
-      StatusBar.setTranslucent(true);
-      StatusBar.setBackgroundColor('transparent');
-    }
+    // if (Platform.OS === 'android') {
+    //   SystemNavigationBar.immersive();
+    //   SystemNavigationBar.setNavigationColor('transparent');
+    //   StatusBar.setTranslucent(true);
+    //   StatusBar.setBackgroundColor('transparent');
+    // }
   }, []);
 
   return (

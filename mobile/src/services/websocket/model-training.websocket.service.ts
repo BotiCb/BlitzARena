@@ -99,13 +99,8 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
       const capturePromises: Promise<void>[] = [];
 
       while (this.remainingPhotoToSendCount > 0 && this.isTakePhotos) {
-        if (capturePromises.length < this.maxConcurrentCaptures) {
-          console.log(
-            'Capturing photo, remaining:',
-            this.remainingPhotoToSendCount,
-            capturePromises.length,
-            this.photoQueue.length
-          );
+        if (capturePromises.length < this.maxConcurrentCaptures && this.photoQueue.length < 10) {
+          console.log('Capturing photo, remaining:', this.remainingPhotoToSendCount, capturePromises.length, this.photoQueue.length);
           const capturePromise = this.captureAndQueuePhoto();
           capturePromises.push(capturePromise);
           capturePromise.finally(() => {
@@ -184,7 +179,10 @@ export class ModelTrainingWebSocketService extends AbstractCustomWebSocketServic
     } catch (error) {
       console.error('Error uploading photo:', error);
       this.remainingPhotoToSendCount++;
-    } finally {
+      this.isTakePhotos = true;
+      this.isTakingPhotosHandlerFunction(true);
+    }
+    finally{
       await RNFS.unlink(trainingImage.photoUri);
     }
   }
