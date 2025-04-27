@@ -33,5 +33,5 @@ jobs:
         with:
           service: ${{ secrets.ECS_SERVICE_CHORE }}
           cluster: ${{ secrets.ECS_CLUSTER }}
-          task-definition: ${{ secrets.ECS_TASK_DEFINITION }} 
+          task-definition: ${{ secrets.ECS_TASK_DEFINITION_CHORE }} 
           force-new-deployment: true
