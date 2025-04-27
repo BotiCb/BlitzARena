@@ -24,14 +24,22 @@ jobs:
 
       - name: Build, Tag, and Push Docker image
         run: |
-          docker build -t ${{ secrets.ECR_REPOSITORY_GAME }} ./game-session-microservice
-          docker tag ${{ secrets.ECR_REPOSITORY_GAME }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_GAME }}:latest
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_GAME }}:latest
+          REPO_URL="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_GAME }}"
+          docker build -t $REPO_URL:latest ./game-session-microservice
+          docker push $REPO_URL:latest
+
+      - name: Render ECS task definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .github/ecs/task-definition-game.json
+          container-name: game_session  # Update with your container name
+          image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_GAME }}:latest
 
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
           service: ${{ secrets.ECS_SERVICE_GAME }}
           cluster: ${{ secrets.ECS_CLUSTER }}
-          task-definition: ${{ secrets.ECS_TASK_DEFINITION_GAME }} 
           force-new-deployment: true
