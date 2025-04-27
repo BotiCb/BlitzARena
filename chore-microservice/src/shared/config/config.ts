@@ -3,17 +3,9 @@ import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 
 interface FirebaseServiceAccount {
-  type: string;
   project_id: string;
-  private_key_id: string;
   private_key: string;
   client_email: string;
-  client_id: string;
-  auth_uri: string;
-  token_uri: string;
-  auth_provider_x509_cert_url: string;
-  client_x509_cert_url: string;
-  universe_domain: string;
 }
 
 interface Config {
@@ -133,6 +125,29 @@ export const config = convict<Config>({
       format: String,
       default: '',
       env: 'FROM_EMAIL',
+    },
+  },
+  firebase: {
+    service_account: {
+      project_id: {
+        doc: 'Firebase project ID',
+        format: String,
+        default: '',
+        env: 'FIREBASE_PROJECT_ID',
+      },
+
+      private_key: {
+        doc: 'Firebase private key',
+        format: String,
+        default: '',
+        env: 'FIREBASE_PRIVATE_KEY',
+      },
+      client_email: {
+        doc: 'Firebase client email',
+        format: String,
+        default: '',
+        env: 'FIREBASE_CLIENT_EMAIL',
+      },
     },
   },
   clients: {

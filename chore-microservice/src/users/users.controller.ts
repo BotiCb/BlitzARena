@@ -8,12 +8,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UserProfileDto } from './dto/output/user-profile.dto';
 import { UserInfoDto } from './dto/output/user-info.dto';
 import { isObjectId } from 'src/shared/utils/mapper';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DetailedUserProfileDto, InGameUserInfoDto } from './dto/output/detailed-user-profile';
 import { EmailService } from 'src/shared/modules/email/email.service';
 import { PlayerInGameRole, UserRole } from 'src/shared/decorators/roles.decorator';
-@ApiTags('users')
-@ApiBearerAuth()
+
 @Controller('users')
 export class UsersController {
   constructor(

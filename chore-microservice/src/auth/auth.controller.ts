@@ -3,13 +3,11 @@ import { AuthService } from './auth.service';
 import { LoginRequestDto } from './dto/input/login-request.dto';
 import { CreateUserDto } from './dto/input/create-user.dto';
 import { AccessTokenDto } from './dto/output/access-token.dto';
-import { ApiTags } from '@nestjs/swagger';
 import { UserRole } from 'src/shared/decorators/roles.decorator';
 import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { UserModel } from 'src/shared/schemas/collections/user.schema';
-import { CurrentToken } from 'src/shared/decorators/current-token.decorator';
 import { RefreshTokenGuard } from 'src/shared/guards/refresh-token-guard';
-@ApiTags('auth')
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
