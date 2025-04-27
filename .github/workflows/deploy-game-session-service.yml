@@ -1,11 +1,7 @@
 name: Deploy Game Session Service
 
 on:
-  push:
-    paths:
-      - 'game-session-microservice/**'
-    branches:
-      - main
+ workflow_dispatch: 
 
 jobs:
   deploy:

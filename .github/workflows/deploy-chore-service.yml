@@ -1,11 +1,7 @@
 name: Deploy Chore Service
 
 on:
-  push:
-    paths:
-      - 'chore-microservice/**'
-    branches:
-      - main
+ workflow_dispatch: 
 
 jobs:
   deploy:
