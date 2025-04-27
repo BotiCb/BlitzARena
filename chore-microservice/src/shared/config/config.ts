@@ -9,6 +9,10 @@ interface FirebaseServiceAccount {
 }
 
 interface Config {
+  serviceUrls:{
+    gameSessionServiceUrl: string;
+    modelTrainingServiceUrl: string;
+  }
   server: {
     port: number;
     runSeeders: boolean;
@@ -65,6 +69,20 @@ export const config = convict<Config>({
       default: 'EN',
       format: String,
       env: 'TARGET_LANGUAGE',
+    },
+  },
+  serviceUrls: {
+    gameSessionServiceUrl: {
+      doc: 'The url of the game session service',
+      format: String,
+      default: 'http://localhost:8000/api',
+      env: 'GAME_SESSION_SERVICE_URL',
+    },
+    modelTrainingServiceUrl: {
+      doc: 'The url of the model training service',
+      format: String,
+      default: 'http://localhost:7000/model-trainer-api',
+      env: 'MODEL_TRAINING_SERVICE_URL',
     },
   },
   db: {
