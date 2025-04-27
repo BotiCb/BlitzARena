@@ -1,0 +1,33 @@
+name: Deploy Game Session Service
+
+on:
+  push:
+    paths:
+      - 'game-session-microservice/**'
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build and Deploy FastAPI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push Docker image
+        run: |
+          docker build -t ${{ secrets.ECR_REPOSITORY_GAME }} ./game-session-microservice
+          docker tag ${{ secrets.ECR_REPOSITORY_GAME }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_GAME }}:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_GAME }}:latest
+
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          service: ${{ secrets.ECS_SERVICE_GAME }}
+          cluster: ${{ secrets.ECS_CLUSTER }}
+          force-new-deployment: true

@@ -1,0 +1,33 @@
+name: Deploy Chore Service
+
+on:
+  push:
+    paths:
+      - 'chore-microservice/**'
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build and Deploy NestJS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push Docker image
+        run: |
+          docker build -t ${{ secrets.ECR_REPOSITORY_CHORE }} ./chore-microservice
+          docker tag ${{ secrets.ECR_REPOSITORY_CHORE }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_CHORE }}:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_CHORE }}:latest
+
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          service: ${{ secrets.ECS_SERVICE_CHORE }}
+          cluster: ${{ secrets.ECS_CLUSTER }}
+          force-new-deployment: true
