@@ -28,8 +28,8 @@ const GameContent = () => {
   const { gamePhase, ping, errorMsg } = useGame();
   return (
     <>
-      {/* <Text>{ping}</Text>
-      {errorMsg && <Text style={{ color: 'red' }}>{errorMsg}</Text>} */}
+      <Text style={{ position: 'absolute', top: 0, right: 0, zIndex: 1 }}>{ping}</Text>
+      {errorMsg && <Text style={{ color: 'red' }}>{errorMsg}</Text>} 
       {(() => {
         switch (gamePhase) {
           case 'lobby':

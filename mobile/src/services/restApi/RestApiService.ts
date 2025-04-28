@@ -43,3 +43,7 @@ refreshTokenApiClient.interceptors.request.use(async (config) => {
   }
   return config;
 });
+
+export const setApiBaseUrl = (url: string) => {
+  apiClient.defaults.baseURL = url;
+};

@@ -12,6 +12,7 @@ import { apiClient } from '~/services/restApi/RestApiService';
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<AppStackParamList, 'Home'>>();
   const { userInfo } = useAuth();
+  
 
 
   return (

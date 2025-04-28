@@ -1,3 +1,4 @@
+import { AsyncStore } from '../storage/AsyncStorage';
 import { WebSocketMsg } from './websocket-types';
 
 import { FASTAPI_BASE_URL } from '~/utils/constants/constants';
@@ -13,10 +14,17 @@ export class WebSocketService {
   private reconnectDelay: number = 2000;
   private gameId: string | null = null;
   private userSessionId: string | null = null;
+  private static baseUrl: string | null = null;
 
   private constructor() {} // Private constructor to prevent direct instantiation
 
-  static getInstance(): WebSocketService {
+  static async init() {
+    WebSocketService.baseUrl = await AsyncStore.getItemAsync('websocketUrl');
+    console.log('WebSocket base URL:', WebSocketService.baseUrl);
+  }
+  
+
+  static  getInstance(): WebSocketService {
     if (!WebSocketService.instance) {
       WebSocketService.instance = new WebSocketService();
     }
@@ -27,8 +35,7 @@ export class WebSocketService {
     if (this.ws) {
       return this.ws;
     }
-
-    this.ws = new WebSocket(`${FASTAPI_BASE_URL}/${gameId}/player/${userSessionId}`);
+    this.ws = new WebSocket(`${WebSocketService.baseUrl}/${gameId}/player/${userSessionId}`);
 
     this.ws.onopen = () => {
       console.log('WebSocket connected');

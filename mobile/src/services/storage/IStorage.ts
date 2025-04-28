@@ -1,4 +1,4 @@
-export type StorageKey = 'jwtToken' | 'refreshToken' | 'userInfo' | 'lastGameId';
+export type StorageKey = 'jwtToken' | 'refreshToken' | 'userInfo' | 'lastGameId' | 'apiBaseUrl' | 'websocketUrl';
 
 export interface IStorage {
   getItemAsync: (key: StorageKey) => Promise<string | null>;
