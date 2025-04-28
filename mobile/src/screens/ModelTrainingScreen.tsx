@@ -38,7 +38,9 @@ const ModelTrainingScreen = () => {
       resizeMode="cover">
       <View style={styles.container}>
         {progress > 0 && <ProgressBar progress={progress} />}
-
+        <NeonText>
+          Your training group:
+        </NeonText>
         {trainingGroup && (
           <PlayerListComponent
             players={players.filter((player) =>

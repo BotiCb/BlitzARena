@@ -31,6 +31,7 @@ export const InMatchWaitingForPlayersView = () => {
       {matchPhaseEndsAt ? 
         <BigCountdownTimer endsAt={matchPhaseEndsAt} /> : 
         <>
+          <NeonText style={{ color: 'white' }}>Go to your base!</NeonText>
           {players.some((player) => player.team === TEAM.RED) && (
             <>
               <NeonText style={{ color: 'red' }}>Red team</NeonText>
