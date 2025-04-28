@@ -8,6 +8,7 @@ import { useMatch } from '~/contexts/MatchContext';
 import { useDetection } from '~/contexts/DetectionContexts';
 import { useGame } from '~/contexts/GameContext';
 import { Player } from '~/utils/models';
+import { BODY_PART } from '~/utils/types/detection-types';
 
 export interface BottomInMatchBarProps {
   healthPoints: number;
@@ -24,18 +25,34 @@ export interface BottomInMatchBarProps {
 
 export const InMatchHud = ({ healthPoints, gunHandling }: BottomInMatchBarProps) => {
   const { score, round, maxRounds } = useMatch();
-  const { detectedPlayer } = useDetection();
-  const { players } = useGame ();
-  const [detectedPlayerObject, setDetectedPlayerObject] = useState<Player | null>(null);
+  const { detections } = useDetection();
+  const { players, model } = useGame();
+  const [detectedPlayer, setDetectedPlayer] = useState<Player | null>(null);
 
   useEffect(() => {
-    if (detectedPlayer) {
-      const player = players.find((player) => player.sessionID === detectedPlayer);
-      setDetectedPlayerObject(player || null);
+    const updateDetectedPerson = () => {
+    if (detections.value && detections.value.bodyPart !== BODY_PART.NOTHING) {
+      
+        const player = players.find(
+          (player) =>
+            detections.value &&
+            player.sessionID === model?.mapperArray[detections.value.classification.id]
+        ) as Player | null;
+        setDetectedPlayer(player);
+      
     } else {
-      setDetectedPlayerObject(null);
-    }
-  }, [detectedPlayer]);
+      setDetectedPlayer(null);
+    }}
+
+    const interval = setInterval(() => {
+      updateDetectedPerson();
+    }, 100);
+
+    return () => {
+      clearInterval(interval);
+    };
+
+  }, [players]);
 
   return (
     <>
@@ -61,12 +78,12 @@ export const InMatchHud = ({ healthPoints, gunHandling }: BottomInMatchBarProps)
         )}
 
         {/* Detected Player Info */}
-        {detectedPlayerObject && (
+        {detectedPlayer && (
           <View style={styles.playerInfoContainer}>
-            <NeonText style={styles.playerName}>
-              {detectedPlayerObject.firstName} {detectedPlayerObject.lastName}
-              {detectedPlayerObject.isEliminated && (
-                <NeonText style={styles.eliminatedIndicator}> X</NeonText>
+            <NeonText style={[styles.playerName, { color: detectedPlayer.team }]}>
+              {detectedPlayer.firstName} {detectedPlayer.lastName}
+              {detectedPlayer.isEliminated && (
+                <NeonText style={{ color: 'red' }}> X</NeonText>
               )}
             </NeonText>
           </View>
@@ -88,9 +105,7 @@ export const InMatchHud = ({ healthPoints, gunHandling }: BottomInMatchBarProps)
           <NeonText
             style={styles.ammoText}
             neonColor={
-              gunHandling.ammoInClip === 0 || gunHandling.isReloading 
-                ? '#ff0000' 
-                : '#00ff00'
+              gunHandling.ammoInClip === 0 || gunHandling.isReloading ? '#ff0000' : '#00ff00'
             }>
             {gunHandling.ammoInClip}/{gunHandling.totalAmmo}
           </NeonText>

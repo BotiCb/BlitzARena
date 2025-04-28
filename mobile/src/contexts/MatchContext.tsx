@@ -40,7 +40,7 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
 
   const { location } = useCoordinates({
     keepRefreshing: true,
-    refreshTimeInterval: 2000,
+    refreshTimeInterval: 8000,
     options: {
       accuracy: 6,
     },

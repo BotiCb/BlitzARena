@@ -243,7 +243,7 @@ export function InBattleFrameProcessor(
         return;
       }
 
-      runAtTargetFps(detections.value ? 7 : 3, () => {
+      runAtTargetFps(detections.value ? 6 : 3, () => {
         'worklet';
         
         const resized = resize(frame, {

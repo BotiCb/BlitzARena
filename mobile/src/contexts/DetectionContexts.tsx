@@ -35,28 +35,9 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
   const detections = useSharedValue<Detection | null>(null);
   const runModel = useSharedValue<boolean>(false);
 
-  useEffect(() => {
-    const updateDetectedPerson = () => {
-      if (detections.value && detections.value.bodyPart !== BODY_PART.NOTHING) {
-        if (detectedPlayer !== model?.mapperArray[detections.value.classification.id]) {
-          setDetectedPlayer(model?.mapperArray[detections.value.classification.id] as string);
-        }
-      } else {
-        setDetectedPlayer('');
-      }
-    };
-    const interval = setInterval(() => {
-      updateDetectedPerson();
-    }, 100);
 
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
 
-  useEffect(() => {
-    console.log(detectedPlayer);
-  }, [detectedPlayer]);
+
 
   useEffect(() => {
     if (model?.path) {
