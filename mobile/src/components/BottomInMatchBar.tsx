@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ProgressBar } from './ProgressBar';
 import { ReloadButton } from '~/atoms/ReloadButton';
@@ -6,6 +6,8 @@ import { HitPerson } from '~/services/websocket/websocket-types';
 import NeonText from '~/atoms/NeonText';
 import { useMatch } from '~/contexts/MatchContext';
 import { useDetection } from '~/contexts/DetectionContexts';
+import { useGame } from '~/contexts/GameContext';
+import { Player } from '~/utils/models';
 
 export interface BottomInMatchBarProps {
   healthPoints: number;
@@ -23,6 +25,17 @@ export interface BottomInMatchBarProps {
 export const InMatchHud = ({ healthPoints, gunHandling }: BottomInMatchBarProps) => {
   const { score, round, maxRounds } = useMatch();
   const { detectedPlayer } = useDetection();
+  const { players } = useGame ();
+  const [detectedPlayerObject, setDetectedPlayerObject] = useState<Player | null>(null);
+
+  useEffect(() => {
+    if (detectedPlayer) {
+      const player = players.find((player) => player.sessionID === detectedPlayer);
+      setDetectedPlayerObject(player || null);
+    } else {
+      setDetectedPlayerObject(null);
+    }
+  }, [detectedPlayer]);
 
   return (
     <>
@@ -48,11 +61,11 @@ export const InMatchHud = ({ healthPoints, gunHandling }: BottomInMatchBarProps)
         )}
 
         {/* Detected Player Info */}
-        {detectedPlayer && (
+        {detectedPlayerObject && (
           <View style={styles.playerInfoContainer}>
             <NeonText style={styles.playerName}>
-              {detectedPlayer.firstName} {detectedPlayer.lastName}
-              {detectedPlayer.isEliminated && (
+              {detectedPlayerObject.firstName} {detectedPlayerObject.lastName}
+              {detectedPlayerObject.isEliminated && (
                 <NeonText style={styles.eliminatedIndicator}> X</NeonText>
               )}
             </NeonText>

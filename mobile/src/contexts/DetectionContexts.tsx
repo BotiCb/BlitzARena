@@ -16,7 +16,7 @@ import { Platform } from 'react-native';
 import { HitPerson } from '~/services/websocket/websocket-types';
 
 type DetectionContextType = {
-  detectedPlayer: Player | null;
+  detectedPlayer: string;
   detections: ISharedValue<Detection | null>;
   classifyModel: TensorflowModel | null;
   poseModel: TensorflowModel | null;
@@ -31,32 +31,20 @@ export const DetectionProvider = ({ children }: { children: React.ReactNode }) =
   const [poseModel, setPoseModel] = useState<TensorflowModel | null>(null);
   const { model, players } = useGame();
   const delegate = Platform.OS === 'ios' ? 'core-ml' : undefined;
-  const [detectedPlayer, setDetectedPlayer] = useState<Player | null>(null);
+  const [detectedPlayer, setDetectedPlayer] = useState<string>('');
   const detections = useSharedValue<Detection | null>(null);
   const runModel = useSharedValue<boolean>(false);
 
   useEffect(() => {
     const updateDetectedPerson = () => {
       if (detections.value && detections.value.bodyPart !== BODY_PART.NOTHING) {
-        if (detectedPlayer?.sessionID !== model?.mapperArray[detections.value.classification.id]) {
-          const player = players.find(
-            (player) =>
-              player.sessionID === model?.mapperArray[detections.value?.classification.id ?? 0]
-          );
-          if (player && player.sessionID !== detectedPlayer?.sessionID) {
-            setDetectedPlayer(player);
-          } else {
-            setDetectedPlayer(null);
-          }
+        if (detectedPlayer !== model?.mapperArray[detections.value.classification.id]) {
+          setDetectedPlayer(model?.mapperArray[detections.value.classification.id] as string);
         }
       } else {
-      
-          setDetectedPlayer(null);
-        
+        setDetectedPlayer('');
       }
     };
-
-    // update it in every 300 ms
     const interval = setInterval(() => {
       updateDetectedPerson();
     }, 100);
