@@ -45,7 +45,7 @@ export const LobbyScreen = () => {
           onRemovePlayer={onRemovePlayer}
         />
         <NeonButton onPress={handleReadyPress} title={ready ? 'Not Ready' : 'Ready'} />
-        {isEveryOneReady && areYouHost && (
+        {isEveryOneReady && areYouHost && players.length > 1 && (
           <NeonButton title="Start Game" onPress={onStartNextGamePhase} />
         )}
       </View>

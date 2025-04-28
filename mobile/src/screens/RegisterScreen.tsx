@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, ImageBackground } from 'react-native';
+import NeonText from '~/atoms/NeonText';
 import { NeonButton } from '~/components/NeonButton';
 
 import { AuthStackParamList } from '~/navigation/types';
@@ -63,7 +64,7 @@ const RegisterScreen = () => {
       style={{ flex: 1 }}
       resizeMode="cover">
       <View style={styles.container}>
-        <Text style={styles.title}>Login</Text>
+        <NeonText style={styles.title}>Register</NeonText>
         <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} />
         <TextInput
           style={styles.input}
@@ -92,7 +93,7 @@ const RegisterScreen = () => {
           secureTextEntry
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <Button
+        <NeonButton
           title={loading ? 'Registering...' : 'Register'}
           onPress={handleRegister}
           disabled={loading}

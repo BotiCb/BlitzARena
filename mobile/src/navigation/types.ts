@@ -15,6 +15,7 @@ export type AppStackParamList = {
     userSessionId: string;
   };
   JoinGame: undefined;
+  Profile: undefined;
 };
 
 // types.ts

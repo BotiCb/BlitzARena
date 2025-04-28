@@ -12,29 +12,31 @@ import { apiClient } from '~/services/restApi/RestApiService';
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<AppStackParamList, 'Home'>>();
   const { userInfo } = useAuth();
-  const handleLogout = async () => {
-    await AuthService.logout();
-  };
 
-  const handleGetProfile = async () => {
-    const response = await apiClient.get(USER_ENDPOINTS.GET_PROFILE);
-    if (response.status === 200) {
-      console.log(response.data);
-    } else {
-      console.log(response.status);
-    }
-  };
 
   return (
     <ImageBackground
-      source={require('../../assets/ui/backgrounds/homescreen_original.png')} // Make sure the image path is correct
+      source={require('../../assets/ui/backgrounds/homescreen_original2.png')} // Make sure the image path is correct
       style={{ flex: 1 }}
       resizeMode="stretch">
-      <View>
-        <NeonButton title="Logout" onPress={handleLogout} />
-        <NeonButton title="GetProfile" onPress={handleGetProfile} />
-        <NeonButton title="Host Game" onPress={() => navigation.navigate('CreateGame')} />
-        <NeonButton title="Join Game" onPress={() => navigation.navigate('JoinGame')} />
+      <View >
+        {/* <NeonButton title="Logout" onPress={handleLogout} />
+        <NeonButton title="GetProfile" onPress={handleGetProfile} /> */}
+        <NeonButton
+          title=""
+          onPress={() => navigation.navigate('CreateGame')}
+          style={{ marginTop: 413, width: 220, padding: 0, height: 83, marginLeft: 5 }}
+        />
+        <NeonButton
+          title=""
+          style={{ marginTop: 25,width: 220, padding: 0, height: 83, marginLeft: 5 }}
+          onPress={() => navigation.navigate('JoinGame')}
+        />
+          <NeonButton
+          title=""
+          style={{ marginTop: 101, width: 5, padding: -10, height: 60, marginLeft: 340 }}
+          onPress={() => navigation.navigate('Profile')}
+        />
       </View>
     </ImageBackground>
   );
@@ -43,33 +45,6 @@ const HomeScreen = () => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 16,
-  },
-  input: {
-    width: '100%',
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-  },
-  error: {
-    color: 'red',
-    marginBottom: 8,
-  },
-  mapContainer: {
-    flex: 1,
-    width: '100%',
-    marginTop: 16,
-    height: '100%',
-  },
+
+
 });

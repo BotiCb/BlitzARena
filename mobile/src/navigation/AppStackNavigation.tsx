@@ -7,6 +7,7 @@ import { AppStackParamList } from './types';
 import GameSetupScreen from '~/screens/GameSetupScreen';
 import HomeScreen from '~/screens/HomeScreen';
 import { JoinGameScreen } from '~/screens/JoinGameScreen';
+import { ProfileScreen } from '~/screens/ProfileScreen';
 
 const Stack = createStackNavigator<AppStackParamList>();
 
@@ -17,6 +18,7 @@ const AppStack = () => {
       <Stack.Screen name="CreateGame" component={GameSetupScreen} />
       <Stack.Screen name="GameStack" component={GameStackNavigation} />
       <Stack.Screen name="JoinGame" component={JoinGameScreen} />
+      <Stack.Screen name="Profile" component={ProfileScreen} />
     </Stack.Navigator>
   );
 };

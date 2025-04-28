@@ -16,6 +16,7 @@ export const USER_ENDPOINTS = {
   GET_PLAYERS_IN_GAME: (gameId: string) => `${ROUTES.USERS}/ingameinfo/${gameId}`,
   GET_PLAYER_BY_SESSION_ID: (sessionId: string) =>
     `${ROUTES.USERS}/ingameinfo/session-id/${sessionId}`,
+  UPDATE_PROFILE: `${ROUTES.USERS}`,
 };
 
 export const GAME_ENDPOINTS = {
