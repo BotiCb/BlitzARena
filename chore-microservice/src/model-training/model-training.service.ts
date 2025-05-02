@@ -48,10 +48,14 @@ export class ModelTrainingService {
     const shouldRotate = metadata.width > metadata.height;
 
     let resizedImageBuffer;
-    if (shouldRotate) {
+    if (metadata.width !== photoSize || metadata.height !== photoSize) {
+      if (shouldRotate) {
       resizedImageBuffer = await image.resize(photoSize, photoSize, { fit: 'fill' }).rotate(90).toBuffer();
-    } else {
+      } else {
       resizedImageBuffer = await image.resize(photoSize, photoSize, { fit: 'fill' }).toBuffer();
+      }
+    } else {
+      resizedImageBuffer = await image.toBuffer();
     }
 
     if (!(await this.personDetectionService.detectPerson(await image.toBuffer()))) {

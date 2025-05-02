@@ -46,4 +46,5 @@ refreshTokenApiClient.interceptors.request.use(async (config) => {
 
 export const setApiBaseUrl = (url: string) => {
   apiClient.defaults.baseURL = url;
+  refreshTokenApiClient.defaults.baseURL = url;
 };

@@ -127,7 +127,10 @@ export const ProfileScreen = () => {
   }, []);
 
   if (isLoading) {
-    return <SplashScreen />;
+    return  <View style={{ marginTop: 20 }}>
+    <NeonButton title="Logout" onPress={handleLogout} />
+    <SplashScreen />
+  </View>;
   }
 
   return (

@@ -88,7 +88,14 @@ export const MapComponent = ({ gameArea, readonly, onGameAreaChange }: MapCompon
             zIndex={1}
           />
 
-
+          <Marker
+            coordinate={{
+              latitude: userLocation.coords.latitude,
+              longitude: userLocation.coords.longitude,
+            }}
+            pinColor="yellow"
+            zIndex={2}
+          />
 
           {gameArea.teamBases.map((teamBase, index) => (
             <Marker
