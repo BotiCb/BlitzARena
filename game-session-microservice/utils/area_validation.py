@@ -26,6 +26,14 @@ def validate_area(player_coords: Coordinates, game_area: GameArea) -> bool:
     
     return True
 
+def is_player_in_area(player_coords: Coordinates, game_area: GameArea) -> bool:
+    """
+    Checks if the player's coordinates are within the game area.
+    Returns True if the player is within the polygon defined by the game area edges.
+    """
+    edges = game_area.edges
+    return _is_point_in_polygon(player_coords, edges)
+
 def _has_self_intersection(vertices: List[Coordinates]) -> bool:
     n = len(vertices)
     if n < 3:
