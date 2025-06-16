@@ -2,7 +2,7 @@ import React from "react"
 import BigCountdownTimer from "~/atoms/BigCountdownTimer"
 import NeonText from "~/atoms/NeonText"
 
-export const AreaLeftCountDown = ({ endsAt }: { endsAt: number }) => {
+export const AreaWarningCountDown = ({ endsAt }: { endsAt: number }) => {
     return (
         <>
             <NeonText>
