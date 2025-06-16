@@ -68,8 +68,8 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
             if player.countdown_task and not player.countdown_task.done():
                 player.countdown_task.cancel()
                 player.countdown_task = None
-                await self.context.game_context.websockets.send_to_player(player.id, Message({"type": "position_change", "data": 
-                     "in_area"
+                await self.context.game_context.websockets.send_to_player(player.id, Message({"type": "area_left_countdown", "data": 
+                    {"end_at": None}
                 }))
 
     

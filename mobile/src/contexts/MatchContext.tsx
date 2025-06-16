@@ -23,6 +23,7 @@ type MatchContextType = {
   };
   score: Record<string, number>;
   winningTeam: string | null;
+  areaWarningEndsAt: number | null;
 };
 
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
@@ -37,6 +38,7 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
   const [score, setScore] = useState<Record<string, number>>({});
   const [winningTeam, setWinningTeam] = useState<string | null>(null);
   const gunHandling = useGunHandling();
+  const [areaWarningEndsAt, setAreaWarningEndsAt] = useState<number | null>(null);
 
   const { location } = useCoordinates({
     keepRefreshing: true,
@@ -64,6 +66,7 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
     matchWebSocketService.setHealthPointsHandlerFunction(setHealthPoints);
     matchWebSocketService.setWinningTeamHandlerFunction(setWinningTeam);
     matchWebSocketService.setScoreHandlerFunction(setScore);
+    matchWebSocketService.setAreaTimerHandlerFunction(setAreaWarningEndsAt);
 
     matchWebSocketService.readyForPhase();
 
@@ -80,7 +83,8 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
     matchPhaseEndsAt,
     healthPoints,
     score,
-    winningTeam
+    winningTeam,
+    areaWarningEndsAt,
   };
 
   useEffect(() => {

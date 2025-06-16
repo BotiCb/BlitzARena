@@ -12,6 +12,7 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
     private healtPointsHandlerFunction: (healthPoints: number) => void = () => { };
     private scoreHandlerFunction: (score: Record<string, number>) => void = () => { };
     private winningTeamHandlerFunction: (team: string | null) => void = () => { };
+    private areaTimerHandlerFunction: (endsAt: number | null) => void = () => { };
 
 
     setCurrentRoundHandlerFunction = (handler: (round: number) => void) => {
@@ -40,6 +41,10 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
 
     setWinningTeamHandlerFunction = (handler: (team: string | null) => void) => {
         this.winningTeamHandlerFunction = handler;
+    }
+
+    setAreaTimerHandlerFunction = (handler: (endsAt: number | null) => void) => {
+        this.areaTimerHandlerFunction = handler;
     }
 
 
@@ -101,6 +106,15 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
 
     }
 
+    onPositionChange = (message: WebSocketMsg) => {
+        const { endsAt } = message.data;
+        if (endsAt) {
+            this.areaTimerHandlerFunction(MatchWebSocketService.clockSyncService.serverTimeToClient(endsAt));
+        } else {
+            this.areaTimerHandlerFunction(null);
+        }
+    }
+
 
 
     onHpInfo = (message: WebSocketMsg) => {
@@ -113,6 +127,7 @@ export class MatchWebSocketService extends AbstractCustomWebSocketService {
         const { eliminatedBy, eliminatedPlayer } = message.data;
         if(MatchWebSocketService.sessionId === eliminatedPlayer){
             this.healtPointsHandlerFunction(0);
+            this.areaTimerHandlerFunction(null);
         }
         AbstractCustomWebSocketService.playersHandlerFunction((players: Player[]) => {
             return players.map((player: Player) => {
