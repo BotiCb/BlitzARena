@@ -98,7 +98,6 @@ Players aim with phones mounted on cardboard guns. AI identifies the player and 
 - New weapon types with different stats
 - Expanded multiplayer modes (e.g., capture the flag)
 - Arena/map editor for custom matches
-- Support for AR glasses or wearable hardware
 
 ---
 
