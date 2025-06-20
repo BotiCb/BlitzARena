@@ -19,6 +19,7 @@ class Player:
         self.training_photo_left_to_take = 0
         self.kills = 0
         self.deaths = 0
+        self.countdown_task = None
 
     def set_ready(self, ready: bool):
         """Set the ready status for the player."""

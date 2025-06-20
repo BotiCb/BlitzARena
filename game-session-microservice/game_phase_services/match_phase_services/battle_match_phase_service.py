@@ -34,6 +34,21 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
         await asyncio.sleep(duration.total_seconds())
         await self.context.transition_to_match_phase("waiting-for-players")
 
+    async def run_countdown_for_player(self, player: Player):
+        """Run countdown for a player when they are outside the game area"""
+        time_delta = timedelta(seconds=10)
+        await self.context.game_context.websockets.send_to_player(player.id, Message({"type": "area_left_countdown", "data": {
+            "end_at": int(time_delta.timestamp() * 1000)
+        }}))
+
+        await asyncio.sleep(time_delta.total_seconds())
+
+        player.hp = 0
+        await self.send_elimininated_info(player, None)
+
+
+
+
     def on_exit(self):
         """Clean up resources when exiting phase"""
         if self._countdown_task and not self._countdown_task.done():
@@ -44,10 +59,19 @@ class BattleMatchPhaseService(MatchPhaseAbstractService):
         
 
     async def handle_player_position_change(self, player: Player):
-        """Handle player movements during battle"""
-        # Add battle-specific position logic here
-        pass
-    
+        if player.is_alive() == False:
+            return
+        
+       if not is_player_in_area(player.coordinates, self.context.game_context.game_area):
+            player.countdown_task = asyncio.create_task(self.run_countdown_for_player(player))
+        else :
+            if player.countdown_task and not player.countdown_task.done():
+                player.countdown_task.cancel()
+                player.countdown_task = None
+                await self.context.game_context.websockets.send_to_player(player.id, Message({"type": "area_left_countdown", "data": 
+                    {"end_at": None}
+                }))
+
     
     async def handle_player_shoot(self, playerId: str, message: dict):
         try:

@@ -8,9 +8,10 @@ import { useMatch } from '~/contexts/MatchContext';
 
 import { InMatchHud } from '~/components/BottomInMatchBar';
 import NeonText from '~/atoms/NeonText';
+import { AreaWarningCountDown } from '~/components/AreaLeftCountDown';
 
 const InMatchBattleView = () => {
-  const { matchPhaseEndsAt, healthPoints } = useMatch();
+  const { matchPhaseEndsAt, healthPoints, areaWarningEndsAt } = useMatch();
   const { getHitPerson } = useDetection();
   const { gunHandling, score } = useMatch();
   return (
@@ -22,8 +23,11 @@ const InMatchBattleView = () => {
         gunHandling.isReloading || !gunHandling.isAbleToShoot || gunHandling.ammoInClip === 0
       }>
       <View style={styles.container}>
-     
+      
 
+        {areaWarningEndsAt && (
+          <AreaWarningCountDown endsAt={areaWarningEndsAt}/>
+        )}
         {matchPhaseEndsAt && <SmallCountdownTimer endsAt={matchPhaseEndsAt} />}
         {healthPoints > 0 && <Scope />}
         {healthPoints > 0 ? (
