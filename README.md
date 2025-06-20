@@ -1,6 +1,5 @@
 # BlitzARena – Augmented Reality Shooter Game
 
-![BlitzARena]
 
 **BlitzARena** is an innovative Augmented Reality (AR) shooter game that merges real-world movement with virtual gameplay. Designed for mobile platforms, it utilizes **AI**, **computer vision**, and **real-time image processing** to deliver an immersive and competitive multiplayer experience.
 
@@ -33,7 +32,7 @@
 - **Real-time Communication**: WebSocket
 
 📌 *System architecture:*  
-![System architecture](./images/page25_architecture.png)
+
 
 ---
 
@@ -61,15 +60,6 @@
 
 ---
 
-## 📷 Sample Screens & Diagrams
-
-- 📄 *Page 8*: Cardboard gun setup  
-- 📄 *Page 12*: In-game aiming demo  
-- 📄 *Page 26*: Database structure  
-- 📄 *Page 30*: YOLO Pose model explanation  
-- 📄 *Page 31–32*: Model training pipeline
-
----
 
 ## 🧩 AI & Model Details
 
@@ -89,13 +79,6 @@
 
 ---
 
-## 🛠 Deployment Requirements
-
-- Android (8.0+) or iOS (12+)
-- Min. 2GB RAM device with camera and GPS
-- Stable internet connection
-
----
 
 ## 📈 Further Development Ideas
 
@@ -116,18 +99,5 @@
 
 ---
 
-## 🧑‍💻 Author
 
-**Nagy Botond**  
-Sapientia Hungarian University of Transylvania – Faculty of Technical and Human Sciences  
-Bachelor Thesis, 2025  
-Advisor: Dr. Jánosi-Rancz Katalin Tünde
-
----
-
-## 📎 Acknowledgements
-
-This project is part of a diploma thesis and is developed with academic guidance. Special thanks to the Sapientia University and everyone involved in testing BlitzARena.
-
----
 
