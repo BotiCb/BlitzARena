@@ -28,7 +28,6 @@
   - TensorFlow Lite for mobile inference
 - **Database**: MongoDB
 - **Cloud Storage**: Firebase Storage
-- **Communication**: WebSocket
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/69d87276-4be7-4c4b-8c51-747d3631ad09" width="600" alt="System Architecture"/>
@@ -109,7 +108,6 @@ Players aim with phones mounted on cardboard guns. AI identifies the player and 
 - [Ultralytics YOLOv8 Documentation](https://docs.ultralytics.com/)
 - [TensorFlow Lite](https://www.tensorflow.org/lite)
 - [React Native Documentation](https://reactnative.dev/)
-- Faccio & McConnell – *Death by Pokémon Go*, SSRN, 2018
 
 ---
 
