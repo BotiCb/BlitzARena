@@ -114,4 +114,4 @@ Players aim with phones mounted on cardboard guns. AI identifies the player and 
 ---
 
 **Created by Nagy Botond – Sapientia Hungarian University of Transylvania**  
-*Bachelor Thesis, 2025 | Supervisor: Dr. Jánosi-Rancz Katalin Tünde*
+*Bachelor Thesis, 2025
