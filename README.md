@@ -41,11 +41,13 @@
 
 1. **Create & Join Match**  
    Host generates a QR code, other players scan to join.  
-   ![Join screen](./images/page10_join.png)
+   ![image](https://github.com/user-attachments/assets/92354773-b214-400f-b9b2-7b5dd65676d8)
+
 
 2. **Data Collection for AI Training**  
    Players take photos of each other in training groups.  
-   ![Training](./images/page11_training.png)
+   ![image](https://github.com/user-attachments/assets/e70c12ce-a5a2-479b-ae4e-22f77dab6fc1)
+  
 
 3. **Team Setup & Map Configuration**
 
@@ -53,7 +55,9 @@
    - Players aim using their phones mounted on cardboard weapons.
    - Real-time camera analysis identifies hit players and body parts.
    - Damage is calculated based on hit area and weapon stats.  
-   ![Combat](./images/page12_combat.png)
+  ![image](https://github.com/user-attachments/assets/6519b80f-e1cc-4a55-a6b5-1bf8d8c43401)
+  ![image](https://github.com/user-attachments/assets/2acb8fdd-87f9-462e-b6d1-99b9048ec878)
+
 
 5. **Rounds & Scoring**  
    - 10 rounds, stats generated at the end.  
