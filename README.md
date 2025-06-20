@@ -32,6 +32,7 @@
 - **Real-time Communication**: WebSocket
 
 📌 *System architecture:*  
+![image](https://github.com/user-attachments/assets/69d87276-4be7-4c4b-8c51-747d3631ad09)
 
 
 ---
